@@ -105,8 +105,8 @@ Containers are a lighter-weight form of virtualization that shares the host oper
 
 **In summary,** virtual machines offer complete isolation and flexibility, but they can be resource-intensive and slow to start up. Containers, on the other hand, are lightweight, fast, and portable, but they may not provide the same level of isolation as VMs. The choice between VMs and containers depends on the specific requirements of your application, such as performance, isolation, and portability.
 
-![Containers vs Virtual Machines](https://www.netapp.com/media/container-vs-vm-inline1_tcm19-82163.png?v=85344?v=85344)
-(Doug Jones, 2016)
+![Containers vs Virtual Machines](./files/virtualizationVsContainerization.drawio.svg)
+Inspired by Doug Jones (2016)
 
 ## Containerization
 **Containerization** is a technology that packages applications and their dependencies into a single, portable unit called a container. This approach offers several benefits, including improved portability, consistency, efficiency, isolation, and scalability.
