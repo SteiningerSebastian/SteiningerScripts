@@ -8,7 +8,7 @@ Throughout the course, we will use practical examples and hands-on exercises to 
 
 Until now, we've primarily focused on developing applications on our local machines. While this is essential for prototyping and testing, the ultimate goal is to deploy these applications to production environments where they can be accessed by users. In this course, we'll explore the techniques and best practices involved in bringing your applications from development to production.
 
-	[![Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
+[![[Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
 
 If you have headphones and are corently working alone on a task, you can listen to this, if you would like to.
 [![Welcome to Production](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) []
