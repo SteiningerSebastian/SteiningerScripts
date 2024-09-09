@@ -10,10 +10,10 @@ Throughout the course, we will use practical examples and hands-on exercises to 
  
 Until now, we've primarily focused on developing applications on our local machines. While this is essential for prototyping and testing, the ultimate goal is to deploy these applications to production environments where they can be accessed by users. In this course, we'll explore the techniques and best practices involved in bringing your applications from development to production.
 
-[![[Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
+[![Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
 
 If you have headphones and are corrently working alone on a task, you can listen to this, if you would like to.
-[![Welcome to Production](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) []
+[![Forrest Brazeal Performance at fwd:cloudsec 2024](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) []
 
 ## Download Docker
 Follow the instructions from the link and install Docker Desktop. [Docker Desktop](https://docs.docker.com/desktop/)
@@ -106,6 +106,7 @@ Containers are a lighter-weight form of virtualization that shares the host oper
 **In summary,** virtual machines offer complete isolation and flexibility, but they can be resource-intensive and slow to start up. Containers, on the other hand, are lightweight, fast, and portable, but they may not provide the same level of isolation as VMs. The choice between VMs and containers depends on the specific requirements of your application, such as performance, isolation, and portability.
 
 ![Containers vs Virtual Machines](./files/virtualizationVsContainerization.drawio.svg)
+
 Inspired by Doug Jones (2016)
 
 ## Containerization
