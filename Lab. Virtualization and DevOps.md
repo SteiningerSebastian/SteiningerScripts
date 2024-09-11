@@ -331,13 +331,359 @@ You can view the running container by using this command.
 docker container ls
 ```
 
-#### MORE EXAMPLES FOR STUDENTS TO TRY ON THEIR OWN ...
+#### Kahoot
+To check if you have successfully acquired the basic knowledge to work in this field, it's recommended to try the quiz.
 
-#### Docker-Compose
-...
+[Kahoot](https://create.kahoot.it/share/lab-4bi-virtualization-and-containerization/39c78139-8b31-485b-8233-21ecb076e63a)
 
+#### Task: Webserver ASP.NET C\#
+Now that we've built and run a Docker container from a file for a basic application, let's explore how to integrate this approach into your development workflow. We'll create a ASP.NET application that includes functionalities related to prime numbers:
+
+- **Random Prime Number Generation:** An HTTP GET method will return a random prime number.
+- **Primality Check:** A separate function will determine if a provided number is prime.
+- **Relative Primality Check:** An additional function will check if two integers are relatively prime (share no common factors greater than 1).
+
+To create a new ASP.NET Core Empty project with containerization enabled in Visual Studio, start by selecting the **Empty** template when creating a new project. Then, configure Docker support by choosing **Dockerfile Only** in the dialog. 
+
+![Dialog ASP.NET Core Container](./files/CreateASPNetWithContainerSupport.png)
+This will set up your project with a Dockerfile, allowing you to build and run your application in a containerized environment. Once created, you can write your Prime Number functionalities within the project structure. You can build the initial Docker image using Visual Studio's build options, and then run the application in a container using the `docker run` command.
+
+By implementing these functionalities and utilizing Docker, you can build, test, and run your ASP.NET Core application efficiently within a containerized environment. This promotes faster iterations and consistency throughout the development process.
+
+``` Program.cs
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => {
+    //Find a random prime number.
+});
+
+app.MapGet("/isPrime/{number}", (int number) => {
+    //Check if is prime.
+});
+
+app.MapGet("/isRelativePrime/{a}/{b}", (int a, int b) => {
+    //Check if a and b have any common dividers.
+});
+
+app.Run();
+```
+
+Now that this is working, let's take a look at the docker file that was created.
+
+```
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+
+# This stage is used to build the service project
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["TestWebServerContainer/TestWebServerContainer.csproj", "TestWebServerContainer/"]
+RUN dotnet restore "./TestWebServerContainer/TestWebServerContainer.csproj"
+COPY . .
+WORKDIR "/src/TestWebServerContainer"
+RUN dotnet build "./TestWebServerContainer.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./TestWebServerContainer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "TestWebServerContainer.dll"]
+```
+
+This script defines a multi-stage Dockerfile for building and running an ASP.NET Core Web API application. Here's a breakdown of each stage:
+
+**1. Base Stage (Debug Mode):**
+
+- `FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base`: Uses the official Microsoft ASP.NET Core base image with version 8.0 as the foundation for the application. This image contains the necessary runtime libraries for .NET Core applications.
+- `USER app`: Sets the user within the container to "app." This user account is typically used to run the application process.
+- `WORKDIR /app`: Sets the working directory within the container to `/app`. This is where application files will be copied and executed.
+- `EXPOSE 8080`: Exposes port 8080 within the container, allowing external communication on this port. This might be needed for debugging purposes.
+- `EXPOSE 8081`: Similarly, exposes port 8081, potentially for additional functionality or another service.
+
+**Note:** This stage is primarily used when running the application within Visual Studio in "fast mode" (the default for Debug configuration). It provides a pre-built base image for quick debugging.
+
+**2. Build Stage:**
+
+- `FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build`: Uses the official Microsoft .NET Core SDK image with version 8.0 to build the application.
+- `ARG BUILD_CONFIGURATION=Release`: Defines an argument named `BUILD_CONFIGURATION` with a default value of "Release." This can be overridden when building the image depending on your needs (e.g., "Debug").
+- `WORKDIR /src`: Sets the working directory within this stage to `/src`.
+- `COPY`: Copies the project file ("TestWebServerContainer.csproj") and its folder from your local machine to the `/src` directory within the container.
+- `RUN dotnet restore`: Executes the `dotnet restore` command to download project dependencies.
+- `COPY`: Copies all files from the current directory (where the Dockerfile resides) to the `/src` directory.
+- `WORKDIR /src/TestWebServerContainer`: Changes the working directory to the specific project folder within the container.
+- `RUN dotnet build`: Executes the `dotnet build` command to build the project using the specified build configuration (`$BUILD_CONFIGURATION`). The output is placed in the `/app/build` directory.
+
+**3. Publish Stage:**
+
+- `FROM build AS publish`: Creates a new stage based on the build stage.
+- `ARG BUILD_CONFIGURATION=Release`: Similar to the previous stage, defines an argument for build configuration.
+- `RUN dotnet publish`: Executes the `dotnet publish` command to publish the built application to the `/app/publish` directory within the container. The `-p:UseAppHost=false` parameter ensures a self-contained deployment without relying on a separate web server process.
+
+**4. Final Stage (Production or Regular Mode):**
+
+- `FROM base AS final`: Creates a final stage based on the base stage (the pre-configured .NET Core environment).
+- `WORKDIR /app`: Sets the working directory within this stage to `/app`.
+- `COPY --from=publish /app/publish .`: Copies the published application files from the publish stage to the final stage's `/app` directory. This effectively combines the base image with your built and published application.
+- `ENTRYPOINT ["dotnet", "TestWebServerContainer.dll"]`: Defines the entry point for the container. This instructs the container to run the "dotnet" command with the argument "TestWebServerContainer.dll" when the container starts. This launches your ASP.NET Core Web API application.
+
+**Summary:**
+
+This Dockerfile defines a multi-stage build process for an ASP.NET Core Web API application. It optimizes the image size by separating build steps and utilizes pre-built base images. The script also demonstrates the use of arguments to control the build configuration.
+#### Volumes & Bind Mounts
+"Volumes are the preferred mechanism for persisting data generated by and used by Docker containers." (Docker, 2024a)
+
+**Docker Volumes** and **Bind Mounts** are two mechanisms used to persist data within Docker containers. They provide different ways to share data between the container and the host system, or between multiple containers.
+
+##### Docker Volumes
+
+- **Purpose:** Volumes are specifically designed to persist data independently of the container's lifecycle. They exist as separate entities on the host filesystem and can be managed and shared across multiple containers.
+- **Creation:** Volumes are created using the `docker volume create` command. For example:
+```
+docker volume create my-data-volume
+```
+- **Mounting:** Volumes are mounted to containers using the `-v` or `--volume` flag when running a container. For example, this mounts the "my-data-volume" to the `/app/data` directory within the container:
+```
+docker run -v my-data-volume:/app/data my-image
+```
+- **Persistence:** Data stored in volumes persists even after the container is stopped or deleted.
+
+##### Bind Mounts
+
+- **Purpose:** Bind mounts directly map a directory on the host system to a directory within the container. Changes made to the host directory are immediately reflected in the container, and vice versa.
+- **Mounting:** Bind mounts are also specified using the `-v` or `--volume` flag. For example, this mounts the `/host/path` directory on the host system to the `/container/path` directory within the container:
+```
+docker run -v /host/path:/container/path my-image
+```
+- **Persistence:** Data changes made within the container's bind mount directory are directly reflected on the host system and persisted.
+
+**Key Differences:**
+
+|Feature|Docker Volumes|Bind Mounts|
+|---|---|---|
+|Persistence|Independent of container|Directly linked to host|
+|Management|Managed by Docker|Managed by host system|
+|Sharing|Can be shared across multiple containers|Limited to one container at a time|
+|Performance|Generally better performance|Can be slower due to direct file system access|
+
+**Choosing Between Volumes and Bind Mounts:**
+
+- **Use volumes** when you want to:
+    - Persist data independently of the container's lifecycle.
+    - Share data between multiple containers.
+    - Manage data using Docker commands.
+- **Use bind mounts** when you need:
+    - Direct access to host system files.
+    - To quickly debug or test changes to files.
+    - To share large datasets that don't need to be managed separately.
+
+By understanding the differences between volumes and bind mounts, you can choose the appropriate method for your specific use case and ensure proper data management within your Docker environment. 
+
+For more information visit the [docker documentation](https://docs.docker.com/engine/storage/volumes/)  website.
+##### Integrating NAS with Docker
+
+You can integrate NAS with Docker to provide persistent storage for your containerized applications. Here's a general approach:
+
+1. **Configure NAS:**
+    - Set up your NAS device according to the manufacturer's instructions.
+    - Ensure it is accessible on your network.
+    - Create a share or folder on the NAS that will be used by Docker.
+2. **Mount the NAS Share in Docker:**
+    - Use the `-v` or `--volume` flag when running a Docker container to mount the NAS share to a directory within the container.
+    - For example:
+        ```
+        docker run -v nas_share:/app/data -p 80:80 my-image
+        ```        
+        This mounts the NAS share named "nas_share" to the `/app/data` directory within the container.
+
+**Benefits of Using NAS with Docker:**
+
+- **Centralized Storage:** NAS provides a central location for storing data, making it easier to manage and access.
+- **Scalability:** NAS devices can be scaled to accommodate growing storage needs.
+- **Performance:** NAS devices are often optimized for storage performance.
+- **Data Persistence:** Data stored on NAS persists even if the container is stopped or deleted.
+
+**Additional Considerations:**
+
+- **NAS Protocol:** Ensure your NAS device supports a protocol compatible with Docker (e.g., NFS, CIFS).
+- **Permissions:** Set appropriate permissions on the NAS share to allow Docker containers to access and modify files.
+- **Network Connectivity:** Verify that your Docker host has network connectivity to the NAS device.
+##### Task: Use Volumes to make the Minecraft-World persistent. 
+Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
 ### Orchestration
+**Orchestration** is the process of automating the deployment, management, and scaling of containerized applications. It involves coordinating multiple containers, ensuring they work together seamlessly and providing a reliable and scalable platform for your applications.
+
+**Key Benefits of Orchestration:**
+
+- **Automation:** Orchestration tools automate many manual tasks, such as deploying containers, scaling applications, and managing resources.
+- **Scalability:** Orchestrators can automatically scale applications up or down based on demand, ensuring optimal resource utilization.
+- **High Availability:** Orchestration tools can help ensure that applications remain available even if individual containers fail.
+- **Simplified Management:** Orchestrators provide a centralized platform for managing and monitoring containerized applications.
+
+**Popular Orchestration Tools:**
+
+- **Kubernetes:** A widely-used open-source platform developed by Google. It offers a rich feature set for managing containerized applications, including service discovery, load balancing, and self-healing.
+- **Docker Swarm:** A built-in orchestration tool provided by Docker. It is simpler to use than Kubernetes but offers fewer features.
+- **Apache Mesos:** A distributed systems framework that can be used for both container and non-container workloads. It is highly scalable and flexible.
+
+**Core Concepts of Orchestration:**
+
+- **Clusters:** A group of physical or virtual machines that work together to run containerized applications.
+- **Nodes:** Individual machines within a cluster.
+- **Services:** A logical group of containers that perform a specific function.
+- **Tasks:** Instances of a service that run on individual nodes.
+- **Scheduling:** The process of assigning tasks to nodes based on various factors, such as resource availability and workload distribution.
+- **Load Balancing:** Distributing traffic across multiple instances of a service to improve performance and reliability.
+- **Service Discovery:** Automatically discovering and registering services within a cluster.
+
+**Orchestration Workflow:**
+
+1. **Application Deployment:** The orchestration tool deploys the application's containers to the cluster.
+2. **Service Discovery:** The orchestration tool registers the services with a service discovery mechanism.
+3. **Scheduling:** Tasks are scheduled and assigned to nodes based on available resources and workload.
+4. **Load Balancing:** Traffic is distributed across multiple instances of a service to improve performance and reliability.
+5. **Scaling:** The orchestration tool automatically scales applications up or down based on demand.
+6. **Monitoring and Management:** The orchestration tool provides tools for monitoring the health of applications and managing resources.
+
+By using an orchestration tool, you can simplify the management of your containerized applications and ensure that they are reliable, scalable, and highly available.
+#### Docker-Compose
+
+**Docker Compose** is a tool that allows you to define and run multi-container Docker applications. It simplifies the process of managing and scaling your applications by defining all the services and their dependencies in a single YAML file.  
+
+**Key Features of Docker Compose:**
+
+- **Service Definition:** Defines the services that make up your application, including the image to use, ports to expose, environment variables, and dependencies.
+- **Networking:** Creates a private network for your application, allowing containers to communicate with each other.
+- **Volumes:** Manages volumes for persistent data storage.
+- **Secrets:** Stores sensitive information securely and makes it available to your containers.
+
+**Example Docker Compose File:**
+
+```
+version: '3.7'
+
+services:
+  web:
+    image: my-web-app:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - database
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+```
+
+**Version:**
+
+- `version: '3.7'` specifies the version of the Docker Compose specification used. This version indicates that the script supports features introduced in Docker Compose 3.7.
+
+**Services:**
+
+- `services:` defines the individual services that make up the application.
+
+**Web Service:**
+
+- `web:` defines a service named "web."
+    - `image: my-web-app:latest`: Specifies the Docker image to use for this service. In this case, it's using the latest version of an image named "my-web-app."
+    - `ports:` defines the port mapping between the container and the host:
+        - `"8080:80"` maps port 8080 on the host to port 80 within the container. This allows you to access the web application on port 8080 of your host machine.
+    - `depends_on:` specifies that the "web" service depends on the "database" service. This means that the "database" service must be started before the "web" service.
+
+**Database Service:**
+
+- `database:` defines a service named "database."
+    - `image: postgres:latest`: Specifies the Docker image to use for the database. Here, it's using the latest version of the official PostgreSQL image.
+    - `environment:` defines environment variables that will be set within the database container:
+        - `POSTGRES_USER: myuser`: Sets the PostgreSQL user to "myuser."
+        - `POSTGRES_PASSWORD: mypassword`: Sets the PostgreSQL password to "mypassword."
+        - `POSTGRES_DB: mydatabase`: Sets the PostgreSQL database name to "mydatabase."
+
+This Docker Compose script describes a multi-container application consisting of a web application and a PostgreSQL database. The "web" service depends on the "database" service, ensuring that the database is started before the web application. The environment variables for the database service provide the necessary credentials and database name for the PostgreSQL instance.
+
+**Using Docker Compose:**
+
+1. **Create a Docker Compose file:** Create a YAML file named `docker-compose.yml` with the desired configuration.
+2. **Run Docker Compose:** Use the `docker-compose up` command to start the defined services. For example:
+    ```
+    docker-compose up -d
+    ```
+    This will start the services in detached mode, allowing you to run other commands in the terminal.
+
+**Benefits of Using Docker Compose:**
+
+- **Simplified Configuration:** Defines your entire application in a single file.
+- **Dependency Management:** Automatically manages dependencies between services.
+- **Environment Isolation:** Creates a separate environment for your application.
+- **Easier Deployment:** Can be used to deploy your application to different environments.
+
+**Integration with Orchestration Tools:**
+
+Docker Compose can be used in conjunction with larger orchestration tools like Kubernetes or Docker Swarm. These tools can provide additional features like service discovery, load balancing, and automatic scaling.
+
+By using Docker Compose, you can simplify the management of your multi-container applications and make it easier to deploy and scale them across different environments.
+##### Commands
+
+A Docker Compose YAML file defines the services, networks, volumes, and other components that make up your multi-container application. Here's a breakdown of the key structures and commands used in Docker Compose:
+
+**Top-Level Structure:**
+
+- **version:** Specifies the version of the Docker Compose specification used.
+- **services:** Defines the individual services that make up your application.
+
+**Service Definition:**
+
+- **image:** Specifies the Docker image to use for the service.
+- **build:** Specifies a context and Dockerfile to build the image locally.
+- **ports:** Defines port mappings between the container and the host.
+- **volumes:** Mounts volumes to the container.
+- **environment:** Sets environment variables within the container.
+- **depends_on:** Specifies dependencies between services.
+- **networks:** Specifies the network(s) the service should be connected to.
+- **restart:** Configures the restart policy for the service.
+- **command:** Overrides the default command specified in the image.
+
+**Networks:**
+
+- **networks:** Defines custom networks for your application.
+- **name:** Specifies the name of the network.
+- **driver:** Specifies the driver to use for the network (e.g., `bridge`, `overlay`, `host`).
+
+**Volumes:**
+
+- **volumes:** Defines volumes to be used by your services.
+- **name:** Specifies the name of the volume.
+- **driver:** Specifies the driver to use for the volume (e.g., `local`, `nfs`).
+
+**Commands:**
+
+- **docker-compose up:** Starts all services defined in the Docker Compose file.
+- **docker-compose down:** Stops and removes all containers and networks created by Docker Compose.
+- **docker-compose build:** Builds the images defined in the Docker Compose file.
+- **docker-compose run:** Runs a one-off command within a service container.
+- **docker-compose exec:** Executes a command within a running container.
+- **docker-compose ps:** Lists the running containers and their status.
+#### Kubernets
 ...
 
 # Bibliography
 Doug Jones, March 16, 2018, Containers vs. Virtual Machines (VMs): What's the Difference? https://www.netapp.com/blog/containers-vs-vms/
+Docker, 11. September 2024a, Volumes https://docs.docker.com/engine/storage/volumes/
