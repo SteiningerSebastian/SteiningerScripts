@@ -692,4 +692,5 @@ A Docker Compose YAML file defines the services, networks, volumes, and other co
 
 # Bibliography
 Doug Jones, March 16, 2018, Containers vs. Virtual Machines (VMs): What's the Difference? https://www.netapp.com/blog/containers-vs-vms/
+
 Docker, 11. September 2024a, Volumes https://docs.docker.com/engine/storage/volumes/
