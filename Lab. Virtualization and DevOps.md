@@ -28,8 +28,8 @@ Until now, we've primarily focused on developing applications on our local machi
 
 [![Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
 
-If you have headphones and are corrently working alone on a task, you can listen to this, if you would like to.
-[![Forrest Brazeal Performance at fwd:cloudsec 2024](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) []
+Check out this video for some inspirational tunes to boost your productivity.
+[![Forrest Brazeal Performance at fwd:cloudsec 2024](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) 
 
 ## Download Docker
 Follow the instructions from the link and install Docker Desktop. [Docker Desktop](https://docs.docker.com/desktop/)
