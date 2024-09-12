@@ -98,6 +98,7 @@ If you see the error `13 - Access Denied`, make sure that no other extension, et
 | Operating System       | Yes                      | Often no, or a simplified RTOS |
 | Energy Consumption     | Higher                   | Lower                          |
 | Real-Time Capabilities | May have, but not always | Often designed for real-time   |
+
 In summary, **general-purpose computers** are designed for versatility and power, while **microcontrollers** are optimized for specific tasks, energy efficiency, and real-time performance. The choice between the two depends on the specific requirements of the application. 
 ## C / C++ vs Micropython
 **C**
