@@ -513,7 +513,9 @@ By understanding these fundamental concepts, you can build a strong foundation f
 (espressif, 2024)
 
 # MicroPython in action
-to be continued ...
+
+The [MicroPython's Quick Reference for the ESP32](https://docs.micropython.org/en/latest/esp32/quickref.html) provides a solid foundation for getting started. The authors focus on expanding upon specific areas they believe warrant further explanation.
+
 # Bibliography
 Alsabbagh, M. (2019). MicroPython Cookbook (1st ed.). Packt Publishing. Retrieved 12 September 2024 from https://www.perlego.com/book/969835 (Original work published 21 May 2019)
 
