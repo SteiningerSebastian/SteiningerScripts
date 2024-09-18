@@ -924,6 +924,7 @@ deploy:
 ![Kubernetes](./files/KubernetesArchitecture.png)
 
 (Wikimedia Commons, 2024)
+
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
 
 ![Kubernetes](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)
