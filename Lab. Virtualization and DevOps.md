@@ -922,6 +922,7 @@ deploy:
 - **Namespaces:** Isolate different applications or teams within a Kubernetes cluster.
 
 ![Kubernetes](./files/KubernetesArchitecture.png)
+
 (Wikimedia Commons, 2024)
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
 
@@ -1097,6 +1098,7 @@ kind: Service
 metadata:
   name: my-service
 spec:
+  type: LoadBalancer
   selector:
     app: my-app
   ports:
