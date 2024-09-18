@@ -332,7 +332,6 @@ docker container ls
 
 #### Kahoot
 To check if you have successfully acquired the basic knowledge to work in this field, it's recommended to try the quiz.
-
 [Kahoot](https://create.kahoot.it/share/lab-4bi-virtualization-and-containerization/39c78139-8b31-485b-8233-21ecb076e63a)
 
 #### Task: Webserver ASP.NET C\#
@@ -530,7 +529,10 @@ You can integrate NAS with Docker to provide persistent storage for your contain
 - **Network Connectivity:** Verify that your Docker host has network connectivity to the NAS device.
 ##### Task: Use Volumes to make the Minecraft-World persistent. 
 Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
-### Orchestration
+#### Kahoot
+To check if you have successfully acquired the knowledge about volumes, etc., it's recommended to try the quiz.
+[Kahoot](https://create.kahoot.it/share/lab-4bi-virtualization-and-containerization-2/dcd9eb24-9c0e-46e8-a93d-baa3384a34df)
+## Orchestration
 **Orchestration** is the process of automating the deployment, management, and scaling of containerized applications. It involves coordinating multiple containers, ensuring they work together seamlessly and providing a reliable and scalable platform for your applications.
 
 **Key Benefits of Orchestration:**
@@ -566,7 +568,7 @@ Modify the existing Minecraft server to enable persistent world storage using an
 6. **Monitoring and Management:** The orchestration tool provides tools for monitoring the health of applications and managing resources.
 
 By using an orchestration tool, you can simplify the management of your containerized applications and ensure that they are reliable, scalable, and highly available.
-#### Docker-Compose
+### Docker-Compose
 
 **Docker Compose** is a tool that allows you to define and run multi-container Docker applications. It simplifies the process of managing and scaling your applications by defining all the services and their dependencies in a single YAML file.  
 
@@ -629,10 +631,10 @@ This Docker Compose script describes a multi-container application consisting of
 
 1. **Create a Docker Compose file:** Create a YAML file named `docker-compose.yml` with the desired configuration.
 2. **Run Docker Compose:** Use the `docker-compose up` command to start the defined services. For example:
-    ```
-    docker-compose up -d
-    ```
-    This will start the services in detached mode, allowing you to run other commands in the terminal.
+```
+docker-compose up -d
+```
+This will start the services in detached mode, allowing you to run other commands in the terminal.
 
 **Benefits of Using Docker Compose:**
 
@@ -646,7 +648,7 @@ This Docker Compose script describes a multi-container application consisting of
 Docker Compose can be used in conjunction with larger orchestration tools like Kubernetes or Docker Swarm. These tools can provide additional features like service discovery, load balancing, and automatic scaling.
 
 By using Docker Compose, you can simplify the management of your multi-container applications and make it easier to deploy and scale them across different environments.
-##### Commands
+#### Commands
 
 A Docker Compose YAML file defines the services, networks, volumes, and other components that make up your multi-container application. Here's a breakdown of the key structures and commands used in Docker Compose:
 
@@ -687,10 +689,447 @@ A Docker Compose YAML file defines the services, networks, volumes, and other co
 - **docker-compose run:** Runs a one-off command within a service container.
 - **docker-compose exec:** Executes a command within a running container.
 - **docker-compose ps:** Lists the running containers and their status.
-#### Kubernets
-...
+#### Network
+Docker Compose allows you to define multiple networks within a single project. These networks provide a way to isolate containers and control communication between them.
 
+**Types of Networks (docker, 2024b):**
+
+- **bridge:** The default network driver. It creates a virtual network interface for containers connected to it. This network is suitable for most use cases.
+- **host:** Containers connected to the host network share the host's network namespace. This can be useful for debugging or performance optimization, but it can also pose security risks.
+- **none:** Containers connected to the none network have no network interface.
+- **overlay:** A network driver designed for multi-host networking. It allows containers on different hosts to communicate with each other.
+- **macvlan:** A network driver that assigns a real MAC address to containers, allowing them to join existing physical networks.
+
+**Benefits of Using Networks:**
+
+- **Isolation:** Networks provide isolation between containers, preventing them from interfering with each other.
+- **Communication:** Containers connected to the same network can communicate with each other using their IP addresses.
+- **External Access:** Containers connected to the `frontend` network can be accessed from the host system or the internet.
+- **Internal Communication:** Containers connected to the `backend` network can only communicate with other containers on the same network.
+
+**Example Docker Compose File:**
+
+``` docker-compose.yaml
+version: '3.7'
+
+services:
+  web:
+    image: my_web_app
+    ports:
+      - "80:80"
+    networks:
+      - frontend
+      - backend
+
+  db:
+    image: my_database
+    networks:
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+```
+
+In this example, the `web` and `db` services are connected to different networks: `frontend` and `backend`. This allows the `web` service to access the database service on the `backend` network without exposing it to the internet.
+### Apache J Meter
+**Apache JMeter** is a popular open-source performance testing tool designed to evaluate the performance of web applications, APIs, and other services. It simulates a heavy load on a server or group of servers to measure its response time, throughput, and other performance metrics.
+
+**Key Features of JMeter:**
+
+- **Functional Testing:** Can be used for functional testing in addition to performance testing.
+- **Protocol Support:** Supports various protocols like HTTP, HTTPS, FTP, JDBC, SOAP, and JMS.
+- **Distributed Testing:** Allows for distributed testing across multiple machines to simulate heavy loads.
+- **Plugins:** Offers a rich ecosystem of plugins for extended functionality.
+- **Reporting:** Generates detailed reports in various formats (HTML, CSV, XML).
+
+**Common Use Cases:**
+
+- **Load Testing:** Simulating heavy traffic to assess a system's performance under stress.
+- **Stress Testing:** Pushing a system to its limits to identify bottlenecks.
+- **Endurance Testing:** Evaluating a system's performance over a prolonged period.
+- **Spike Testing:** Simulating sudden bursts of traffic to assess a system's responsiveness.
+
+By using JMeter, you can identify performance issues, optimize your applications, and ensure that they can handle expected loads.
+#### Test Performance
+- **Download JMeter:** Head over to the official Apache JMeter website [https://jmeter.apache.org/download_jmeter.cgi](https://jmeter.apache.org/download_jmeter.cgi) and download the latest version.
+- **Launch JMeter:** Once downloaded, navigate to the `bin` folder of the extracted JMeter archive (e.g., `...\Downloads\apache-jmeter-5.6.3\bin`). Double-click the `jmeter.bat` file to launch the program.
+- **Create a Simple Test:**
+    - Go to the "File" menu and select "Templates" followed by "Simple HTTP Request."
+    - Click "Create" twice to add the template.
+- **Clean Up:**
+    - Right-click on the newly added elements, "User Defined Variables" and "HTTP Header Manager," and choose "Remove" to remove them (these are not needed for this basic test).
+- **Configure the Test:**
+    - Within the thread group settings, adjust the "Number of Threads" and "Number of Loops" to define how many simulated users and repetitions you want for the test (e.g., 100 threads and 10 loops will simulate 10,000 requests).
+- **Add Results Visualization:**
+    - Right-click on the "Thread Group" again and select "Add" -> "Listener" -> "Graph Results." This will display a visual representation of the test results.
+- **Define the Request:**
+    - Set the following parameters:
+        - Protocol: `http` (or `https` if using a secure connection)
+        - Server Name or IP: `localhost` (if testing on the same machine) or the actual IP address
+        - Port Number: `8888` (or the port where your service is listening)
+        - HTTP Method: `GET`
+        - Path: `/` (or the specific path of the resource you want to test)
+- **Run the Test:**
+    - Click the green "play" button on the toolbar to begin the test.
+- **Analyze Results:**
+    - Observe the generated graph to analyze the performance metrics of your web service. You can also access detailed results in other available listeners like "View Results Tree" for a more comprehensive understanding. Consider capturing a screenshot or exporting the graph for documentation purposes.
+### Task: Setup a docker compose orchestration
+Create a highly available and scalable ASP.NET web application using Docker Compose and Nginx as a load balancer. By leveraging Docker's containerization technology and Nginx's load-balancing capabilities, you'll build an application that can handle increased traffic and ensure high availability.
+
+Set up a cluster of three nodes: one managing node and two working nodes. Conduct performance testing on the web server using Apache JMeter. Then, expand the cluster by adding three more working nodes, bringing the total to five. Repeat the performance testing using Apache JMeter. Document your findings and compare the performance metrics before and after scaling the cluster.
+##### Solution
+Below is a solution for the task using only two nodes. Please expand the solution to include five nodes: one managing node and four working nodes. Then, conduct performance testing using Apache JMeter and document your findings.
+
+ * Change the datatype of the ASP.NET applications functions to long, instead of int. 
+* Change your random number generator to `long random = Math.Abs(Random.Shared.NextInt64((1L << 52)));`
+* Rebuild the ASP.NET application using the `Release` configuration.
+* Create a new folder containing two files, `docker-compose.yaml` and `ngnix.conf`.
+
+``` nginx.conf
+upstream web_servers {
+    server web1:8080 weight;
+    server web2:8080 weight;
+}
+
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://web_servers;
+    }
+}
+```
+
+``` docker-compose.yaml
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8888:80"
+    volumes:
+      - <PATH>/ngnix.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web1
+      - web2
+    networks:
+      - frontend
+      - backend
+
+  web1:
+    image: containertest001
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 100M
+
+  web2:
+    image: containertest001
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 100M
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+```
+
+**Nginx Configuration (nginx.conf):**
+
+- **Upstream Block:**
+    - Defines a group of servers, `web1` and `web2`, that Nginx can load balance between.
+    - The `server` directive specifies the IP address or hostname of each server and the port it listens on.
+    - The `weight` directive assigns equal weights (1) to both servers, indicating that requests should be distributed evenly.
+- **Server Block:**
+    - Configures Nginx to listen on port 80.
+    - The `location /` block matches all incoming requests.
+    - The `proxy_pass` directive forwards requests to the `web_servers` upstream group, enabling Nginx to act as a reverse proxy and distribute traffic across the two web servers.
+
+**Docker Compose File (docker-compose.yaml):**
+
+- **Version:** Specifies the Docker Compose version.
+- **Services:**
+    - **nginx:**
+        - Uses the `nginx:alpine` image.
+        - Exposes port 8888 on the host machine to port 80 within the container.
+        - Mounts the `nginx.conf` file from the host to the container's `/etc/nginx/conf.d/default.conf` location.
+        - Depends on the `web1` and `web2` services to ensure they start first.
+        - Enables interactive mode (`tty: true`) for better debugging.
+        - Connects to the `frontend` and `backend` networks.
+    - **web1** and **web2:**
+        - Use the `containertest001` image (replace with your actual image).
+        - Expose port 8080 within the container.
+        - Connect to the `backend` network.
+- **Networks:**
+    - **frontend:** A bridge network for external access to the Nginx service.
+    - **backend:** A bridge network for internal communication between Nginx and the web servers.
+
+**Overall Functionality:**
+
+1. **Docker Compose starts the containers:** The `docker-compose up` command launches the `nginx`, `web1`, and `web2` services.
+2. **Nginx listens on port 8888:** Nginx starts listening on port 8888 on the host machine.
+3. **Requests are forwarded to web servers:** When a request is received on port 8888, Nginx uses the `proxy_pass` directive to forward it to the `web_servers` upstream group.
+4. **Load balancing:** Nginx distributes incoming requests between `web1` and `web2` based on their weights.
+5. **Web servers handle requests:** The `web1` and `web2` containers handle the forwarded requests and process them according to their application logic.
+
+**Key Points:**
+
+- Nginx acts as a reverse proxy, load balancing traffic between multiple web servers.
+- Docker Compose simplifies the management of multiple containers and their dependencies.
+- The `frontend` and `backend` networks provide isolation and control over communication between containers.
+- The `tty: true` option allows for interactive access to the Nginx container for debugging.
+
+This configuration provides a basic setup for load balancing between two web servers using Nginx and Docker Compose. You can customize it further by adding more web servers, changing the load balancing algorithm, or implementing additional features like SSL/TLS or caching.
+
+* Use `docker compose up` within the correct folder to start the containers.
+* Evaluate the performance of the web-application using [Apache JMeter](https://jmeter.apache.org/download_jmeter.cgi) 
+![Graph Results](./files/JMeterGETRequestPerformance.png)
+* Use the following code, execute the same tests with 5 instances and document the results.
+``` yaml
+deploy:
+	mode: replicated
+    replicas: 5
+```
+### Kubernetes
+
+**Kubernetes** is a powerful open-source platform designed to automate the deployment, scaling, and operation of containerized applications. It provides a way to manage clusters of computers, often called nodes, as a single system. This allows developers to focus on writing applications rather than worrying about the underlying infrastructure.
+
+**Key benefits of Kubernetes include:**
+- **Portability:** Applications can be easily moved across different environments, from development to production.
+- **Scalability:** Kubernetes can automatically scale applications up or down based on demand.
+- **Reliability:** It ensures high availability and fault tolerance for your applications.
+- **Efficiency:** Kubernetes optimizes resource utilization, making the most of available hardware.
+- **Ease of management:** It simplifies tasks like deployment, updates, and monitoring.
+
+**Core components of Kubernetes:**
+- **Pods:** The smallest unit of deployment in Kubernetes. A pod typically contains one or more containers that share the same network namespace.
+- **Services:** Abstract network layer for pods, providing a stable way to access pods.
+- **Replication Controllers:** Ensure that a specific number of pods are running at any given time.
+- **Deployments:** Manage the deployment and scaling of applications.
+- **Namespaces:** Isolate different applications or teams within a Kubernetes cluster.
+
+![Kubernetes](./files/KubernetesArchitecture.png)
+(Wikimedia Commons, 2024)
+By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
+
+[![Kubernetes](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)
+#### Deployments
+**Deployments** are a core resource in Kubernetes that manage replicated applications. They provide a declarative way to define the desired state of an application, and Kubernetes automatically ensures that the actual state matches the desired state.
+
+**Key Features of Deployments:**
+- **Declarative Specification:** You define the desired state of your application using a YAML or JSON configuration file.
+- **Automatic Scaling:** Kubernetes can automatically scale your application up or down based on demand.
+- **Rolling Updates:** Deployments can be updated gradually, ensuring minimal downtime.
+- **Canary Deployments:** A subset of pods can be updated first to test changes before rolling them out to the entire application.
+- **Blue-Green Deployments:** Two identical environments can be created, with one serving traffic while the other is updated. Once the update is complete, traffic can be switched to the updated environment.
+
+**Basic Deployment Configuration:**
+``` yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app   
+        image: my-image:latest
+        ports:
+        - containerPort: 8080   
+```
+
+**Explanation:**
+- **apiVersion:** Specifies the API version of the Deployment resource.
+- **kind:** The type of resource, which is a Deployment in this case.
+- **metadata:** Contains metadata about the Deployment, such as its name.
+- **spec:** Defines the desired state of the Deployment.
+- **replicas:** The desired number of replicas (pods) for the Deployment.
+- **selector:** A label selector used to match pods to the Deployment.
+- **template:** Defines the template for the pods that will be created.
+- **containers:** A list of containers to be included in the pods.
+- **name:** The name of the container.
+- **image:** The Docker image to use for the container.
+- **ports:** A list of ports that the container exposes.
+#### Kubernetes Services
+
+**Kubernetes Services** provide a stable network layer for a set of Pods. They abstract the details of how Pods are distributed across the cluster, making it easier to access and manage your applications.
+
+**Key Features of Kubernetes Services:**
+- **Abstract Network Layer:** Services hide the complexity of Pod IP addresses and network topology.
+- **Load Balancing:** Services distribute traffic across Pods within the Service, ensuring that traffic is evenly distributed.
+- **Service Discovery:** Services provide a stable DNS name or IP address for a set of Pods, making it easy for other services to discover and communicate with them.
+- **Service Types:** Kubernetes supports different service types, including ClusterIP, NodePort, LoadBalancer, and ExternalName.
+
+**ClusterIP Service:**
+- The default service type.
+- Creates a virtual IP address within the Kubernetes cluster.
+- Can only be accessed from within the cluster.
+
+**NodePort Service:**
+- Exposes the service on a static port on all nodes in the cluster.
+- Can be accessed from outside the cluster using the NodeIP:NodePort format.
+
+**LoadBalancer Service:**
+- Creates a load balancer in front of the service.
+- Can be accessed from outside the cluster using the load balancer's IP address and port.
+- Requires a cloud provider that supports load balancers.
+
+**ExternalName Service:**
+- Resolves to an external DNS name.
+- Useful for accessing services outside of the cluster.
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+```
+
+**Explanation:**
+- **apiVersion:** Specifies the API version of the Service resource.
+- **kind:** The type of resource, which is a Service in this case.
+- **metadata:** Contains metadata about the Service, such as its name.
+- **spec:** Defines the desired state of the Service.
+- **selector:** A label selector used to match Pods to the Service.
+- **ports:** A list of ports that the Service exposes.
+
+**Accessing a Service:**
+To access a Service from within the cluster, you can use its DNS name or IP address. To access a Service from outside the cluster, you will need to use the appropriate IP address and port based on the service type.
+
+By understanding Kubernetes Services, you can effectively manage and access your applications in a distributed environment.
+#### Scaling in Kubernetes
+**Scaling** is a fundamental aspect of Kubernetes, allowing applications to dynamically adjust their resource usage based on demand. The **Horizontal Pod Autoscaler (HPA)** is a powerful tool that automates the process of scaling Pods up or down based on metrics.
+
+**How HPA Works:**
+1. **Metric Selection:** The HPA monitors specific metrics to determine the scaling behavior. Common metrics include CPU utilization, memory usage, and custom metrics.
+2. **Target Value:** You define a target value for the selected metric.
+3. **Scaling Policy:** You specify the scaling policy, such as the minimum and maximum number of Pods.
+4. **Scaling Algorithm:** The HPA uses an algorithm to determine when to scale up or down based on the metric value and target value.
+```
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-deployment   
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 70
+  minReplicas: 2
+  maxReplicas: 10
+```
+
+**Explanation:**
+- **apiVersion:** Specifies the API version of the HPA resource.
+- **kind:** The type of resource, which is a HorizontalPodAutoscaler in this case.
+- **metadata:** Contains metadata about the HPA, such as its name.
+- **spec:** Defines the desired state of the HPA.
+- **scaleTargetRef:** References the Deployment that the HPA will scale.
+- **metrics:** A list of metrics to monitor. In this example, the HPA will monitor CPU utilization.
+- **targetAverageUtilization:** The target CPU utilization for the Deployment.
+- **minReplicas:** The minimum number of replicas for the Deployment.
+- **maxReplicas:** The maximum number of replicas for the Deployment.
+##### Example - HPA 
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: my-image:latest   
+        ports:
+        - containerPort: 8080
+      resources:
+        requests:   
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080   
+
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-app   
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization:    70
+  minReplicas: 2
+  maxReplicas: 10
+```
+
+This configuration creates a Deployment with 3 replicas, a Service to expose the Deployment, and an HPA to scale the Deployment based on CPU utilization.
+#### Working with Kubernetes
+... to be continued ...
 # Bibliography
 Doug Jones, March 16, 2018, Containers vs. Virtual Machines (VMs): What's the Difference? https://www.netapp.com/blog/containers-vs-vms/
 
 Docker, 11. September 2024a, Volumes https://docs.docker.com/engine/storage/volumes/
+
+Docker, 18. September 2024b, Network https://docs.docker.com/engine/network/
+
+Wikimedia Commons, 19. September 2024, Kubernetes https://commons.wikimedia.org/wiki/File:Kubernetes.png

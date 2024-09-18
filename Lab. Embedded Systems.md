@@ -521,7 +521,7 @@ Alsabbagh, M. (2019). MicroPython Cookbook (1st ed.). Packt Publishing. Retrieve
 
 Beningo, J. (2020). MicroPython Projects (1st ed.). Packt Publishing. Retrieved 12 September 2024 from https://www.perlego.com/book/1443351 (Original work published 17 April 2020)
 
-espressif (2024) Esp32-DevKitC V4 Getting Started Guide, Retrieved 12 September 2024 from https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html
+espressif (2024). Esp32-DevKitC V4 Getting Started Guide. Retrieved 12 September 2024 from https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html
 
 Murugesh, TS., Vasudevan, S., &#38; Pulari, S. R. (2024). Python (1st ed.). CRC Press. Retrieved 12 September 2024 from https://www.perlego.com/book/4473886 (Original work published 7 August 2024)
 
