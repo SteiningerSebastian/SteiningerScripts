@@ -900,7 +900,7 @@ This configuration provides a basic setup for load balancing between two web ser
 * Use the following code, execute the same tests with 5 instances and document the results.
 ``` yaml
 deploy:
-	mode: replicated
+    mode: replicated
     replicas: 5
 ```
 ### Kubernetes
@@ -925,7 +925,7 @@ deploy:
 (Wikimedia Commons, 2024)
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
 
-[![Kubernetes](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)
+![Kubernetes](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)
 #### Deployments
 **Deployments** are a core resource in Kubernetes that manage replicated applications. They provide a declarative way to define the desired state of an application, and Kubernetes automatically ensures that the actual state matches the desired state.
 
