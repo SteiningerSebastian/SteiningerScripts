@@ -420,6 +420,121 @@ print("Time after sleep:", current_time_after_sleep)
 - If you need to schedule tasks at specific times, explore libraries like `schedule` or `APScheduler`.
 
 By effectively using the `time` module, you can manipulate time and control the flow of your Python applications.
+### Tasks:
+#### 1. Moving Average
+**Description:** A moving average is a statistical calculation that helps smooth out fluctuations in a dataset. It involves calculating the average of a specific number of consecutive data points and updating it as new data points become available.
+
+**Theory:**
+- **Window size:** The number of data points included in the calculation.
+- **Calculation:**
+    - For each new data point, add it to the window and remove the oldest data point.
+    - Calculate the average of the current window.
+
+**Solution (Python):**
+```
+def moving_average(values, window_size):
+  """Calculates the moving average of a list of values.
+
+  Args:
+    values: A list of numbers.
+    window_size: The size of the moving average window.
+
+  Returns:
+    A list of moving averages corresponding to each value in the input list.
+  """
+
+  if window_size <= 0:
+    raise ValueError("Window size must be positive.")
+
+  moving_averages = []
+  window = []
+  for value in values:
+    window.append(value)
+    if len(window) > window_size:
+      window.pop(0)
+    if len(window) == window_size:
+      average = sum(window) / window_size
+      moving_averages.append(average)
+  return moving_averages
+```
+#### 2. Normalize to a Range
+**Description:** Normalization is the process of scaling values to a specific range (often 0 to 1). This is useful for comparing values from different scales or for certain mathematical operations.
+
+**Theory:**
+- **Formula:**
+    - `normalized_value = (value - min_value) / (max_value - min_value)`
+
+**Solution (Python):**
+```
+def normalize_to_range(value, min_value, max_value):
+  """Normalizes a value to a specified range.
+
+  Args:
+    value: The value to normalize.
+    min_value: The minimum value of the target range.
+    max_value: The maximum value of the target range.
+
+  Returns:
+    The normalized value.
+  """
+
+  normalized_value = (value - min_value) / (max_value - min_value)
+  return normalized_value
+```
+#### 3. Denormalize from a Range
+**Description:** Denormalization is the reverse process of normalization, where a scaled value is converted back to its original range.
+
+**Theory:**
+- **Formula:**
+    - `denormalized_value = normalized_value * (max_value - min_value) + min_value`
+
+**Solution (Python):**
+```
+def denormalize_from_range(normalized_value, min_value, max_value):
+  """Denormalizes a value from a specified range.
+
+  Args:
+    normalized_value: The normalized value.
+    min_value: The minimum value of the original range.
+    max_value: The maximum value of the original range.
+
+  Returns:
+    The denormalized value.
+  """
+
+  denormalized_value = normalized_value * (max_value - min_value) + min_value
+  return denormalized_value
+```
+#### 4. Median
+**Description:** The median of a set of numbers is the middle value when the numbers are arranged in ascending order. If there are an even number of values, the median is the average of the two middle values.  
+
+**Theory:**
+- **Sorting:** The dataset must be sorted in ascending order.
+- **Middle value:** For an odd number of elements, the median is the value at index `(n-1) / 2`, where `n` is the number of elements. For an even number of elements, the median is the average of the values at indices `n // 2 - 1` and `n // 2`.
+
+**Solution (Python):**
+```
+def calculate_median(values):
+  """Calculates the median of a list of values.
+
+  Args:
+    values: A list of numbers.
+
+  Returns:
+    The median of the values.
+  """
+
+  if not values:
+    return None  # Handle empty lists
+
+  sorted_values = sorted(values)
+  n = len(sorted_values)
+  if n % 2 == 0:
+    median = (sorted_values[n // 2 - 1] + sorted_values[n // 2]) / 2
+  else:
+    median = sorted_values[(n    - 1) // 2]
+  return median
+```
 ## MicroPython
 **Python** and **MicroPython** are both programming languages, but they serve different purposes and have distinct characteristics.
 ### Python
@@ -515,11 +630,372 @@ By understanding these fundamental concepts, you can build a strong foundation f
 ## ESP32 Pinout
 ![ESP32 Dev Kit C](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/_images/esp32-devkitC-v4-pinout.png)
 (espressif, 2024)
-
+## Kahoot
+To check if you have successfully acquired the basic knowledge to work in this field, it's recommended to try the quiz. [Kahoot](https://create.kahoot.it/details/dfa7fe63-aa92-48a9-b360-68bb624f5b57)
 # MicroPython in action
-
 The [MicroPython's Quick Reference for the ESP32](https://docs.micropython.org/en/latest/esp32/quickref.html) provides a solid foundation for getting started. The authors focus on expanding upon specific areas they believe warrant further explanation.
+## Digital Input and Output (I/O)
+**Digital I/O** refers to the interaction between a microcontroller or computer and external devices using discrete electrical signals. These signals are typically represented as either high (1) or low (0) voltage levels.  
+### Digital Input
+- **Purpose:** Receives digital signals from external devices.  
+- **Process:** The microcontroller monitors the voltage level at an input pin. If the voltage is high, it interprets it as a logical 1; if it's low, it interprets it as a logical 0.
+- **Applications:** Reading the state of buttons, switches, sensors, or other digital devices.  
+#### Pull-up vs. Pull-down Resistors
+When using digital input pins, it's often necessary to provide a default state to ensure that the input is reliably read as either high or low. This is achieved using pull-up or pull-down resistors.
 
+- **Pull-up resistor:** Connects the input pin to the power supply (VCC). When no external signal is applied, the input pin will be pulled high. To create a low input, an external device must connect the pin to ground.
+- **Pull-down resistor:** Connects the input pin to ground. When no external signal is applied, the input pin will be pulled low. To create a high input, an external device must connect the pin to the power supply.
+
+The choice between pull-up and pull-down resistors depends on the specific application and the type of external device being used. For example, if a button is connected to an input pin, a pull-up resistor is typically used so that the input will be high when the button is not pressed. When the button is pressed, it connects the pin to ground, creating a low input.
+#### Digital Input Events with MicroPython
+##### Event-Driven Programming
+In MicroPython, event-driven programming for digital inputs is typically implemented using interrupts. When a digital input pin changes state, an interrupt is generated, triggering a predefined interrupt service routine (ISR).
+##### Interrupt-Driven I/O
+Here's a MicroPython example demonstrating interrupt-driven I/O for a digital input pin:
+
+``` python
+import machine
+import utime
+
+# Define the interrupt service routine
+def button_pressed(pin):
+    print("Button pressed!")
+
+# Create a digital input pin with an internal pull-up resistor
+button_pin = machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)
+
+# Set the interrupt handler
+button_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=button_pressed)
+
+# Main loop (optional)
+while True:
+    # Perform other tasks while waiting for interrupts
+    utime.sleep(0.1)
+```
+
+In this example:
+1. **Import necessary modules:** `machine` for hardware interaction and `utime` for time-related functions.
+2. **Define the ISR:** The `button_pressed` function is the ISR that will be executed when the button is pressed (falling edge).
+3. **Create the input pin:** `machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)` creates a digital input pin on GPIO 15 with an internal pull-up resistor.
+4. **Set the interrupt handler:** `button_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=button_pressed)` configures the pin to generate an interrupt on a falling edge (when the button is pressed) and assigns the `button_pressed` function as the ISR.
+5. **Main loop (optional):** The `while True` loop can be used to perform other tasks while waiting for interrupts.
+##### Polling
+While interrupt-driven I/O is generally preferred for efficient event handling, polling can be used in certain scenarios. Here's a polling example:
+``` python
+import machine
+import utime
+
+button_pin = machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)
+
+while True:
+    if button_pin.value() == 0:
+        print("Button pressed!")
+    utime.sleep(0.1)
+```
+
+In this example, the `while True` loop continuously checks the button pin's value. If it's low (button pressed), a message is printed. However, polling can be less efficient than interrupts, especially for frequent events.
+
+**Choosing the Right Method**
+- **Interrupt-driven I/O:** Generally preferred for efficient event handling, especially when real-time responsiveness is critical.
+- **Polling:** Can be used for less frequent events or when interrupts are not available or desired.
+
+**Additional Considerations**
+- **Debouncing:** To prevent false triggers due to contact bounce, consider using hardware or software debouncing techniques.
+- **Multiple inputs:** For multiple digital inputs, you can create separate interrupt handlers for each pin or use a single ISR with logic to determine which pin triggered the interrupt.
+- **Interrupt priorities:** If your application involves multiple interrupt sources, you may need to set interrupt priorities to ensure that critical events are handled promptly.
+#### Digital I/O: Debouncing Hardware vs. Software
+Debouncing is a technique used to prevent false signals from being generated when a mechanical switch or button is pressed or released. It involves filtering out electrical noise and contact bounce that can cause multiple momentary connections and disconnections.  
+
+- **Hardware Debouncing:**
+    - **Method:** Uses external components like capacitors or resistors to physically filter out noise.
+    - **Advantages:** Reliable, less prone to software-related issues.
+    - **Disadvantages:** Requires additional components, can increase circuit complexity.
+- **Software Debouncing:**
+    - **Method:** Uses programming techniques within the microcontroller's firmware to filter out noise.
+    - **Advantages:** Simpler to implement, requires fewer components.
+    - **Disadvantages:** Can be less reliable, especially in noisy environments or with high-frequency signals.
+
+**Choosing the Right Method**
+The best debouncing method depends on several factors:
+- **Desired reliability:** Hardware debouncing is generally more reliable.
+- **Circuit complexity:** Software debouncing is simpler to implement.
+- **Noise level:** Hardware debouncing is better suited for noisy environments.
+- **Signal frequency:** Hardware debouncing can handle higher frequencies.
+
+In many cases, a combination of hardware and software debouncing can provide the best results. For example, a simple RC (resistor-capacitor) circuit can be used for initial filtering, followed by software debouncing for further refinement.
+### Digital Output
+- **Purpose:** Sends digital signals to external devices.  
+- **Process:** The microcontroller sets the voltage level at an output pin to either high or low, depending on the desired output.  
+- **Applications:** Controlling LEDs, motors, relays, or other digital devices.  
+### Example: Controlling an LED with MicroPython on a Raspberry Pi Pico
+Build the necessary circuit and blink a LED once.
+![Circuit](https://upload.wikimedia.org/wikipedia/commons/5/57/Cjam-reaction-fritzing-led.png)
+(Oakley A., 2024)
+
+``` python
+import machine
+
+# Create a digital output pin on GPIO pin 23
+led_pin = machine.Pin(23, machine.Pin.OUT)
+
+# Set the LED on
+led_pin.value(1)
+
+# Wait for 1 second
+time.sleep(1)
+
+# Set the LED off
+led_pin.value(0)
+```
+In this example:
+1. **Import the `machine` module:** This module provides functions for interacting with the microcontroller's hardware.  
+2. **Create a digital output pin:** The `machine.Pin(25, machine.Pin.OUT)` line creates a digital output pin on GPIO pin 25.
+3. **Set the LED on:** `led_pin.value(1)` sets the voltage level on the pin to high, turning the LED on.
+4. **Wait for 1 second:** `time.sleep(1)` pauses the program for 1 second.
+5. **Set the LED off:** `led_pin.value(0)` sets the voltage level on the pin to low, turning the LED off.
+
+This code demonstrates the basic process of controlling a digital output device (an LED) using MicroPython. You can modify the GPIO pin number and the delay time to suit your specific requirements.
+## PWM
+
+PWM is a technique used to control the average power delivered to a load by varying the width of the pulses of a square wave signal. In other words, it involves switching a load between fully on and fully off states at a high frequency, while adjusting the proportion of time the load is on versus off.  
+
+**How does PWM work?**
+1. **Square Wave Generation:** A square wave signal is generated with a fixed frequency and amplitude.
+2. **Duty Cycle Adjustment:** The duty cycle of the square wave is varied. The duty cycle is the ratio of the "on" time of the pulse to the total period of the pulse.  
+3. **Load Control:** The square wave signal is applied to a load, such as a motor or LED.
+4. **Average Power Control:** The average power delivered to the load is determined by the duty cycle. A higher duty cycle means more time the load is on, resulting in higher average power.
+
+**Key Benefits of PWM:**
+- **Efficient Power Control:** PWM allows for precise control of power delivery to a load without wasting energy as heat.  
+- **Smooth Control:** By using a high PWM frequency, the load can be controlled smoothly, avoiding flickering or noise.
+- **Flexibility:** PWM can be used to control a wide range of loads, including motors, LEDs, heaters, and more.  
+- **Simplicity:** PWM circuits are relatively simple to implement, making them widely used in various applications.
+
+**Applications of PWM:**
+- **Motor Control:** PWM is commonly used to control the speed and direction of DC motors.  
+- **LED Brightness Control:** By varying the duty cycle of a PWM signal applied to an LED, its brightness can be adjusted smoothly.  
+- **Audio Amplifiers:** PWM can be used to generate analog audio signals from digital data, providing a cost-effective and efficient solution.
+- **Power Supplies:** PWM is used in switching power supplies to regulate output voltage and improve efficiency.  
+- **Robotics:** PWM is used to control the movement of robotic actuators and joints.  
+
+**Additional Considerations:**
+- **PWM Frequency:** The choice of PWM frequency depends on the specific application. Higher frequencies can reduce noise and flickering, but they may also require faster switching components.  
+- **Dead Time:** To prevent excessive current flow through switching components, a dead time (a period where both the "on" and "off" signals are low) is often introduced between the "on" and "off" states of the PWM signal.
+
+In summary, PWM is a versatile and efficient technique for controlling the power delivered to a load. It has a wide range of applications and is an essential tool in many electronic systems.
+## Analog Input and Output
+**Analog I/O** involves the interaction between a microcontroller or computer and external devices using continuously varying electrical signals, rather than discrete high or low levels. These signals can represent physical quantities such as temperature, light intensity, voltage, or current.  
+### Analog Input
+- **Purpose:** Converts analog signals from external devices into digital values that can be processed by the microcontroller.  
+- **Hardware:** Typically involves an **analog-to-digital converter (ADC)**. The ADC samples the analog signal at regular intervals and converts each sample into a digital value (e.g., a 10-bit value ranging from 0 to 1023).  
+- **MicroPython:** MicroPython provides ADC functionality through the `machine.ADC` class.
+### Analog Output
+- **Purpose:** Generates analog signals to control external devices.  
+- **Hardware:** Typically involves a **digital-to-analog converter (DAC)**. The DAC converts digital values into analog signals.  
+- **MicroPython:** MicroPython provides DAC functionality through the `machine.DAC` class.
+### Example: Reading a Temperature Sensor with MicroPython
+``` python
+import machine
+import time
+
+# Create an ADC object on pin A0
+adc = machine.ADC(32)
+dac = machine.DAC(25)
+
+while True:
+	# Read the ADC value
+	value = adc.read_uv()
+
+    # Convert the ADC value to voltage (assuming a 3.3V reference)
+    voltage = value / 1000 / 1000 * 3.3
+
+    print(voltage)
+    
+    #Set a raw analog value in the range 0-255, 50% now *(1.65V)
+	dac.write(voltage / 3.3 * 255) 
+	
+    time.sleep(1)
+```
+In this example:
+1. **Create an ADC object:** `machine.ADC(0)` creates an ADC object on pin A0.
+2. **Read the ADC value:** `adc.read_uv()` reads the current value from the ADC in microvolts.
+3. **Convert to voltage:** The ADC value is converted to a voltage using the reference voltage of 3.3V.
+4. 3. **Convert to value:** The voltage value is converted to a DAC vlaue using the reference voltage of 3.3V.
+5. **Print the voltage:** The calculated temperature is printed to the console.
+
+**Note:** The specific conversion formulas and calibration factors will depend on the type of analog sensor and its characteristics.
+
+**Additional Considerations:**
+- **Noise:** Analog signals can be susceptible to noise. Filtering techniques can be used to reduce noise and improve the accuracy of measurements.  
+- **Resolution:** The resolution of an ADC determines the number of distinct digital values that can be represented. A higher resolution ADC provides more precise measurements.  
+- **Sampling rate:** The sampling rate of an ADC determines how frequently the analog signal is sampled. A higher sampling rate can capture faster-changing signals.  
+- **Multiple channels:** Some microcontrollers have multiple ADC channels, allowing simultaneous measurements of multiple analog signals.
+### Task 1: Read the value of a potentiometer
+Build a circuit to rad the value of a potentiometer
+#### Solution
+``` python
+import machine import time 
+# Create an ADC object on pin 
+adc = machine.ADC(32) 
+# Read the ADC value and convert it to voltage 
+while True: 
+	# Assuming a 3.3V reference voltage 
+	value = adc.read_uv() voltage = value / 1000 / 1000 * 3.3 
+	print("Potentiometer voltage:", voltage, "V") 
+	time.sleep(0.1)
+```
+**Import necessary modules:**
+- `machine`: This module provides access to hardware-related functions, including ADC operations.
+- `time`: This module is used for introducing delays and timing operations.
+
+**Create an ADC object:**
+- `adc = machine.ADC(32)`: This line creates an ADC object on pin 32 of your microcontroller. The specific pin number may vary depending on your hardware setup.
+
+**Read the ADC value and convert it to voltage:**
+- `value = adc.read_uv()`: This line reads the ADC value and stores it in the `value` variable. The `read_uv()` method returns the value in microvolts.
+- `voltage = value / 1000 / 1000 * 3.3`: This line converts the ADC value (in microvolts) to voltage in volts. The conversion factor `1000 / 1000` is used to divide the value by 1 million (since the ADC value is in microvolts), and then the result is multiplied by the reference voltage (3.3V in this case) to obtain the actual voltage.
+
+**Print the voltage:**
+- `print("Potentiometer voltage:", voltage, "V")`: This line prints the calculated voltage to the console, along with a message indicating that it's the potentiometer voltage.
+
+**Delay:**
+- `time.sleep(0.1)`: This line introduces a delay of 0.1 seconds before the next ADC reading and voltage calculation. This helps to avoid overwhelming the console with output and allows for a more readable display of the potentiometer voltage.
+
+**Overall Functionality:**
+The code continuously reads the ADC value from pin 32, converts it to voltage, and prints the voltage to the console. This can be used to measure the voltage output of a potentiometer connected to pin 32.
+### Task 2: Control the Brightness of an LED using PWM and DAC
+Use the setup from Task 1 and add an LED control its brightness based on the potentiometer using PWM and DAC
+#### Solution
+``` python
+import machine
+import time
+
+# Create an ADC object on pin A0
+adc = machine.ADC(32)
+# Create a DAC object on pin D1 (adjust pin number as needed) 
+dac = machine.DAC(25)
+
+# Create a PWM object on pin D1 (adjust pin number as needed)
+pwm = machine.PWM(machine.Pin(26))
+
+# Set the PWM frequency (adjust as needed)
+pwm.freq(1000)  # 1kHz frequency
+
+while True:
+    # Read the ADC value and convert it to a PWM duty cycle
+    value = adc.read_uv()
+    scaled_value = int(value / 1000 / 1000 * 255)
+
+    # Set the PWM duty cycle
+    pwm.duty(scaled_value)
+    dac.write(scaled_value)
+
+    time.sleep(0.1)
+```
+The provided Python code combines the functionalities of controlling LED brightness using both PWM (Pulse Width Modulation) and DAC (Digital-to-Analog Converter) based on the output of a potentiometer connected to the ADC (Analog-to-Digital Converter).
+
+Here's a breakdown of the code:
+**1. Import Modules:**
+- `machine`: Provides access to hardware functionalities like ADC, DAC, and PWM.
+- `time`: Enables sleep delays for pacing the output.
+
+**2. Create Hardware Objects:**
+- `adc = machine.ADC(32)`: Creates an ADC object on pin 32 (adjust this as needed based on your hardware).
+- `dac = machine.DAC(25)`: Creates a DAC object on pin 25 (adjust this as needed based on your hardware). This line might be commented out depending on which method you choose (PWM or DAC).
+- `pwm = machine.PWM(machine.Pin(26))`: Creates a PWM object on pin 26 (adjust this as needed based on your hardware).
+
+**3. Set PWM Frequency:**
+- `pwm.freq(1000)`: Sets the PWM frequency to 1 kHz. You can adjust this value to control the perceived flickering of the LED (higher frequencies are generally less noticeable).
+
+**4. Enter the Infinite Loop:**
+- `while True:`: The code continuously reads the potentiometer value and controls the LED brightness in the loop.
+
+**5. Read ADC Value and Convert:**
+- `value = adc.read_uv()`: Reads the raw value from the ADC in microvolts.
+- `scaled_value = int(value / 1000 / 1000 * 255)`: Converts the microvolt value to a scaled value between 0 and 255 suited for controlling the LED brightness. Here's the breakdown:
+    - `value / 1000 / 1000`: Divides the microvolt value by 1 million to convert it to volts.
+    - `* 255`: Multiplies by 255 because the PWM and DAC typically use a range of 0 to 255 to represent the brightness level.
+
+**6. Control LED Brightness:**
+- **PWM Method (if the `dac` line is commented out):**
+    - `pwm.duty(scaled_value)`: Sets the PWM duty cycle based on the scaled value. A higher `scaled_value` results in a higher duty cycle (longer "on" time for the LED), leading to a brighter LED.
+- **DAC Method (if the `dac` line is uncommented and `pwm` line is commented out):**
+    - `dac.write(scaled_value)`: Directly sets the analog voltage output of the DAC based on the scaled value. This translates to a more directly proportional control over the LED brightness compared to PWM (which uses a square wave signal).
+
+**7. Delay:**
+- `time.sleep(0.1)`: Introduces a delay of 0.1 seconds. This prevents overwhelming the console with output and allows for a smoother perceived brightness change.
+
+**Choosing Between PWM and DAC:**
+- **PWM:** Simpler to implement, widely available on most microcontrollers, and efficient. It's a good choice for basic LED brightness control.
+- **DAC:** Provides more direct control over the analog output, resulting in potentially smoother brightness changes. However, DACs might be less widely available or require higher-end controllers.
+
+In summary, this code gives you the flexibility to use either PWM or DAC for controlling the LED brightness based on a potentiometer input.
+## I2C (Inter-Integrated Circuit) Protocol
+**I2C (Inter-Integrated Circuit)** is a simple, flexible, and widely used serial communication protocol for connecting multiple devices on a single pair of wires. It is commonly used in embedded systems due to its low overhead and ease of implementation.
+
+- **Bus Structure:** I2C requires only two wires: Serial Data (SDA) and Serial Clock (SCL). Devices on the bus use an open-drain output configuration on SDA, allowing multiple devices to share the same line without conflicting. Communication is synchronous, driven by the SCL clock signal.
+- **Addressing:** Each device on the bus has a unique 7-bit address. The address is transmitted at the beginning of a communication cycle to identify the target device. The addressed device responds to the transmission, while other devices remain silent.
+- **Data Transfer:** Data is transmitted in 8-bit bytes, with the least significant bit (LSB) transmitted first. The master device initiates data transfer by sending a start condition, followed by the slave address and a read or write bit. The slave device responds with an acknowledge bit, and then data is transferred between the master and slave. The master sends a stop condition to end the communication.
+- **Clock Stretching:** Slaves can stretch the clock to synchronize with slower devices or to indicate busy status.
+- **Multi-Master Capability:** Multiple devices can act as masters and initiate data transfers. Arbitration is used to resolve conflicts when multiple masters try to access the bus simultaneously.
+
+I2C offers various modes (Standard, Fast, Fast Mode Plus) with different data transfer rates. It is commonly used in applications such as connecting sensors, actuators, display devices, memory, and other devices in embedded systems.
+![I2C Protocol](https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/I2C_analyze.jpg/799px-I2C_analyze.jpg?20190121103040)
+([Martinfred](https://commons.wikimedia.org/wiki/User:Martinfred "User:Martinfred"), 2019)
+
+**Controlling a 7-Segment Display with I2C**
+Many 7-segment displays are available with I2C interfaces. These displays typically have a fixed address on the I2C bus. 
+
+**MicroPython Example:**
+``` python
+import machine
+import time
+
+# Create I2C bus object (adjust pins as needed)
+i2c = machine.I2C(0, scl=machine.Pin(22), sda=machine.Pin(21))
+
+# 7-segment display address (adjust as needed)
+address = 0x70
+
+# Function to write data to the 7-segment display
+def write_data(data):
+    i2c.writeto(address, bytes([data]))
+
+# Example: Display the number 5
+write_data(0x05)
+
+# Wait for a while
+time.sleep(1)
+
+# Display the number 8
+write_data(0x08)
+```
+
+**Explanation:**
+1. **Import necessary modules:** `machine` for hardware access and `time` for delays.
+2. **Create I2C bus object:** `machine.I2C(0, scl=machine.Pin(22), sda=machine.Pin(21))` creates an I2C bus object on pins 22 (SCL) and 21 (SDA). Adjust the pin numbers according to your hardware setup.
+3. **Define 7-segment display address:** The `address` variable stores the I2C address of your 7-segment display.
+4. **Define `write_data` function:** This function takes a byte of data as input and writes it to the 7-segment display using the `i2c.writeto` method.
+5. **Display numbers:** The `write_data` function is called with the appropriate data values (0x05 for number 5 and 0x08 for number 8) to display the desired numbers on the 7-segment display.
+
+**Additional Notes:**
+- The specific data values for each digit on the 7-segment display may vary depending on the exact device. Refer to the datasheet for your display to determine the correct values.
+- You can combine multiple data values to display more complex patterns or characters.
+- Some 7-segment displays support additional features like brightness control or dot-point functionality, which can be accessed through specific I2C commands.
+
+**Driver**
+There are many different drivers available, to speed up the development. For example you can use this [Driver](https://github.com/mcauser/micropython-tm1637) for the 7 segment display. Some drivers are already built into MicroPython, such as the [DHT11 driver](https://docs.micropython.org/en/latest/esp8266/tutorial/dht.html). 
+
+By following these steps and understanding the I2C protocol, you can effectively control 7-segment displays and other I2C devices in your MicroPython projects
+# End of Script
+
+**Thank you for joining me on this journey through MicroPython and embedded system development!** We've covered the fundamentals of MicroPython, explored its syntax and features, and delved into practical examples of interacting with hardware components.
+
+**Now, it's time for you to take the reins and explore the endless possibilities that MicroPython offers.** With the knowledge you've gained, you can create your own unique embedded projects, from simple blinky LEDs to complex IoT devices.
+
+**Remember:** The best way to learn is by doing. **Don't be afraid to experiment and try new things.** If you encounter challenges, don't hesitate to consult online resources, forums, or even reach out to the MicroPython community for help.
+
+**Happy coding!**
 # Bibliography
 Alsabbagh, M. (2019). MicroPython Cookbook (1st ed.). Packt Publishing. Retrieved 12 September 2024 from https://www.perlego.com/book/969835 (Original work published 21 May 2019)
 
@@ -527,7 +1003,10 @@ Beningo, J. (2020). MicroPython Projects (1st ed.). Packt Publishing. Retrieved 
 
 espressif (2024). Esp32-DevKitC V4 Getting Started Guide. Retrieved 12 September 2024 from https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html
 
+Martinfred (2019). I2C analyze.jpg. https://commons.wikimedia.org/wiki/File:I2C_analyze.jpg
+
 Murugesh, TS., Vasudevan, S., &#38; Pulari, S. R. (2024). Python (1st ed.). CRC Press. Retrieved 12 September 2024 from https://www.perlego.com/book/4473886 (Original work published 7 August 2024)
 
-Peckol, J. (2019). Embedded Systems (2nd ed.). Wiley. Retrieved 12 September 2024 from https://www.perlego.com/book/991979 (Original work published 15 April 2019)
+Oakley A. (2018). Cjam-reaction-fritzing-led.png. https://commons.wikimedia.org/wiki/File:Cjam-reaction-fritzing-led.png
 
+Peckol, J. (2019). Embedded Systems (2nd ed.). Wiley. Retrieved 12 September 2024 from https://www.perlego.com/book/991979 (Original work published 15 April 2019)
