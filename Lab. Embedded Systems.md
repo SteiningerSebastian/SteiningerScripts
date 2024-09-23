@@ -480,8 +480,8 @@ A voltage divider is a simple circuit that divides a voltage into two or more sm
 A potentiometer is a variable resistor that can be used to adjust the voltage in a circuit. It consists of a resistive element with a sliding contact. By moving the contact, you can change the resistance between the contact and the ends of the element, thereby adjusting the voltage.
 
 For example the ADC of the esp32 supports a range of 0.1V to 0.95V. This circuit uses a potentiometer to simulate different values. 
-![Circuit Potentiometer high](./files/potentiometer_01V_095V.png)
-![Circuit Potentiometer high](./files/potentiometer_01V_095V_low.png)
+![Circuit Potentiometer high](Potentiometer01V095V.png)
+![Circuit Potentiometer high](Potentiometer01V095Vlow.png)
 ## Light-Emitting Diodes (LEDs)
 LEDs are semiconductor devices that emit light when a current flows through them. They are widely used in various applications, such as displays, indicators, and lighting. LEDs have a specific polarity and require a forward voltage to emit light.
 
