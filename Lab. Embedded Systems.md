@@ -460,7 +460,6 @@ When choosing a sleep mode, consider the following factors:
 Take a look at the [documentation](https://docs.micropython.org/en/latest/esp8266/tutorial/powerctrl.html) if you want to learn more.
 
 **In summary,** Python is a versatile language suitable for a variety of applications, while MicroPython is optimized for resource-constrained devices and provides a subset of Python's features. The choice between the two depends on the specific requirements of your project.
-
 # Electronics
 Electronics is the branch of science that deals with the flow of electric current and its application in various devices. It involves the study of components, circuits, and systems that use electricity to perform specific functions.
 ## Basic Electrical Quantities
@@ -476,8 +475,13 @@ where:
 - I is the current
 ## Voltage Divider
 A voltage divider is a simple circuit that divides a voltage into two or more smaller voltages. It consists of two or more resistors connected in series. The voltage at the junction of the resistors is proportional to the ratio of their resistances.
+![VoltageDivider](./files/voltageDivider.drawio.svg)
 ## Potentiometer
 A potentiometer is a variable resistor that can be used to adjust the voltage in a circuit. It consists of a resistive element with a sliding contact. By moving the contact, you can change the resistance between the contact and the ends of the element, thereby adjusting the voltage.
+
+For example the ADC of the esp32 supports a range of 0.1V to 0.95V. This circuit uses a potentiometer to simulate different values. 
+![Circuit Potentiometer high](./files/potentiometer_01V_095V.png)
+![Circuit Potentiometer high](./files/potentiometer_01V_095V_low.png)
 ## Light-Emitting Diodes (LEDs)
 LEDs are semiconductor devices that emit light when a current flows through them. They are widely used in various applications, such as displays, indicators, and lighting. LEDs have a specific polarity and require a forward voltage to emit light.
 
