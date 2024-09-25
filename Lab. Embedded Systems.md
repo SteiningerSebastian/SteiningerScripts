@@ -628,7 +628,7 @@ DACs convert digital values into analog signals. This is useful for controlling 
  
 By understanding these fundamental concepts, you can build a strong foundation for your exploration of electronics and begin creating your own circuits and projects.
 ## ESP32 Pinout
-![ESP32 Dev Kit C](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/_images/esp32-devkitC-v4-pinout.png)
+![ESP32 Dev Kit C](https://docs.espressif.com/projects/esp-dev-kits/en/latest/_images/esp32_devkitC_v4_pinlayout.png)
 (espressif, 2024)
 ## Kahoot
 To check if you have successfully acquired the basic knowledge to work in this field, it's recommended to try the quiz. [Kahoot](https://create.kahoot.it/details/dfa7fe63-aa92-48a9-b360-68bb624f5b57)
@@ -710,6 +710,10 @@ Debouncing is a technique used to prevent false signals from being generated whe
     - **Method:** Uses external components like capacitors or resistors to physically filter out noise.
     - **Advantages:** Reliable, less prone to software-related issues.
     - **Disadvantages:** Requires additional components, can increase circuit complexity.
+    - Button without hardware debouncing
+	    ![Button bouncing](./files/buttonBounce.png)
+	* Button with hardware debouncing
+		![Button bouncing](./files/buttonDebounce.png)
 - **Software Debouncing:**
     - **Method:** Uses programming techniques within the microcontroller's firmware to filter out noise.
     - **Advantages:** Simpler to implement, requires fewer components.
@@ -1001,7 +1005,7 @@ Alsabbagh, M. (2019). MicroPython Cookbook (1st ed.). Packt Publishing. Retrieve
 
 Beningo, J. (2020). MicroPython Projects (1st ed.). Packt Publishing. Retrieved 12 September 2024 from https://www.perlego.com/book/1443351 (Original work published 17 April 2020)
 
-espressif (2024). Esp32-DevKitC V4 Getting Started Guide. Retrieved 12 September 2024 from https://docs.espressif.com/projects/esp-idf/en/stable/esp32/hw-reference/esp32/get-started-devkitc.html
+espressif (2024). ESP32-DevKitC V4. Retrieved 25 September 2024 from https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html
 
 Martinfred (2019). I2C analyze.jpg. https://commons.wikimedia.org/wiki/File:I2C_analyze.jpg
 

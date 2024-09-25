@@ -790,8 +790,8 @@ Below is a solution for the task using only two nodes. Please expand the solutio
 
 ``` nginx.conf
 upstream web_servers {
-    server web1:8080 weight;
-    server web2:8080 weight;
+    server web1:8080;
+    server web2:8080;
 }
 
 server {
@@ -903,6 +903,101 @@ deploy:
     mode: replicated
     replicas: 5
 ```
+#### Kahoot
+Let's test what you have learned during the last project. [Kahoot](https://create.kahoot.it/details/4a87edcd-de5f-4185-b8f8-a7c91c168cf2)
+
+#### Tasks for Docker
+To build on you gained theoretical knowledge choose out of the ten tasks and document your solution. Provide arguments for the choice of technology and why you implemented certain things the way you did.
+##### 1. Create a Docker image for a simple web server.
+The web server should serve a static HTML page with the text "Hello, World!", the file is copied from the host at build.
+##### 2. Create a Docker image for a Python application.
+The Nginx web server should serve static HTML, JavaScript, and CSS files from a specified mounted directory.
+##### 3. Create a Docker Compose file for a simple web application
+ The application should consist of a web server (e.g., Nginx) and a Python application. The web server should serve static files from a specified directory and 
+ The Python application should handle dynamic requests and return a response.
+``` python
+ from flask import Flask, jsonify 
+ 
+ app = Flask(__name__) 
+ 
+ @app.route('/products', methods=['GET']) 
+ def get_products(): 
+	 products = [ {'id': 1, 'name': 'Product  A', 'price': 10.0}, 
+	 {'id': 2, 'name': 'Product B', 'price': 20.0}, 
+	 {'id': 3, 'name': 'Product C', 'price': 30.0} ] 
+	return jsonify(products)
+
+
+if __name__ == '__main__': 
+	app.run(host='0.0.0.0', port=8081)
+```
+
+##### 4. Create a Docker Compose file for a database and application
+The application should depend on a database (e.g., MySQL, PostgreSQL). The Docker Compose file should define both the database and application containers. The database should be initialized with sample data.
+
+``` python
+from flask import Flask, jsonify 
+from pymongo import MongoClient 
+app = Flask(__name__) 
+client = MongoClient('mongodb://localhost:27017') 
+db = client['mydatabase']  
+products_collection = db['products'] 
+@app.route('/products', methods=['GET']) 
+
+def get_products(): 
+	products = products_collection.find() 
+	product_data = [ {'id': product['_id'], 'name': product['name'], 'price': product['price']} for product in products ] 
+	return jsonify(product_data) if __name__ == '__main__': 
+	
+app.run(host='0.0.0.0', port=8081)
+```
+##### 5. Create a Docker Compose file for a load-balanced web application
+The application should have multiple web server instances. A load balancer should distribute traffic among the web servers. The Docker Compose file should define the load balancer and web server containers.
+##### 6. Create a Docker file for a multi-stage build
+The application should have multiple build stages for optimization. Write one for an application of your choice.
+##### 7. Docker Compose with a Custom Network
+Create a Docker Compose file that defines a custom network. Connect multiple containers to the custom network, make sure backend services can not be reached from the host network. Ensure that the containers can communicate with each other using the network.
+##### 8. Docker Compose with a Volume
+Create a Docker Compose file that mounts a volume to a container. Use the volume to persist data across container restarts. You can use the Minecraft-Server. Provide arguments on why and how you chose to persist data.
+##### 9. Intermediate: Docker Compose with Secrets Management
+Create a Docker Compose file that uses [Secrets](https://docs.docker.com/engine/swarm/secrets/) management to store a SSL/TLS certificate. Use the certificate to enable Https on a webserver you built.
+##### 10. Advanced: Docker Compose with a Monitoring Tool
+Integrate Docker Compose with a monitoring tool (e.g., Prometheus, Grafana), to monitor the performance and health of your containers and services.
+``` docker-compose.yml
+services: 
+	prometheus: 
+		image: prom/prometheus command: 
+			-config.file=/etc/prometheus/prometheus.yml 
+		volumes: - ./prometheus.yml:/etc/prometheus/prometheus.yml  
+		ports: - "9090:9090" 
+	grafana: 
+		image: grafana/grafana 
+		ports: - "3000:3000" 
+		volumes: 
+			- ./grafana.ini:/etc/grafana/provisioning/datasources/datasource.yaml  
+			- ./dashboards:/var/lib/grafana/dashboards depends_on: - prometheus
+```
+
+```prometheus.yml
+scrape_interval: 15s 
+evaluation_interval: 15s 
+scrape_configs: 
+- job_name: 'node-exporter' 
+  static_configs: 
+	  - targets: ['localhost:9100']  
+- job_name: 'app' 
+  static_configs: 
+	  - targets: ['app:8080']
+```
+
+``` datasource.yaml
+apiVersion: 1 
+datasources: 
+	- name: Prometheus 
+	  type: prometheus 
+	  url: http://prometheus:9090 
+	  access: pro
+```
 ### Kubernetes
 
 **Kubernetes** is a powerful open-source platform designed to automate the deployment, scaling, and operation of containerized applications. It provides a way to manage clusters of computers, often called nodes, as a single system. This allows developers to focus on writing applications rather than worrying about the underlying infrastructure.
@@ -1001,7 +1096,7 @@ spec:
 - Resolves to an external DNS name.
 - Useful for accessing services outside of the cluster.
 
-```
+``` yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1036,7 +1131,7 @@ By understanding Kubernetes Services, you can effectively manage and access your
 2. **Target Value:** You define a target value for the selected metric.
 3. **Scaling Policy:** You specify the scaling policy, such as the minimum and maximum number of Pods.
 4. **Scaling Algorithm:** The HPA uses an algorithm to determine when to scale up or down based on the metric value and target value.
-```
+``` yaml
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -1066,7 +1161,7 @@ spec:
 - **minReplicas:** The minimum number of replicas for the Deployment.
 - **maxReplicas:** The maximum number of replicas for the Deployment.
 ##### Example - HPA 
-```
+``` yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1126,13 +1221,221 @@ spec:
 ```
 
 This configuration creates a Deployment with 3 replicas, a Service to expose the Deployment, and an HPA to scale the Deployment based on CPU utilization.
-#### Working with Kubernetes
-... to be continued ...
+#### Kind
+**What is kind?**
+- **Local Kubernetes cluster:** kind is a tool designed to create local Kubernetes clusters on your machine, using Docker container "nodes."
+- **Lightweight and portable:** It's a lightweight and portable solution, making it easy to set up and use for various development and testing scenarios.
+- **CNCF certified:** kind is certified by the Cloud Native Computing Foundation (CNCF) as a conformant Kubernetes installer, ensuring compatibility and reliability.
+
+**Key Features and Benefits:**
+- **Multi-node clusters:** Create clusters with multiple nodes, including high-availability (HA) configurations, to simulate production environments.
+- **Customizable configurations:** Tailor your clusters to specific needs by configuring various parameters like node size, network settings, and Kubernetes version.
+- **Integration with existing tools:** Easily integrate kind with your existing development workflows and tools, such as IDEs, CI/CD pipelines, and testing frameworks.
+- **Rapid development and testing:** Leverage kind to quickly develop, test, and iterate on Kubernetes applications without the overhead of managing a full-scale Kubernetes environment.
+- **Learning and experimentation:** Use kind as a sandbox for learning Kubernetes concepts, experimenting with new features, and trying out different deployment strategies.
+
+**When to Use kind:**
+- **Local development:** Develop and test Kubernetes applications on your local machine without the need for a cloud-based environment.
+- **CI/CD pipelines:** Integrate kind into your CI/CD pipelines to perform automated testing and validation of Kubernetes applications.
+- **Learning and experimentation:** Explore Kubernetes concepts, try out new features, and experiment with different deployment strategies in a controlled environment.
+- **Proof of concepts:** Quickly create proof of concepts and demos to showcase Kubernetes capabilities and benefits.
+
+The following instructions are based on the *Quick Start* guide provided by the The Kubernetes Authors (2024).
+##### Installation
+**Kind & Kubectl (Windows)**
+To install [*kind*](https://kind.sigs.k8s.io/docs/user/quick-start/) on Windows, `ls` in the correct directory then use this commands in PowerShell to download the file. 
+```
+curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.24.0/kind-windows-amd64
+```
+Make sure the directory you choose is listed in the Path variable of you System variable. To check that it is listed or add a new path to the system variable type *Edit System Environment Variables* into Windows-Search. Then navigate to `Environment Variables` -> `Select Path under System variables` -> `Edit` and make sure that the path your executable is located at, is listed.
+![Edit System Environment Variable](./files/EditSystemEnvironmentVariable.png)
+
+Type `kind` in a new command window and check if the command is recognized, if so you have successfully installed *kind*.
+``` PowerShell
+kind creates and manages local Kubernetes clusters using Docker container 'nodes' ...
+```
+Now install  [kubectl](https://kubernetes.io/docs/tasks/tools/)
+
+``` yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+nodes:
+  - role: control-plane
+    extraPortMappings:
+    
+    - containerPort: 8888
+      hostPort: 8888
+
+  - role: worker
+  - role: worker
+  - role: worker
+```
+
+After saving this code to a file you can use `kind create cluster --config kind-example-config.yaml` to create you cluster. Using `kubectl cluster-info --context kind-kind` you can learn more about the cluster you just created.
+
+Use `kind get clusters` to list the existing clusters, using `kind delete cluster --name my-cluster` will remove a given cluster from you pc.
+
+**Kubernetes Dashboard (Windows)**
+Let's now install the frontend, to enable us to work with something nicer than the console. So, run `winget install Helm.Helm` in PowerShell, Helm is package manager for Kubernetes.
+
+Now according to The Kubernetes Authors (2024c) we need to run the following commands to install the frontend. Restart the terminal if the command is not recognized.
+```shell
+# Add kubernetes-dashboard repository
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+# Deploy a Helm Release named "kubernetes-dashboard" using the kubernetes-dashboard chart
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+```
+
+If this succeeds run `kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443` to make the dashboard accessible to the host. If this fails because of a pending pod, wait until the pod is ready to run the command.
+
+Now you can  open the Dashboard at the given address and configure Kubernetes. The token that will be required for you to log in can be obtained by running `kubectl -n default create token default` in a console.
+
+But before you can execute or upload a configuration you must grant the necessary rights, for our local deployment we will just allow any user to change anything. (DO NOT DO THIS IN PRODUCTION)  Run `kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts` to grant all users access.
+#### Monitoring
+Monitoring is a crucial aspect of managing containerized applications. It involves collecting, analyzing, and visualizing data to gain insights into the performance, health, and resource utilization of your containers. Effective monitoring helps you identify issues early, optimize resource allocation, and ensure the reliability of your applications.
+
+In a containerized environment, monitoring becomes even more important due to the dynamic nature of containers and the potential for rapid changes in workload. Key metrics to monitor include:
+- **CPU usage:** Track the CPU consumption of your containers to identify bottlenecks and optimize resource allocation.
+- **Memory usage:** Monitor memory consumption to prevent out-of-memory errors and ensure efficient resource utilization.
+- **Network I/O:** Track network traffic to identify performance issues and optimize network configuration.
+- **Disk I/O:** Monitor disk usage to prevent storage bottlenecks and ensure data is accessible.
+- **Application-specific metrics:** Collect metrics relevant to your specific application, such as response times, error rates, and custom metrics.
+
+Popular monitoring tools for containerized environments include:
+- **Prometheus:** An open-source time series database and monitoring system.
+- **Grafana:** A popular visualization tool for creating dashboards and alerts.
+- **Jaeger:** A distributed tracing system for understanding request flow and performance bottlenecks.
+- **Elasticsearch, Logstash, Kibana (ELK Stack):** A powerful logging and analytics platform.
+
+By effectively monitoring your containerized applications, you can proactively address issues, optimize performance, and ensure the reliability and availability of your services. Most of the tools provide good install instructions on their websites.
+#### Task: Webserver Cluster
+Using the existing cluster, write the configuration to host you Webserver with automatic horizontal pod autoscaling and load balancing. Document the process of deploying the Webserver and test it using JMeter and document the result. Try different scaling strategies.
+##### Solution
+###### 1. Create the deployment
+``` yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prime-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prime-test
+  template:
+    metadata:
+      labels:
+        app: prime-test
+    spec:
+      containers:
+      - name: prime-test
+        image: sebastiansteininger/containertest001:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
+```
+###### 2. Create a LoadBalancer
+Create a LoadBalancer to make the deployment available to requests outside the Kubernetes installation and distribute requests to the pods.
+
+For this feature to work we either need an external cloud provider that does the load balancing or we need to install a local LoadBalancer. Download, unzip and install the local LoadBalancer. Then follow the [instructions](https://github.com/kubernetes-sigs/cloud-provider-kind?tab=readme-ov-file#install).
+``` yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: prime-test
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prime-test
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  minReplicas: 1
+  maxReplicas: 10
+```
+###### 3. Create a HorizontalPodAutoscaler
+To be able to handle any demand thrown at us, let's us automatic scaling using a HPA. Then the amount of pods scales based on the demand.
+
+But unfortunately kind is missing the metrics-server so we first need to install it using the command `kubectl apply -f https://raw.githubusercontent.com/SteiningerSebastian/SteiningerScripts/refs/heads/main/files/metricsserver.yaml`. Using `kubectl get deployments -n kube-system` you should find the metrics-server in the list. Before you may continue wait for the deployment to succeed.
+
+``` yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: prime-test
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prime-test
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 70
+  minReplicas: 1
+  maxReplicas: 10
+```
+#### Tasks for Kubernetes
+##### 1. Deploy a Simple Web Application
+Create a Docker image for a application of your choice.  Configure a Deployment to run the application as pods and create a Service to expose the application to the outside world.
+##### 2. Scale a Deployment
+Configure the HorizontalPodAutoscaler (HPA) to increase or decrease the number of replicas in a Deployment automatically based on a metric. Monitor resource usage and adjust the configuration accordingly. Use Apache JMeter to test the performance of certain configurations.
+##### 3. Set Up Basic Monitoring
+Use built-in Kubernetes metrics to monitor resource usage. Use tools like `kubectl top` to view resource usage for pods. Consider using external monitoring solutions like Prometheus and Grafana for more advanced monitoring. Document your choice and provide an argument for your choice.
+##### 4. Deploy a Microservices Application
+Break down a complex application into smaller, independent microservices. Create Docker images for each microservice. Then define the relationships between microservices using a Docker Compose file or Kubernetes manifests. After Deploying the microservices to a Kubernetes cluster, configure service discovery, load balancing, and networking between microservices.
+##### 5. Advanced: DevSecOps - Automate Container Deployment and Updates
+Implement a CI/CD pipeline to automate the deployment of a containerized application to your Kubernetes cluster. Provide arguments for your choices and document the process and the resulting pipeline.
+
+**Steps:**
+1. **Create a Dockerfile:** Define the build process for your application's Docker image.
+2. **Set up a repository:** Create a repository on a platform like GitHub or GitLab to store your application's code.
+3. **Configure a CI/CD pipeline:** Choose a CI/CD tool (e.g., Jenkins, GitLab CI/CD, CircleCI) and configure it to trigger a build on code changes.
+4. **Define build stages:** In your CI/CD pipeline, define stages for building, testing, and deploying the Docker image.
+5. **Build and push the image:** Configure the pipeline to build the Docker image using the Dockerfile and push it to a container registry (e.g., Docker Hub, a private registry).
+6. **Update the Deployment:** Create a Kubernetes Deployment manifest that references the image. Use the `imagePullPolicy` field to specify when the image should be pulled (e.g., `Always`, `IfNotPresent`).
+7. **Apply the Deployment:** Integrate the pipeline with Kubernetes to apply the updated Deployment manifest.
+8. **Configure deployment strategies:** Consider using deployment strategies like `RollingUpdate` or `Recreate` to control how updates are applied to your application.
+9. Trigger the update by applying an updated deployment .yaml using `kubectl apply -f deployment.yaml`
+# Capstone Project
+Based on what you have learned, select an application you would like to deploy. This could be, for example, a web server with a front-end and back-end, a gaming server (if sufficiently complex), or any other application you can imagine.
+
+After outlining your project idea, consult with your tutor or teacher to confirm that it is appropriate for completing the course. Your documentation should include a rationale for selecting this project and outline what you aim to achieve.
+
+As you work on the project, document your progress, thoughts, and decisions, providing clear reasoning for your choices. At the end of the course, you will demonstrate what you have developed during the allotted time for the capstone project.
+## ToDo:
+- **Choose a project:** Select an application that aligns with your interests and course objectives. Consider factors like complexity, relevance, and feasibility. Some examples include a web server, gaming server, or IoT application.
+- **Document your project idea:** Outline your project goals, objectives, and expected outcomes. Explain why you chose this project and what you aim to achieve.
+- **Seek approval:** Consult with your instructor to confirm that your project is suitable for the course and to get guidance and feedback.
+- **Develop your application:** Break down your application into smaller components, create Dockerfiles for each component, and use a orchestration tool to define the relationships between them.
+- **Test and deploy:** Thoroughly test your application to ensure it functions as expected. Deploy it to a local or cloud environment.
+- **Document your progress:** Keep a detailed record of your development process, including your thoughts, choices, and any challenges you encounter.
+- **Prepare a presentation:** Create a presentation to showcase your project's features, functionality, and benefits. Explain your design choices and implementation techniques.
+- **Deliver your presentation:** Present your project during the designated time for the capstone project. Be prepared to answer questions from your instructor and classmates.
 # Bibliography
 Doug Jones, March 16, 2018, Containers vs. Virtual Machines (VMs): What's the Difference? https://www.netapp.com/blog/containers-vs-vms/
 
 Docker, 11. September 2024a, Volumes https://docs.docker.com/engine/storage/volumes/
 
 Docker, 18. September 2024b, Network https://docs.docker.com/engine/network/
+
+Sharma, H. K., Kumar, A., Pant, S., &#38; Ram, M. (2024). DevOps: A Journey from Microservice to Cloud Based Containerization (1st ed.). River Publishers. Retrieved 25 September 2024 from https://www.perlego.com/book/4310455 (Original work published 23 January 2024)
+
+The Kubernetes Authors, 20. September 2024a, Configuration. https://kind.sigs.k8s.io/docs/user/configuration/
+
+The Kubernetes Authors, 20. September 2024c, Deploy and Access the Kubernetes Dashboard https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+The Kubernetes Authors, 20. September 2024b, Quick Start. https://kind.sigs.k8s.io/docs/user/quick-start/
 
 Wikimedia Commons, 19. September 2024, Kubernetes https://commons.wikimedia.org/wiki/File:Kubernetes.png
