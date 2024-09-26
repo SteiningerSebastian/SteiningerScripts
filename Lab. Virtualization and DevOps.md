@@ -1419,7 +1419,6 @@ As you work on the project, document your progress, thoughts, and decisions, pro
 - **Document your progress:** Keep a detailed record of your development process, including your thoughts, choices, and any challenges you encounter.
 - **Prepare a presentation:** Create a presentation to showcase your project's features, functionality, and benefits. Explain your design choices and implementation techniques.
 - **Deliver your presentation:** Present your project during the designated time for the capstone project. Be prepared to answer questions from your instructor and classmates.
-
 # Good By
 As we conclude our journey through the realm of virtualization and containers, it's evident that these technologies have become indispensable tools in the modern DevOps landscape. Virtualization has revolutionized the way we manage infrastructure, allowing us to create isolated environments for different applications and services. Containers, on the other hand, have provided a lightweight, portable way to package and deploy applications.
 
