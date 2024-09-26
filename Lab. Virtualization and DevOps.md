@@ -1344,6 +1344,25 @@ Create a LoadBalancer to make the deployment available to requests outside the K
 
 For this feature to work we either need an external cloud provider that does the load balancing or we need to install a local LoadBalancer. Download, unzip and install the local LoadBalancer. Then follow the [instructions](https://github.com/kubernetes-sigs/cloud-provider-kind?tab=readme-ov-file#install).
 ``` yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: prime-test
+spec:
+  selector:
+    app: prime-test
+  ports:
+    - port: 8888
+      protocol: TCP
+      targetPort: 8080
+  type: LoadBalancer
+```
+###### 3. Create a HorizontalPodAutoscaler
+To be able to handle any demand thrown at us, let's us automatic scaling using a HPA. Then the amount of pods scales based on the demand.
+
+But unfortunately kind is missing the metrics-server so we first need to install it using the command `kubectl apply -f https://raw.githubusercontent.com/SteiningerSebastian/SteiningerScripts/refs/heads/main/files/metricsserver.yaml`. Using `kubectl get deployments -n kube-system` you should find the metrics-server in the list. Before you may continue wait for the deployment to succeed.
+
+``` yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -1354,35 +1373,12 @@ spec:
     kind: Deployment
     name: prime-test
   metrics:
-  - type: Resource
+    type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
         averageUtilization: 60
-  minReplicas: 1
-  maxReplicas: 10
-```
-###### 3. Create a HorizontalPodAutoscaler
-To be able to handle any demand thrown at us, let's us automatic scaling using a HPA. Then the amount of pods scales based on the demand.
-
-But unfortunately kind is missing the metrics-server so we first need to install it using the command `kubectl apply -f https://raw.githubusercontent.com/SteiningerSebastian/SteiningerScripts/refs/heads/main/files/metricsserver.yaml`. Using `kubectl get deployments -n kube-system` you should find the metrics-server in the list. Before you may continue wait for the deployment to succeed.
-
-``` yaml
-apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: prime-test
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: prime-test
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      targetAverageUtilization: 70
   minReplicas: 1
   maxReplicas: 10
 ```
