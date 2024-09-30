@@ -173,7 +173,9 @@ You can convert values between different data types using built-in functions lik
 To create a list, enclose a sequence of items within square brackets `[]`.
 ```
 # Creating a list of integers
-numbers = [1, 2, 3, 4, 5]
+numbers = [5, 2, 3, 4, 1]
+# Sorts the list of numbers ascending.
+sorted_numbers = sorted(numnbers)
 
 # Creating a list of strings
 fruits = ["apple", "banana", "cherry"]
@@ -787,6 +789,20 @@ PWM is a technique used to control the average power delivered to a load by vary
 - **Dead Time:** To prevent excessive current flow through switching components, a dead time (a period where both the "on" and "off" signals are low) is often introduced between the "on" and "off" states of the PWM signal.
 
 In summary, PWM is a versatile and efficient technique for controlling the power delivered to a load. It has a wide range of applications and is an essential tool in many electronic systems.
+### Example: Using PWM to dim a LED.
+```python
+import time
+import machine # Set up the PWM pin (adjust to your desired pin)
+
+pwm_pin = machine.Pin(13, machine.Pin.OUT) # Create a PWM object with a frequency of 1000 Hz 
+pwm = machine.PWM(pwm_pin, freq=1000) # Set the duty cycle to 50% (adjust as needed) 
+
+pwm.duty(512) # Wait for some time (adjust as needed), cycle is between 0 (all off) and 1023 (all on)
+
+time.sleep(5) # Stop the PWM 
+
+pwm.deinit()
+```
 ## Analog Input and Output
 **Analog I/O** involves the interaction between a microcontroller or computer and external devices using continuously varying electrical signals, rather than discrete high or low levels. These signals can represent physical quantities such as temperature, light intensity, voltage, or current.  
 ### Analog Input
