@@ -171,7 +171,7 @@ You can convert values between different data types using built-in functions lik
 **Lists** are one of the most versatile data structures in Python. They are ordered collections of items, where each item can be of any data type. Lists are mutable, meaning you can change their elements after they are created.
 ### Creating Lists
 To create a list, enclose a sequence of items within square brackets `[]`.
-```
+``` python
 # Creating a list of integers
 numbers = [5, 2, 3, 4, 1]
 # Sorts the list of numbers ascending.
@@ -185,7 +185,7 @@ mixed_list = [10, "Hello", 3.14, True]
 ```
 ### Accessing List Elements
 You can access individual elements of a list using their index, which starts from 0.
-```
+``` python
 # Accessing the first element
 first_number = numbers[0]  # Output: 1
 
@@ -194,7 +194,7 @@ last_fruit = fruits[-1]  # Output: cherry
 ```
 ### Slicing Lists
 You can extract a portion of a list using slicing.
-```
+``` python
 # Extracting elements from index 1 to 3 (exclusive)
 sublist = numbers[1:4]  # Output: [2, 3, 4]
 
@@ -206,7 +206,7 @@ last_three = numbers[2:]  # Output: [3, 4, 5]
 ```
 ### Modifying Lists
 You can modify existing elements in a list or add new elements.
-```
+``` python
 # Changing an element
 numbers[2] = 100
 
@@ -218,7 +218,7 @@ numbers.insert(1, 20)
 ```
 ### Removing Elements
 You can remove elements from a list using various methods.
-```
+``` python
 # Removing an element by its value
 fruits.remove("banana")
 
@@ -239,14 +239,14 @@ Lists support various operations, such as:
 - **Min. Element**: Finding the smallest element in a list using the `min()` function.
 ### Nested Lists
 Lists can contain other lists, creating nested structures.
-```
+``` python
 matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 ```
 ## Loops
 Loops are essential programming constructs that allow you to repeatedly execute a block of code until a certain condition is met. Python provides two main types of loops: `for` loops and `while` loops.
 ### `for` Loops
 `for` loops are used to iterate over a sequence of values, such as a list, tuple, or string.
-```
+``` python
 # Iterating over a list
 fruits = ["apple", "banana", "cherry"]
 for fruit in fruits:
@@ -259,7 +259,7 @@ for i in range(5):   1. github.com github.com
 The `range()` function generates a sequence of numbers. You can specify the starting point, ending point (exclusive), and step size.
 ### `while` Loops
 `while` loops execute a block of code as long as a specified condition is true.
-```
+``` python
 count = 0
 while count < 5:
     print(count)
@@ -268,7 +268,7 @@ while count < 5:
 ### `break` and `continue` Statements
 - **`break`:** Exits the loop immediately, regardless of whether the condition is met.
 - **`continue`:** Skips the current iteration and proceeds to the next one.
-```
+``` python
 for i in range(10):
     if i == 5:
         break
@@ -281,7 +281,7 @@ for i in range(10):
 ```
 ### Nested Loops
 You can have loops within loops, known as nested loops.
-```
+``` python
 for row in range(3):
     for col in range(3):
         print(row, col)
@@ -304,7 +304,7 @@ By understanding and effectively using loops, you can write more efficient and c
 **Functions** are reusable blocks of code that perform specific tasks. They help you organize your code, make it more readable, and avoid code duplication.
 ### Defining Functions
 To define a function in Python, you use the `def` keyword followed by the function name, parentheses `()`, and a colon `:`. The code block that defines the function's behavior is indented.
-```
+``` python
 def greet(name):
     print("Hello, " + name + "!")
 
@@ -313,7 +313,7 @@ greet("Alice")  # Output: Hello, Alice!
 ### Parameters and Arguments
 - **Parameters:** Variables defined within the parentheses of a function.
 - **Arguments:** Values passed to a function when it's called.
-```
+``` python
 def add(x, y):
     result = x + y
     return result
@@ -322,7 +322,7 @@ sum = add(3, 5)  # Output: 8
 ```
 ### Return Values
 Functions can return values using the `return` statement. If a function doesn't have a `return` statement, it implicitly returns `None`.
-```
+``` python
 def square(x):
     return x * x
 
@@ -330,7 +330,7 @@ result = square(4)  # Output: 16
 ```
 ### Default Arguments
 You can provide default values for parameters. If an argument isn't provided when the function is called, the default value is used.
-```
+``` python
 def greet(name, greeting="Hello"):
     print(greeting + ", " + name + "!")
 
@@ -339,7 +339,7 @@ greet("Charlie", "Hi")  # Output: Hi, Charlie!
 ```
 ### Keyword Arguments
 You can pass arguments to a function using keyword arguments, where the argument names are specified explicitly.
-```
+``` python
 def greet(name, greeting="Hello"):
     print(greeting + ", " + name + "!")
 
@@ -347,7 +347,7 @@ greet(greeting="Hi", name="David")  # Output: Hi, David!
 ```
 ### Variable-Length Arguments
 You can use `*args` to pass a variable number of positional arguments to a function.
-```
+``` python
 def add(*numbers):
     result = 0
     for num in numbers:
@@ -358,7 +358,7 @@ sum = add(1, 2, 3, 4)  # Output: 10
 ```
 ### Docstrings
 Docstrings are strings that describe the purpose, parameters, and return value of a function. They are enclosed in triple quotes.
-```
+``` python
 def greet(name):
     """Greets a person by name.
 
@@ -401,7 +401,7 @@ REPLs are valuable tools for programmers of all levels, providing a convenient a
 ## Time & Sleep
 - **`time.time()`:** Returns the current time in seconds since the epoch (January 1, 1970).
 - **`time.sleep(seconds)`:** Suspends the execution of the current thread for the specified number of seconds.
-```
+``` python
 import time
 
 # Get the current time
@@ -433,7 +433,7 @@ By effectively using the `time` module, you can manipulate time and control the 
     - Calculate the average of the current window.
 
 **Solution (Python):**
-```
+``` python
 def moving_average(values, window_size):
   """Calculates the moving average of a list of values.
 
@@ -467,7 +467,7 @@ def moving_average(values, window_size):
     - `normalized_value = (value - min_value) / (max_value - min_value)`
 
 **Solution (Python):**
-```
+``` python
 def normalize_to_range(value, min_value, max_value):
   """Normalizes a value to a specified range.
 
@@ -491,7 +491,7 @@ def normalize_to_range(value, min_value, max_value):
     - `denormalized_value = normalized_value * (max_value - min_value) + min_value`
 
 **Solution (Python):**
-```
+``` python
 def denormalize_from_range(normalized_value, min_value, max_value):
   """Denormalizes a value from a specified range.
 
@@ -515,7 +515,7 @@ def denormalize_from_range(normalized_value, min_value, max_value):
 - **Middle value:** For an odd number of elements, the median is the value at index `(n-1) / 2`, where `n` is the number of elements. For an even number of elements, the median is the average of the values at indices `n // 2 - 1` and `n // 2`.
 
 **Solution (Python):**
-```
+``` python
 def calculate_median(values):
   """Calculates the median of a list of values.
 
