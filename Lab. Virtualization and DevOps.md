@@ -910,9 +910,9 @@ Let's test what you have learned during the last project. [Kahoot](https://creat
 To build on you gained theoretical knowledge choose out of the ten tasks and document your solution. Provide arguments for the choice of technology and why you implemented certain things the way you did.
 ##### 1. Create a Docker image for a simple web server.
 The web server should serve a static HTML page with the text "Hello, World!", the file is copied from the host at build.
-##### 2. Create a Docker image for a Python application.
+##### 2. Create a Docker Compose file for a simple web application
 The Nginx web server should serve static HTML, JavaScript, and CSS files from a specified mounted directory.
-##### 3. Create a Docker Compose file for a simple web application
+##### 3. Create a Docker image for a Python application.
  The application should consist of a web server (e.g., Nginx) and a Python application. The web server should serve static files from a specified directory and 
  The Python application should handle dynamic requests and return a response.
 ``` python
