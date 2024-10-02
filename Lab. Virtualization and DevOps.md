@@ -905,7 +905,6 @@ deploy:
 ```
 #### Kahoot
 Let's test what you have learned during the last project. [Kahoot](https://create.kahoot.it/details/4a87edcd-de5f-4185-b8f8-a7c91c168cf2)
-
 #### Tasks for Docker
 To build on you gained theoretical knowledge choose out of the ten tasks and document your solution. Provide arguments for the choice of technology and why you implemented certain things the way you did.
 ##### 1. Create a Docker image for a simple web server.
@@ -926,7 +925,6 @@ The Nginx web server should serve static HTML, JavaScript, and CSS files from a 
 	 {'id': 2, 'name': 'Product B', 'price': 20.0}, 
 	 {'id': 3, 'name': 'Product C', 'price': 30.0} ] 
 	return jsonify(products)
-
 
 if __name__ == '__main__': 
 	app.run(host='0.0.0.0', port=8081)
