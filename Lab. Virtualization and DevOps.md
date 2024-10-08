@@ -1019,8 +1019,7 @@ datasources:
 (Wikimedia Commons, 2024)
 
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
-
-![Kubernetes](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)
+[![Welcome to Production](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)](https://www.youtube.com/watch?v=0w6kXdHXxAA)
 #### Deployments
 **Deployments** are a core resource in Kubernetes that manage replicated applications. They provide a declarative way to define the desired state of an application, and Kubernetes automatically ensures that the actual state matches the desired state.
 
