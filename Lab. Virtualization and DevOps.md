@@ -1005,7 +1005,7 @@ Microservices architecture addresses the limitations of monolithic systems by br
 ![Microservices](https://upload.wikimedia.org/wikipedia/commons/c/c9/JLupin_wiki_fig3.png)
 #### Serverless Architecture
 Serverless architecture is a cloud-based computing model where the cloud provider automatically manages the infrastructure, allowing developers to focus solely on writing code. In a serverless system, developers create functions that are executed in response to events, such as HTTP requests or database updates. These functions are stateless, and the cloud provider dynamically allocates resources as needed to handle requests. Serverless architectures offer the benefit of automatic scaling, where resources are only consumed when needed, making it cost-effective for applications with variable workloads. Additionally, developers don’t need to worry about managing servers, patching, or infrastructure provisioning, which can significantly reduce operational overhead. However, serverless can introduce challenges related to cold starts (initial latency when functions are triggered), vendor lock-in, and limitations in control over the underlying infrastructure. Despite these challenges, serverless architecture is ideal for building highly scalable, event-driven applications.
-![Serverless](./files/serverless.png)
+![Serverless](./files/serverless_architecture.png)
 ### Kubernetes
 
 **Kubernetes** is a powerful open-source platform designed to automate the deployment, scaling, and operation of containerized applications. It provides a way to manage clusters of computers, often called nodes, as a single system. This allows developers to focus on writing applications rather than worrying about the underlying infrastructure.
