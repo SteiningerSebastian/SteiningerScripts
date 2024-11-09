@@ -624,7 +624,7 @@ Buttons are simple mechanical switches that can be used to control the flow of c
 - **Pull-up resistor:** A resistor is connected between the button and the power supply. When the button is not pressed, the input is high. When the button is pressed, the input goes low.
 - **Pull-down resistor:** A resistor is connected between the button and ground. When the button is not pressed, the input is low. When the button is pressed, the input goes high.
 ## Analog-to-Digital Converters (ADCs)
-ADCs convert analog signals (e.g., from sensors) into digital values. This allows microcontrollers and computers to process and analyze analog data. (12 bit, 0V - 1V)
+ADCs convert analog signals (e.g., from sensors) into digital values. This allows microcontrollers and computers to process and analyze analog data. (12 bit, 0V - 1.1V)
 ## Digital-to-Analog Converters (DACs)
 DACs convert digital values into analog signals. This is useful for controlling analog devices, such as motors or speakers.
  
