@@ -469,12 +469,12 @@ def moving_average(values, window_size):
 **Solution (Python):**
 ``` python
 def normalize_to_range(value, min_value, max_value):
-  """Normalizes a value to a specified range.
+  """Normalizes a value from the specified range to a range between 0 and 1.
 
   Args:
     value: The value to normalize.
-    min_value: The minimum value of the target range.
-    max_value: The maximum value of the target range.
+    min_value: The minimum value of the specified range.
+    max_value: The maximum value of the specified range.
 
   Returns:
     The normalized value.
