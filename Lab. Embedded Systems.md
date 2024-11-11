@@ -459,7 +459,7 @@ def moving_average(values, window_size):
       moving_averages.append(average)
   return moving_averages
 ```
-#### 2. Normalize to a Range
+#### 2. Normalize from a Range
 **Description:** Normalization is the process of scaling values to a specific range (often 0 to 1). This is useful for comparing values from different scales or for certain mathematical operations.
 
 **Theory:**
@@ -483,7 +483,7 @@ def normalize_to_range(value, min_value, max_value):
   normalized_value = (value - min_value) / (max_value - min_value)
   return normalized_value
 ```
-#### 3. Denormalize from a Range
+#### 3. Denormalize to a Range
 **Description:** Denormalization is the reverse process of normalization, where a scaled value is converted back to its original range.
 
 **Theory:**
@@ -493,7 +493,7 @@ def normalize_to_range(value, min_value, max_value):
 **Solution (Python):**
 ``` python
 def denormalize_from_range(normalized_value, min_value, max_value):
-  """Denormalizes a value from a specified range.
+  """Denormalizes a value to a specified range.
 
   Args:
     normalized_value: The normalized value.
