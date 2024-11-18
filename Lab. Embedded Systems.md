@@ -818,7 +818,7 @@ pwm.deinit()
 import machine
 import time
 
-# Create an ADC object on pin A0
+# Create an ADC object on pin 32
 adc = machine.ADC(32)
 dac = machine.DAC(25)
 
