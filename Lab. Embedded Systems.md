@@ -851,7 +851,7 @@ In this example:
 - **Sampling rate:** The sampling rate of an ADC determines how frequently the analog signal is sampled. A higher sampling rate can capture faster-changing signals.  
 - **Multiple channels:** Some microcontrollers have multiple ADC channels, allowing simultaneous measurements of multiple analog signals.
 ### Task 1: Read the value of a potentiometer
-Build a circuit to rad the value of a potentiometer
+Build a circuit to read the value of a potentiometer
 #### Solution
 ``` python
 import machine import time 
