@@ -854,13 +854,15 @@ In this example:
 Build a circuit to rad the value of a potentiometer
 #### Solution
 ``` python
-import machine import time 
+import machine
+import time 
 # Create an ADC object on pin 
 adc = machine.ADC(32) 
 # Read the ADC value and convert it to voltage 
 while True: 
 	# Assuming a 3.3V reference voltage 
-	value = adc.read_uv() voltage = value / 1000 / 1000 * 3.3 
+	value = adc.read_uv()
+	voltage = value / 1000 / 1000 * 3.3 
 	print("Potentiometer voltage:", voltage, "V") 
 	time.sleep(0.1)
 ```
