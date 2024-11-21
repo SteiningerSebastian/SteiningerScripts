@@ -1,4 +1,3 @@
-Google's Gemini assisted with the development of this script.
 # Learning Objectives
 **Knowledge and Understanding:**
 

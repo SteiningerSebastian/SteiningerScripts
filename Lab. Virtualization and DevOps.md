@@ -962,7 +962,7 @@ Create a Docker Compose file that mounts a volume to a container. Use the volume
 Create a Docker Compose file that uses [Secrets](https://docs.docker.com/engine/swarm/secrets/) management to store a SSL/TLS certificate. Use the certificate to enable Https on a webserver you built.
 ##### 10. Advanced: Docker Compose with a Monitoring Tool
 Integrate Docker Compose with a monitoring tool (e.g., Prometheus, Grafana), to monitor the performance and health of your containers and services.
-``` docker-compose.yml
+``` yml
 services: 
 	prometheus: 
 		image: prom/prometheus command: 
@@ -977,7 +977,7 @@ services:
 			- ./dashboards:/var/lib/grafana/dashboards depends_on: - prometheus
 ```
 
-```prometheus.yml
+``` yml
 scrape_interval: 15s 
 evaluation_interval: 15s 
 scrape_configs: 
@@ -989,7 +989,7 @@ scrape_configs:
 	  - targets: ['app:8080']
 ```
 
-``` datasource.yaml
+``` yaml
 apiVersion: 1 
 datasources: 
 	- name: Prometheus 
@@ -1253,7 +1253,7 @@ The following instructions are based on the *Quick Start* guide provided by the 
 ##### Installation
 **Kind & Kubectl (Windows)**
 To install [*kind*](https://kind.sigs.k8s.io/docs/user/quick-start/) on Windows, `ls` in the correct directory then use this commands in PowerShell to download the file. 
-```
+``` PowerShell
 curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.24.0/kind-windows-amd64
 ```
 Make sure the directory you choose is listed in the Path variable of you System variable. To check that it is listed or add a new path to the system variable type *Edit System Environment Variables* into Windows-Search. Then navigate to `Environment Variables` -> `Select Path under System variables` -> `Edit` and make sure that the path your executable is located at, is listed.
@@ -1289,7 +1289,7 @@ Use `kind get clusters` to list the existing clusters, using `kind delete cluste
 Let's now install the frontend, to enable us to work with something nicer than the console. So, run `winget install Helm.Helm` in PowerShell, Helm is package manager for Kubernetes.
 
 Now according to The Kubernetes Authors (2024c) we need to run the following commands to install the frontend. Restart the terminal if the command is not recognized.
-```shell
+``` PowerShell
 # Add kubernetes-dashboard repository
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 # Deploy a Helm Release named "kubernetes-dashboard" using the kubernetes-dashboard chart
