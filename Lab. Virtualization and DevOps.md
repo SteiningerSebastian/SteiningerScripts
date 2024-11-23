@@ -533,7 +533,8 @@ To check if you have successfully acquired the knowledge about volumes, etc., it
 - **High Availability:** Orchestration tools can help ensure that applications remain available even if individual containers fail.
 - **Simplified Management:** Orchestrators provide a centralized platform for managing and monitoring containerized applications.
 - **Disaster Recovery**: If all fails, orchestration helps to get back online.
-  [![Disaster Recovery](https://img.youtube.com/vi/uUZdCNyIOQc/0.jpg)](https://www.youtube.com/watch?v=uUZdCNyIOQc)
+
+[![Disaster Recovery](https://img.youtube.com/vi/uUZdCNyIOQc/0.jpg)](https://www.youtube.com/watch?v=uUZdCNyIOQc)
 
 **Popular Orchestration Tools:**
 
