@@ -471,7 +471,7 @@ You can integrate NAS with Docker to provide persistent storage for your contain
 - **NAS Protocol:** Ensure your NAS device supports a protocol compatible with Docker (e.g., NFS, CIFS).
 - **Permissions:** Set appropriate permissions on the NAS share to allow Docker containers to access and modify files.
 - **Network Connectivity:** Verify that your Docker host has network connectivity to the NAS device.
-- 
+
 ##### Task: Use Volumes to make the Minecraft-World persistent. 
 Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
 #### Kahoot
@@ -704,7 +704,6 @@ By using JMeter, you can identify performance issues, optimize your applications
     - Click the green "play" button on the toolbar to begin the test.
 9. **Analyze Results:**
     - Observe the generated graph to analyze the performance metrics of your web service. You can also access detailed results in other available listeners like "View Results Tree" for a more comprehensive understanding. Consider capturing a screenshot or exporting the graph for documentation purposes.
-    - 
 ### Task: Setup a docker compose orchestration
 Create a highly available and scalable ASP.NET web application using Docker Compose and Nginx as a load balancer. By leveraging Docker's containerization technology and Nginx's load-balancing capabilities, you'll build an application that can handle increased traffic and ensure high availability.
 
