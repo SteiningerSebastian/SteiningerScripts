@@ -231,15 +231,15 @@ This code snippet essentially creates a set of instructions for building a Docke
 3. **Setting Up the Container Environment:** `WORKDIR /minecraft` sets the working directory inside the container to `/minecraft`. `ADD https://piston-data.mojang.com/v1/objects/... server.jar` downloads the Minecraft server jar file from the official Mojang website and places it in the `/minecraft` directory inside the container with the name `server.jar`.
 
 4. **Preparing the Server Startup Script:** The next few lines (`RUN java -jar...`) are a bit more involved. They:
-- Run the Minecraft server jar file with the `--installServer` flag, which likely creates some initial configuration files needed for the server to run.
-- Create an empty file called `run.sh`.
-- Fill the `run.sh` file with a simple script that starts the Minecraft server jar file using the `java -jar` command.
-- Make the `run.sh` file executable, allowing it to be run as a program.
+	- Run the Minecraft server jar file with the `--installServer` flag, which likely creates some initial configuration files needed for the server to run.
+	- Create an empty file called `run.sh`.
+	- Fill the `run.sh` file with a simple script that starts the Minecraft server jar file using the `java -jar` command.
+	- Make the `run.sh` file executable, allowing it to be run as a program.
 
 5. **Initializing the Server and Exposing the Port:**
-- `RUN ./run.sh` actually runs the `run.sh` script we just created, which likely initializes the server and creates some additional files needed for it to function.
-- `RUN echo 'eula=true' > ./eula.txt` writes `eula=true` to the file. This is an agreement that needs to be accepted to run the Minecraft server.
-- `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
+	- `RUN ./run.sh` actually runs the `run.sh` script we just created, which likely initializes the server and creates some additional files needed for it to function.
+	- `RUN echo 'eula=true' > ./eula.txt` writes `eula=true` to the file. This is an agreement that needs to be accepted to run the Minecraft server.
+	- `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
 
 6. **Starting the Server:** Finally, `ENTRYPOINT ["./run.sh"]` sets the default command to run when the container starts. In this case, it tells the container to run the `./run.sh` script, which in turn starts the Minecraft server.
 
