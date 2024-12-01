@@ -224,24 +224,24 @@ ENTRYPOINT [ "./run.sh" ]
 
 This code snippet essentially creates a set of instructions for building a Docker image that can run a Minecraft server. Let's break it down step by step:
 
-**1. Choosing a Base Image:** The first line `FROM debian:latest` tells Docker to use the latest version of the "debian" image as the starting point for our Minecraft server image. This image provides a basic Linux operating system environment for our server to run on.
+1. **Choosing a Base Image:** The first line `FROM debian:latest` tells Docker to use the latest version of the "debian" image as the starting point for our Minecraft server image. This image provides a basic Linux operating system environment for our server to run on.
 
-**2. Installing Java:** The next section (`RUN apt-get update...`) installs the necessary software to run Java applications. It does this by updating the list of available software packages, installing `wget` (a tool for downloading files), downloading the latest OpenJDK-8 installer, installing the downloaded package, installing the `ant` build tool (potentially needed by Minecraft), and finally cleaning up the downloaded files.
+2. **Installing Java:** The next section (`RUN apt-get update...`) installs the necessary software to run Java applications. It does this by updating the list of available software packages, installing `wget` (a tool for downloading files), downloading the latest OpenJDK-8 installer, installing the downloaded package, installing the `ant` build tool (potentially needed by Minecraft), and finally cleaning up the downloaded files.
 
-**3. Setting Up the Container Environment:** `WORKDIR /minecraft` sets the working directory inside the container to `/minecraft`. `ADD https://piston-data.mojang.com/v1/objects/... server.jar` downloads the Minecraft server jar file from the official Mojang website and places it in the `/minecraft` directory inside the container with the name `server.jar`.
+3. **Setting Up the Container Environment:** `WORKDIR /minecraft` sets the working directory inside the container to `/minecraft`. `ADD https://piston-data.mojang.com/v1/objects/... server.jar` downloads the Minecraft server jar file from the official Mojang website and places it in the `/minecraft` directory inside the container with the name `server.jar`.
 
-**4. Preparing the Server Startup Script:** The next few lines (`RUN java -jar...`) are a bit more involved. They:
+4. **Preparing the Server Startup Script:** The next few lines (`RUN java -jar...`) are a bit more involved. They:
 - Run the Minecraft server jar file with the `--installServer` flag, which likely creates some initial configuration files needed for the server to run.
 - Create an empty file called `run.sh`.
 - Fill the `run.sh` file with a simple script that starts the Minecraft server jar file using the `java -jar` command.
 - Make the `run.sh` file executable, allowing it to be run as a program.
 
-**5. Initializing the Server and Exposing the Port:**
+5. **Initializing the Server and Exposing the Port:**
 - `RUN ./run.sh` actually runs the `run.sh` script we just created, which likely initializes the server and creates some additional files needed for it to function.
 - `RUN echo 'eula=true' > ./eula.txt` writes `eula=true` to the file. This is an agreement that needs to be accepted to run the Minecraft server.
 - `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
 
-**6. Starting the Server:** Finally, `ENTRYPOINT ["./run.sh"]` sets the default command to run when the container starts. In this case, it tells the container to run the `./run.sh` script, which in turn starts the Minecraft server.
+6. **Starting the Server:** Finally, `ENTRYPOINT ["./run.sh"]` sets the default command to run when the container starts. In this case, it tells the container to run the `./run.sh` script, which in turn starts the Minecraft server.
 
 In summary, this Dockerfile builds an image that can run a Minecraft server by installing Java, downloading the server files, creating a startup script, initializing the server, and finally starting it when the container is run.
 
