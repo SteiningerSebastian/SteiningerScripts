@@ -154,7 +154,7 @@ A Dockerfile is a text document that contains instructions for building a Docker
 
 - **FROM \[image]:** Specifies the base image to use for the new image.
 
-##### Build-time Instructions:**
+##### Build-time Instructions:
 
 - **COPY \[src] \[dest]:** Copies files from the host to the container.
 - **ADD \[src] \[dest]:** Copies files from the host to the container, with automatic extraction for archives.
