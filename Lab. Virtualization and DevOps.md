@@ -150,7 +150,7 @@ To work with docker we need to know the basic commands and what they do.
 ##### Commands
 A Dockerfile is a text document that contains instructions for building a Docker image. Here's a summary of the most commonly used commands:
 
-##### Base Image:**
+##### Base Image:
 
 - **FROM \[image]:** Specifies the base image to use for the new image.
 
@@ -163,7 +163,7 @@ A Dockerfile is a text document that contains instructions for building a Docker
 - **ENV \[key=value]:** Sets environment variables.
 - **ARG \[key=value]:** Defines arguments that can be passed when building the image.
 
-##### Multi-stage Builds:**
+##### Multi-stage Builds:
 
 - **FROM \[image] as \[stage_name]:** Creates a new build stage with a specified name.
 - **COPY --from=\[stage_name] \[src] [dest]:** Copies files from a previous stage to the current stage.
@@ -1364,7 +1364,7 @@ Implement a CI/CD pipeline to automate the deployment of a containerized applica
 6. **Update the Deployment:** Create a Kubernetes Deployment manifest that references the image. Use the `imagePullPolicy` field to specify when the image should be pulled (e.g., `Always`, `IfNotPresent`).
 7. **Apply the Deployment:** Integrate the pipeline with Kubernetes to apply the updated Deployment manifest.
 8. **Configure deployment strategies:** Consider using deployment strategies like `RollingUpdate` or `Recreate` to control how updates are applied to your application.
-9. Trigger the update by applying an updated deployment .yaml using `kubectl apply -f deployment.yaml`
+9. **Trigger the update:** by applying an updated deployment .yaml using `kubectl apply -f deployment.yaml`
 
 # Capstone Project
 Based on what you have learned, select an application you would like to deploy. This could be, for example, a web server with a front-end and back-end, a gaming server (if sufficiently complex), or any other application you can imagine.
