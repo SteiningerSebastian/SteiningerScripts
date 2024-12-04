@@ -512,17 +512,17 @@ To check if you have successfully acquired the knowledge about volumes, etc., it
 6. **Monitoring and Management:** The orchestration tool provides tools for monitoring the health of applications and managing resources.
 
 By using an orchestration tool, you can simplify the management of your containerized applications and ensure that they are reliable, scalable, and highly available.
-## Docker-Compose
+# Docker-Compose
 
 **Docker Compose** is a tool that allows you to define and run multi-container Docker applications. It simplifies the process of managing and scaling your applications by defining all the services and their dependencies in a single YAML file.  
 
-### Key Features of Docker Compose:
+## Key Features of Docker Compose:
 - **Service Definition:** Defines the services that make up your application, including the image to use, ports to expose, environment variables, and dependencies.
 - **Networking:** Creates a private network for your application, allowing containers to communicate with each other.
 - **Volumes:** Manages volumes for persistent data storage.
 - **Secrets:** Stores sensitive information securely and makes it available to your containers.
 
-### Example Docker Compose File
+## Example Docker Compose File
 
 ```
 version: '3.7'
@@ -564,7 +564,7 @@ services:
 
 This Docker Compose script describes a multi-container application consisting of a web application and a PostgreSQL database. The "web" service depends on the "database" service, ensuring that the database is started before the web application. The environment variables for the database service provide the necessary credentials and database name for the PostgreSQL instance.
 
-#### Using Docker Compose
+## Using Docker Compose
 
 1. **Create a Docker Compose file:** Create a YAML file named `docker-compose.yml` with the desired configuration.
 2. **Run Docker Compose:** Use the `docker-compose up` command to start the defined services. For example:
@@ -573,18 +573,18 @@ docker-compose up -d
 ```
 This will start the services in detached mode, allowing you to run other commands in the terminal.
 
-##### Benefits of Using Docker Compose
+### Benefits of Using Docker Compose
 - **Simplified Configuration:** Defines your entire application in a single file.
 - **Dependency Management:** Automatically manages dependencies between services.
 - **Environment Isolation:** Creates a separate environment for your application.
 - **Easier Deployment:** Can be used to deploy your application to different environments.
 
-#### Integration with Orchestration Tools#####
+### Integration with Orchestration Tools
 Docker Compose can be used in conjunction with larger orchestration tools like Kubernetes or Docker Swarm. These tools can provide additional features like service discovery, load balancing, and automatic scaling.
 
 By using Docker Compose, you can simplify the management of your multi-container applications and make it easier to deploy and scale them across different environments.
 
-### Commands
+## Commands
 A Docker Compose YAML file defines the services, networks, volumes, and other components that make up your multi-container application. Here's a breakdown of the key structures and commands used in Docker Compose:
 
 ### Top-Level Structure
@@ -636,7 +636,7 @@ Docker Compose allows you to define multiple networks within a single project. T
 - **External Access:** Containers connected to the `frontend` network can be accessed from the host system or the internet.
 - **Internal Communication:** Containers connected to the `backend` network can only communicate with other containers on the same network.
 
-#### Example Docker Compose File:
+### Example Docker Compose File:
 ``` docker-compose.yaml
 version: '3.7'
 
@@ -663,17 +663,17 @@ networks:
 
 In this example, the `web` and `db` services are connected to different networks: `frontend` and `backend`. This allows the `web` service to access the database service on the `backend` network without exposing it to the internet.
 
-## Apache J Meter
+# Apache J Meter
 **Apache JMeter** is a popular open-source performance testing tool designed to evaluate the performance of web applications, APIs, and other services. It simulates a heavy load on a server or group of servers to measure its response time, throughput, and other performance metrics.
 
-### Key Features of JMeter
+## Key Features of JMeter
 - **Functional Testing:** Can be used for functional testing in addition to performance testing.
 - **Protocol Support:** Supports various protocols like HTTP, HTTPS, FTP, JDBC, SOAP, and JMS.
 - **Distributed Testing:** Allows for distributed testing across multiple machines to simulate heavy loads.
 - **Plugins:** Offers a rich ecosystem of plugins for extended functionality.
 - **Reporting:** Generates detailed reports in various formats (HTML, CSV, XML).
 
-### Common Use Cases
+## Common Use Cases
 - **Load Testing:** Simulating heavy traffic to assess a system's performance under stress.
 - **Stress Testing:** Pushing a system to its limits to identify bottlenecks.
 - **Endurance Testing:** Evaluating a system's performance over a prolonged period.
@@ -681,7 +681,7 @@ In this example, the `web` and `db` services are connected to different networks
 
 By using JMeter, you can identify performance issues, optimize your applications, and ensure that they can handle expected loads.
 
-### Test Performance
+## Test Performance
 1. **Download JMeter:** Head over to the official Apache JMeter website [https://jmeter.apache.org/download_jmeter.cgi](https://jmeter.apache.org/download_jmeter.cgi) and download the latest version.
 2. **Launch JMeter:** Once downloaded, navigate to the `bin` folder of the extracted JMeter archive (e.g., `...\Downloads\apache-jmeter-5.6.3\bin`). Double-click the `jmeter.bat` file to launch the program.
 3. **Create a Simple Test:**
@@ -704,12 +704,12 @@ By using JMeter, you can identify performance issues, optimize your applications
     - Click the green "play" button on the toolbar to begin the test.
 9. **Analyze Results:**
     - Observe the generated graph to analyze the performance metrics of your web service. You can also access detailed results in other available listeners like "View Results Tree" for a more comprehensive understanding. Consider capturing a screenshot or exporting the graph for documentation purposes.
-## Task: Setup a docker compose orchestration
+# Setup a docker compose orchestration
 Create a highly available and scalable ASP.NET web application using Docker Compose and Nginx as a load balancer. By leveraging Docker's containerization technology and Nginx's load-balancing capabilities, you'll build an application that can handle increased traffic and ensure high availability.
 
 Set up a cluster of three nodes: one managing node and two working nodes. Conduct performance testing on the web server using Apache JMeter. Then, expand the cluster by adding three more working nodes, bringing the total to five. Repeat the performance testing using Apache JMeter. Document your findings and compare the performance metrics before and after scaling the cluster.
 
-### Solution
+## ASP.NET load-balanced Webserver
 Below is a solution for the task using only two nodes. Please expand the solution to include five nodes: one managing node and four working nodes. Then, conduct performance testing using Apache JMeter and document your findings.
 
  * Change the datatype of the ASP.NET applications functions to long, instead of int. 
@@ -832,16 +832,16 @@ deploy:
 #### Kahoot
 Let's test what you have learned during the last project. [Kahoot](https://create.kahoot.it/details/4a87edcd-de5f-4185-b8f8-a7c91c168cf2)
 
-#### Tasks for Docker
+## Do It Yourself
 To build on you gained theoretical knowledge choose out of the ten tasks and document your solution. Provide arguments for the choice of technology and why you implemented certain things the way you did.
 
-##### 1. Create a Docker image for a simple web server.
+#### 1. Create a Docker image for a simple web server.
 The web server should serve a static HTML page with the text "Hello, World!", the file is copied from the host at build.
 
-##### 2. Create a Docker Compose file for a simple web application
+#### 2. Create a Docker Compose file for a simple web application
 The Nginx web server should serve static HTML, JavaScript, and CSS files from a specified mounted directory.
 
-##### 3. Create a Docker image for a Python application.
+#### 3. Create a Docker image for a Python application.
  The application should consist of a web server (e.g., Nginx) and a Python application. The web server should serve static files from a specified directory and 
  The Python application should handle dynamic requests and return a response.
 
@@ -861,7 +861,7 @@ if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=8081)
 ```
 
-##### 4. Create a Docker Compose file for a database and application
+#### 4. Create a Docker Compose file for a database and application
 The application should depend on a database (e.g., MySQL, PostgreSQL). The Docker Compose file should define both the database and application containers. The database should be initialized with sample data.
 
 ``` python
@@ -881,22 +881,22 @@ def get_products():
 app.run(host='0.0.0.0', port=8081)
 ```
 
-##### 5. Create a Docker Compose file for a load-balanced web application
+#### 5. Create a Docker Compose file for a load-balanced web application
 The application should have multiple web server instances. A load balancer should distribute traffic among the web servers. The Docker Compose file should define the load balancer and web server containers.
 
-##### 6. Create a Docker file for a multi-stage build
+#### 6. Create a Docker file for a multi-stage build
 The application should have multiple build stages for optimization. Write one for an application of your choice.
 
-##### 7. Docker Compose with a Custom Network
+#### 7. Docker Compose with a Custom Network
 Create a Docker Compose file that defines a custom network. Connect multiple containers to the custom network, make sure backend services can not be reached from the host network. Ensure that the containers can communicate with each other using the network.
 
-##### 8. Docker Compose with a Volume
+#### 8. Docker Compose with a Volume
 Create a Docker Compose file that mounts a volume to a container. Use the volume to persist data across container restarts. You can use the Minecraft-Server. Provide arguments on why and how you chose to persist data.
 
-##### 9. Intermediate: Docker Compose with Secrets Management
+#### 9. Intermediate: Docker Compose with Secrets Management
 Create a Docker Compose file that uses [Secrets](https://docs.docker.com/engine/swarm/secrets/) management to store a SSL/TLS certificate. Use the certificate to enable Https on a webserver you built.
 
-##### 10. Advanced: Docker Compose with a Monitoring Tool
+#### 10. Advanced: Docker Compose with a Monitoring Tool
 Integrate Docker Compose with a monitoring tool (e.g., Prometheus, Grafana), to monitor the performance and health of your containers and services.
 ``` yaml
 services: 
@@ -934,30 +934,30 @@ datasources:
 	  access: pro
 ```
 
-## Monolithic, Microservices & Serverless
-### Monolithic Architecture
+# Monolithic, Microservices & Serverless
+## Monolithic Architecture
 Monolithic architecture is a traditional approach to building software applications, where the entire application is developed as a single, unified codebase. In this architecture, all components such as the user interface, business logic, and data access layers are tightly coupled and run as a single process. This approach can simplify development, particularly for smaller applications, because all functionality is contained in one place, making it easier to test, deploy, and manage at the start. However, as the application grows in complexity, monolithic architectures can become difficult to scale and maintain. Changes to one part of the system often require redeploying the entire application, which can lead to downtime and slow development cycles. Additionally, monolithic systems can suffer from scalability issues, as the entire system must scale, even if only one part of the application experiences increased demand.
 ![monolitic](./files/monolithic.png)
 
-### Microservices Architecture
+## Microservices Architecture
 Microservices architecture addresses the limitations of monolithic systems by breaking down applications into smaller, independent services, each responsible for a specific piece of functionality. These services communicate with each other using lightweight protocols such as HTTP or messaging queues. One of the main advantages of microservices is that each service can be developed, deployed, and scaled independently, allowing for greater flexibility and agility in development. Teams can work on different services concurrently, using different technologies, and release updates without affecting the entire application. This architecture also makes it easier to scale specific services that experience high demand without scaling the whole system. However, microservices introduce complexity in managing distributed systems, requiring robust monitoring, orchestration, and communication between services. Challenges such as network latency, data consistency, and service discovery need to be addressed in a microservices architecture.
 ![Microservices](https://upload.wikimedia.org/wikipedia/commons/c/c9/JLupin_wiki_fig3.png)
 
-### Serverless Architecture
+## Serverless Architecture
 Serverless architecture is a cloud-based computing model where the cloud provider automatically manages the infrastructure, allowing developers to focus solely on writing code. In a serverless system, developers create functions that are executed in response to events, such as HTTP requests or database updates. These functions are stateless, and the cloud provider dynamically allocates resources as needed to handle requests. Serverless architectures offer the benefit of automatic scaling, where resources are only consumed when needed, making it cost-effective for applications with variable workloads. Additionally, developers don’t need to worry about managing servers, patching, or infrastructure provisioning, which can significantly reduce operational overhead. However, serverless can introduce challenges related to cold starts (initial latency when functions are triggered), vendor lock-in, and limitations in control over the underlying infrastructure. Despite these challenges, serverless architecture is ideal for building highly scalable, event-driven applications.
 ![Serverless](./files/serverless_architecture.png)
 
-## Kubernetes
+# Kubernetes
 **Kubernetes** is a powerful open-source platform designed to automate the deployment, scaling, and operation of containerized applications. It provides a way to manage clusters of computers, often called nodes, as a single system. This allows developers to focus on writing applications rather than worrying about the underlying infrastructure.
 
-### Key benefits of Kubernetes include
+## Key benefits of Kubernetes include
 - **Portability:** Applications can be easily moved across different environments, from development to production.
 - **Scalability:** Kubernetes can automatically scale applications up or down based on demand.
 - **Reliability:** It ensures high availability and fault tolerance for your applications.
 - **Efficiency:** Kubernetes optimizes resource utilization, making the most of available hardware.
 - **Ease of management:** It simplifies tasks like deployment, updates, and monitoring.
 
-### Core components of Kubernetes
+## Core components of Kubernetes
 - **Pods:** The smallest unit of deployment in Kubernetes. A pod typically contains one or more containers that share the same network namespace.
 - **Services:** Abstract network layer for pods, providing a stable way to access pods.
 - **Replication Controllers:** Ensure that a specific number of pods are running at any given time.
@@ -971,17 +971,17 @@ Serverless architecture is a cloud-based computing model where the cloud provide
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
 [![Welcome to Production](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)](https://www.youtube.com/watch?v=0w6kXdHXxAA)
 
-### Deployments
+## Deployments
 **Deployments** are a core resource in Kubernetes that manage replicated applications. They provide a declarative way to define the desired state of an application, and Kubernetes automatically ensures that the actual state matches the desired state.
 
-#### Key Features of Deployments
+### Key Features of Deployments
 - **Declarative Specification:** You define the desired state of your application using a YAML or JSON configuration file.
 - **Automatic Scaling:** Kubernetes can automatically scale your application up or down based on demand.
 - **Rolling Updates:** Deployments can be updated gradually, ensuring minimal downtime.
 - **Canary Deployments:** A subset of pods can be updated first to test changes before rolling them out to the entire application.
 - **Blue-Green Deployments:** Two identical environments can be created, with one serving traffic while the other is updated. Once the update is complete, traffic can be switched to the updated environment.
 
-##### Basic Deployment Configuration
+#### Basic Deployment Configuration
 ``` yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1004,7 +1004,7 @@ spec:
         - containerPort: 8080   
 ```
 
-##### Explanation
+#### Explanation
 - **apiVersion:** Specifies the API version of the Deployment resource.
 - **kind:** The type of resource, which is a Deployment in this case.
 - **metadata:** Contains metadata about the Deployment, such as its name.
@@ -1017,30 +1017,30 @@ spec:
 - **image:** The Docker image to use for the container.
 - **ports:** A list of ports that the container exposes.
 
-### Kubernetes Services
+## Kubernetes Services
 **Kubernetes Services** provide a stable network layer for a set of Pods. They abstract the details of how Pods are distributed across the cluster, making it easier to access and manage your applications.
 
-#### Key Features of Kubernetes Services
+### Key Features of Kubernetes Services
 - **Abstract Network Layer:** Services hide the complexity of Pod IP addresses and network topology.
 - **Load Balancing:** Services distribute traffic across Pods within the Service, ensuring that traffic is evenly distributed.
 - **Service Discovery:** Services provide a stable DNS name or IP address for a set of Pods, making it easy for other services to discover and communicate with them.
 - **Service Types:** Kubernetes supports different service types, including ClusterIP, NodePort, LoadBalancer, and ExternalName.
 
-#### ClusterIP Service
+### ClusterIP Service
 - The default service type.
 - Creates a virtual IP address within the Kubernetes cluster.
 - Can only be accessed from within the cluster.
 
-#### NodePort Service
+### NodePort Service
 - Exposes the service on a static port on all nodes in the cluster.
 - Can be accessed from outside the cluster using the NodeIP:NodePort format.
 
-#### LoadBalancer Service
+### LoadBalancer Service
 - Creates a load balancer in front of the service.
 - Can be accessed from outside the cluster using the load balancer's IP address and port.
 - Requires a cloud provider that supports load balancers.
 
-#### ExternalName Service
+### ExternalName Service
 - Resolves to an external DNS name.
 - Useful for accessing services outside of the cluster.
 
@@ -1059,7 +1059,7 @@ spec:
   type: LoadBalancer
 ```
 
-**Explanation:**
+**Explanation**
 - **apiVersion:** Specifies the API version of the Service resource.
 - **kind:** The type of resource, which is a Service in this case.
 - **metadata:** Contains metadata about the Service, such as its name.
@@ -1067,15 +1067,15 @@ spec:
 - **selector:** A label selector used to match Pods to the Service.
 - **ports:** A list of ports that the Service exposes.
 
-#### Accessing a Service
+### Accessing a Service
 To access a Service from within the cluster, you can use its DNS name or IP address. To access a Service from outside the cluster, you will need to use the appropriate IP address and port based on the service type.
 
 By understanding Kubernetes Services, you can effectively manage and access your applications in a distributed environment.
 
-### Scaling in Kubernetes
+## Scaling in Kubernetes
 **Scaling** is a fundamental aspect of Kubernetes, allowing applications to dynamically adjust their resource usage based on demand. The **Horizontal Pod Autoscaler (HPA)** is a powerful tool that automates the process of scaling Pods up or down based on metrics.
 
-#### How HPA Works:
+### How HPA Works
 1. **Metric Selection:** The HPA monitors specific metrics to determine the scaling behavior. Common metrics include CPU utilization, memory usage, and custom metrics.
 2. **Target Value:** You define a target value for the selected metric.
 3. **Scaling Policy:** You specify the scaling policy, such as the minimum and maximum number of Pods.
@@ -1172,20 +1172,20 @@ spec:
 
 This configuration creates a Deployment with 3 replicas, a Service to expose the Deployment, and an HPA to scale the Deployment based on CPU utilization.
 
-### Kind
-#### What is kind?
+## Kind
+### What is kind?
 - **Local Kubernetes cluster:** kind is a tool designed to create local Kubernetes clusters on your machine, using Docker container "nodes."
 - **Lightweight and portable:** It's a lightweight and portable solution, making it easy to set up and use for various development and testing scenarios.
 - **CNCF certified:** kind is certified by the Cloud Native Computing Foundation (CNCF) as a conformant Kubernetes installer, ensuring compatibility and reliability.
 
-#### Key Features and Benefits
+### Key Features and Benefits
 - **Multi-node clusters:** Create clusters with multiple nodes, including high-availability (HA) configurations, to simulate production environments.
 - **Customizable configurations:** Tailor your clusters to specific needs by configuring various parameters like node size, network settings, and Kubernetes version.
 - **Integration with existing tools:** Easily integrate kind with your existing development workflows and tools, such as IDEs, CI/CD pipelines, and testing frameworks.
 - **Rapid development and testing:** Leverage kind to quickly develop, test, and iterate on Kubernetes applications without the overhead of managing a full-scale Kubernetes environment.
 - **Learning and experimentation:** Use kind as a sandbox for learning Kubernetes concepts, experimenting with new features, and trying out different deployment strategies.
 
-#### When to Use kind
+### When to Use kind
 - **Local development:** Develop and test Kubernetes applications on your local machine without the need for a cloud-based environment.
 - **CI/CD pipelines:** Integrate kind into your CI/CD pipelines to perform automated testing and validation of Kubernetes applications.
 - **Learning and experimentation:** Explore Kubernetes concepts, try out new features, and experiment with different deployment strategies in a controlled environment.
@@ -1193,8 +1193,8 @@ This configuration creates a Deployment with 3 replicas, a Service to expose the
 
 The following instructions are based on the *Quick Start* guide provided by the The Kubernetes Authors (2024).
 
-#### Installation
-##### Kind & Kubectl (Windows)
+### Installation
+#### Kind & Kubectl (Windows)
 To install [*kind*](https://kind.sigs.k8s.io/docs/user/quick-start/) on Windows, `ls` in the correct directory then use this commands in PowerShell to download the file. 
 ``` PowerShell
 curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.24.0/kind-windows-amd64
@@ -1245,7 +1245,7 @@ Now you can  open the Dashboard at the given address and configure Kubernetes. T
 
 But before you can execute or upload a configuration you must grant the necessary rights, for our local deployment we will just allow any user to change anything. (DO NOT DO THIS IN PRODUCTION)  Run `kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts` to grant all users access.
 
-### Monitoring
+## Monitoring
 Monitoring is a crucial aspect of managing containerized applications. It involves collecting, analyzing, and visualizing data to gain insights into the performance, health, and resource utilization of your containers. Effective monitoring helps you identify issues early, optimize resource allocation, and ensure the reliability of your applications.
 
 In a containerized environment, monitoring becomes even more important due to the dynamic nature of containers and the potential for rapid changes in workload. Key metrics to monitor include:
@@ -1263,7 +1263,7 @@ Popular monitoring tools for containerized environments include:
 
 By effectively monitoring your containerized applications, you can proactively address issues, optimize performance, and ensure the reliability and availability of your services. Most of the tools provide good install instructions on their websites.
 
-### Task: Webserver Cluster
+## Webserver Cluster
 Using the existing cluster, write the configuration to host you Webserver with automatic horizontal pod autoscaling and load balancing. Document the process of deploying the Webserver and test it using JMeter and document the result. Try different scaling strategies.
 
 #### Solution
@@ -1338,7 +1338,7 @@ spec:
   maxReplicas: 10
 ```
 
-### Tasks for Kubernetes
+## Tasks for Kubernetes
 
 #### 1. Deploy a Simple Web Application
 Create a Docker image for a application of your choice.  Configure a Deployment to run the application as pods and create a Service to expose the application to the outside world.
