@@ -225,28 +225,22 @@ ENTRYPOINT [ "./run.sh" ]
 This code snippet essentially creates a set of instructions for building a Docker image that can run a Minecraft server. Let's break it down step by step:
 
 1. **Choosing a Base Image:** The first line `FROM debian:latest` tells Docker to use the latest version of the "debian" image as the starting point for our Minecraft server image. This image provides a basic Linux operating system environment for our server to run on.
-
 2. **Installing Java:** The next section (`RUN apt-get update...`) installs the necessary software to run Java applications. It does this by updating the list of available software packages, installing `wget` (a tool for downloading files), downloading the latest OpenJDK-8 installer, installing the downloaded package, installing the `ant` build tool (potentially needed by Minecraft), and finally cleaning up the downloaded files.
-
 3. **Setting Up the Container Environment:** `WORKDIR /minecraft` sets the working directory inside the container to `/minecraft`. `ADD https://piston-data.mojang.com/v1/objects/... server.jar` downloads the Minecraft server jar file from the official Mojang website and places it in the `/minecraft` directory inside the container with the name `server.jar`.
-
 4. **Preparing the Server Startup Script:** The next few lines (`RUN java -jar...`) are a bit more involved. They:
 	- Run the Minecraft server jar file with the `--installServer` flag, which likely creates some initial configuration files needed for the server to run.
 	- Create an empty file called `run.sh`.
 	- Fill the `run.sh` file with a simple script that starts the Minecraft server jar file using the `java -jar` command.
 	- Make the `run.sh` file executable, allowing it to be run as a program.
-
 5. **Initializing the Server and Exposing the Port:**
 	- `RUN ./run.sh` actually runs the `run.sh` script we just created, which likely initializes the server and creates some additional files needed for it to function.
 	- `RUN echo 'eula=true' > ./eula.txt` writes `eula=true` to the file. This is an agreement that needs to be accepted to run the Minecraft server.
 	- `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
-
 6. **Starting the Server:** Finally, `ENTRYPOINT ["./run.sh"]` sets the default command to run when the container starts. In this case, it tells the container to run the `./run.sh` script, which in turn starts the Minecraft server.
 
 In summary, this Dockerfile builds an image that can run a Minecraft server by installing Java, downloading the server files, creating a startup script, initializing the server, and finally starting it when the container is run.
 
 ###### Understanding the `docker build` Command
-
 The `docker build` command is used to create a new Docker image from a Dockerfile. In this case, we're using the following command:
 
 ```
@@ -256,7 +250,6 @@ docker build -t minecraft_1_21_1 .
 - **`-t minecraft_1_21_1`:** This flag specifies the tag for the newly created image. The tag may contain a namespace (similar to a username) followed by a repository name (like a project name) and a tag (like a version).
 
 **Building the Image**
-
 When you execute this command, Docker will:
 1. **Read the Dockerfile:** It starts by reading the Dockerfile you've created.
 2. **Execute Instructions:** Docker then executes the instructions defined in the Dockerfile, step by step. This includes downloading the base image, installing packages, copying files, and running commands.
@@ -382,12 +375,12 @@ This script defines a multi-stage Dockerfile for building and running an ASP.NET
 - **`ARG BUILD_CONFIGURATION=Release`:** Similar to the previous stage, defines an argument for build configuration.
 - **`RUN dotnet publish`:** Executes the `dotnet publish` command to publish the built application to the `/app/publish` directory within the container. The `-p:UseAppHost=false` parameter ensures a self-contained deployment without relying on a separate web server process.
 
-##### 4. Final Stage (Production or Regular Mode
+##### 4. Final Stage (Production or Regular Mode)
 
--  **`FROM base AS final`: ** Creates a final stage based on the base stage (the pre-configured .NET Core environment).
+-  **`FROM base AS final`:** Creates a final stage based on the base stage (the pre-configured .NET Core environment).
 - `WORKDIR /app`: Sets the working directory within this stage to `/app`.
--  **`COPY --from=publish /app/publish .`: ** Copies the published application files from the publish stage to the final stage's `/app` directory. This effectively combines the base image with your built and published application.
--  **`ENTRYPOINT ["dotnet", "TestWebServerContainer.dll"]`: ** Defines the entry point for the container. This instructs the container to run the "dotnet" command with the argument "TestWebServerContainer.dll" when the container starts. This launches your ASP.NET Core Web API application.
+-  **`COPY --from=publish /app/publish .`:** Copies the published application files from the publish stage to the final stage's `/app` directory. This effectively combines the base image with your built and published application.
+-  **`ENTRYPOINT ["dotnet", "TestWebServerContainer.dll"]`:** Defines the entry point for the container. This instructs the container to run the "dotnet" command with the argument "TestWebServerContainer.dll" when the container starts. This launches your ASP.NET Core Web API application.
 
 ##### Summary
 This Dockerfile defines a multi-stage build process for an ASP.NET Core Web API application. It optimizes the image size by separating build steps and utilizes pre-built base images. The script also demonstrates the use of arguments to control the build configuration.
