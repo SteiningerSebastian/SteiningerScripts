@@ -8,7 +8,7 @@ Google's Gemini assisted with the development of this script.
 - **Networking and Volumes:** Students have a solid grasp of networking concepts within containerized environments. They understand the role of volumes for persistent data storage and can configure networks and volumes appropriately.
 - **Load Balancing:** Students comprehend the purpose of load balancing and can explain its benefits in improving application performance, scalability, and fault tolerance. They can identify scenarios where load balancing is essential and recommend suitable solutions.
 
-## Skills and Abilities:
+## Skills and Abilities
 - **Problem-Solving:** Students can apply their knowledge of virtualization and containerization to solve real-world problems and optimize application performance.
 - **Technical Argumentation:** Students can effectively communicate technical concepts and justify their choices using sound reasoning and evidence.
 - **Hands-On Experience:** Students have practical experience with containerization tools and can demonstrate their ability to create and manage containers.
@@ -108,12 +108,12 @@ Inspired by Doug Jones (2016)
 ## Containerization
 **Containerization** is a technology that packages applications and their dependencies into a single, portable unit called a container. This approach offers several benefits, including improved portability, consistency, efficiency, isolation, and scalability.
 
-### Key components of containerization:
+### Key Components of Containerization
 - **Dockerfile:** A text document that defines the instructions for building a container image.
 - **Container image:** A snapshot of the application and its dependencies, created from a Dockerfile.
 - **Container:** A running instance of a container image.
 
-#### Popular containerization platforms:
+#### Popular Containerization Platforms
 - **Docker:** The most widely used containerization platform.
 - **Kubernetes:** A container orchestration platform for managing and scaling containerized applications.
 
@@ -494,7 +494,7 @@ To check if you have successfully acquired the knowledge about volumes, etc., it
 - **Docker Swarm:** A built-in orchestration tool provided by Docker. It is simpler to use than Kubernetes but offers fewer features.
 - **Apache Mesos:** A distributed systems framework that can be used for both container and non-container workloads. It is highly scalable and flexible.
 
-### Core Concepts of Orchestration:
+### Core Concepts of Orchestration
 - **Clusters:** A group of physical or virtual machines that work together to run containerized applications.
 - **Nodes:** Individual machines within a cluster.
 - **Services:** A logical group of containers that perform a specific function.
@@ -516,7 +516,7 @@ By using an orchestration tool, you can simplify the management of your containe
 
 **Docker Compose** is a tool that allows you to define and run multi-container Docker applications. It simplifies the process of managing and scaling your applications by defining all the services and their dependencies in a single YAML file.  
 
-## Key Features of Docker Compose:
+## Key Features of Docker Compose
 - **Service Definition:** Defines the services that make up your application, including the image to use, ports to expose, environment variables, and dependencies.
 - **Networking:** Creates a private network for your application, allowing containers to communicate with each other.
 - **Volumes:** Manages volumes for persistent data storage.
@@ -591,7 +591,7 @@ A Docker Compose YAML file defines the services, networks, volumes, and other co
 - **version:** Specifies the version of the Docker Compose specification used.
 - **services:** Defines the individual services that make up your application.
 
-### Service Definition:
+### Service Definition
 - **image:** Specifies the Docker image to use for the service.
 - **build:** Specifies a context and Dockerfile to build the image locally.
 - **ports:** Defines port mappings between the container and the host.
@@ -602,7 +602,7 @@ A Docker Compose YAML file defines the services, networks, volumes, and other co
 - **restart:** Configures the restart policy for the service.
 - **command:** Overrides the default command specified in the image.
 
-### Networks:
+### Networks
 - **networks:** Defines custom networks for your application.
 - **name:** Specifies the name of the network.
 - **driver:** Specifies the driver to use for the network (e.g., `bridge`, `overlay`, `host`).
@@ -612,7 +612,7 @@ A Docker Compose YAML file defines the services, networks, volumes, and other co
 - **name:** Specifies the name of the volume.
 - **driver:** Specifies the driver to use for the volume (e.g., `local`, `nfs`).
 
-### Commands:
+### Commands
 - **docker-compose up:** Starts all services defined in the Docker Compose file.
 - **docker-compose down:** Stops and removes all containers and networks created by Docker Compose.
 - **docker-compose build:** Builds the images defined in the Docker Compose file.
@@ -636,7 +636,7 @@ Docker Compose allows you to define multiple networks within a single project. T
 - **External Access:** Containers connected to the `frontend` network can be accessed from the host system or the internet.
 - **Internal Communication:** Containers connected to the `backend` network can only communicate with other containers on the same network.
 
-### Example Docker Compose File:
+## Advanced Example Docker Compose File
 ``` docker-compose.yaml
 version: '3.7'
 
@@ -950,7 +950,7 @@ Serverless architecture is a cloud-based computing model where the cloud provide
 # Kubernetes
 **Kubernetes** is a powerful open-source platform designed to automate the deployment, scaling, and operation of containerized applications. It provides a way to manage clusters of computers, often called nodes, as a single system. This allows developers to focus on writing applications rather than worrying about the underlying infrastructure.
 
-## Key benefits of Kubernetes include
+## Key benefits of Kubernetes
 - **Portability:** Applications can be easily moved across different environments, from development to production.
 - **Scalability:** Kubernetes can automatically scale applications up or down based on demand.
 - **Reliability:** It ensures high availability and fault tolerance for your applications.
@@ -1373,7 +1373,7 @@ After outlining your project idea, consult with your tutor or teacher to confirm
 
 As you work on the project, document your progress, thoughts, and decisions, providing clear reasoning for your choices. At the end of the course, you will demonstrate what you have developed during the allotted time for the capstone project.
 
-## ToDo:
+## ToDo
 1. **Choose a project:** Select an application that aligns with your interests and course objectives. Consider factors like complexity, relevance, and feasibility. Some examples include a web server, gaming server, or IoT application.
 2. **Document your project idea:** Outline your project goals, objectives, and expected outcomes. Explain why you chose this project and what you aim to achieve.
 3. **Seek approval:** Consult with your instructor to confirm that your project is suitable for the course and to get guidance and feedback.
