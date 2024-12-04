@@ -71,7 +71,7 @@ Bare-metal hypervisors are installed directly on the physical hardware, bypassin
 - **VMware ESXi**
 - **Microsoft Hyper-V**
 - **Red Hat KVM**
-- 
+ 
 ##### Hosted Hypervisors
 Software hypervisors, also known as hosted hypervisors, run on top of a host operating system. This approach offers greater flexibility but can introduce additional overhead, potentially impacting performance.
 
@@ -423,8 +423,7 @@ docker run -v /host/path:/container/path my-image
 ```
 - **Persistence:** Data changes made within the container's bind mount directory are directly reflected on the host system and persisted.
 
-##### Key Differences
-
+##### Bind Mounts VS Volumes
 |Feature|Docker Volumes|Bind Mounts|
 |---|---|---|
 |Persistence|Independent of container|Directly linked to host|
