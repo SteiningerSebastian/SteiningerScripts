@@ -552,15 +552,15 @@ services:
 - **`image: my-web-app:latest`:** Specifies the Docker image to use for this service. In this case, it's using the latest version of an image named "my-web-app."
 - **`ports`:** defines the port mapping between the container and the host:
 - **`"8080:80"`:** maps port 8080 on the host to port 80 within the container. This allows you to access the web application on port 8080 of your host machine.
-- **`depends_on:`** specifies that the "web" service depends on the "database" service. This means that the "database" service must be started before the "web" service.
+- **`depends_on`:** specifies that the "web" service depends on the "database" service. This means that the "database" service must be started before the "web" service.
 
 ##### Database Service
 - **`database`:** defines a service named "database."
 - **`image: postgres:latest`:** Specifies the Docker image to use for the database. Here, it's using the latest version of the official PostgreSQL image.
-- **`environment`**: defines environment variables that will be set within the database container:
-- **`POSTGRES_USER: myuser`**: Sets the PostgreSQL user to "myuser."
-- **`POSTGRES_PASSWORD: mypassword`**: Sets the PostgreSQL password to "mypassword."
-- **`POSTGRES_DB: mydatabase`**: Sets the PostgreSQL database name to "mydatabase."
+- **`environment`:** defines environment variables that will be set within the database container:
+- **`POSTGRES_USER: myuser`:** Sets the PostgreSQL user to "myuser."
+- **`POSTGRES_PASSWORD: mypassword`:** Sets the PostgreSQL password to "mypassword."
+- **`POSTGRES_DB: mydatabase`:** Sets the PostgreSQL database name to "mydatabase."
 
 This Docker Compose script describes a multi-container application consisting of a web application and a PostgreSQL database. The "web" service depends on the "database" service, ensuring that the database is started before the web application. The environment variables for the database service provide the necessary credentials and database name for the PostgreSQL instance.
 
