@@ -247,7 +247,7 @@ The `docker build` command is used to create a new Docker image from a Dockerfil
 docker build -t minecraft_1_21_1 .
 ```
 
-- **`-t minecraft_1_21_1`:** This flag specifies the tag for the newly created image. The tag may contain a namespace (similar to a username) followed by a repository name (like a project name) and a tag (like a version).
+`-t minecraft_1_21_1` specifies the tag for the newly created image. The tag may contain a namespace (similar to a username) followed by a repository name (like a project name) and a tag (like a version).
 
 **Building the Image**
 When you execute this command, Docker will:
