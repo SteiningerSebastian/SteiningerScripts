@@ -461,7 +461,7 @@ This script defines a multi-stage Dockerfile for building and running an ASP.NET
 
 ##### 4. Final Stage (Production or Regular Mode)
 -  **`FROM base AS final`:** Creates a final stage based on the base stage (the pre-configured .NET Core environment).
-- `WORKDIR /app`: Sets the working directory within this stage to `/app`.
+- **`WORKDIR /app`:** Sets the working directory within this stage to `/app`.
 -  **`COPY --from=publish /app/publish .`:** Copies the published application files from the publish stage to the final stage's `/app` directory. This effectively combines the base image with your built and published application.
 -  **`ENTRYPOINT ["dotnet", "TestWebServerContainer.dll"]`:** Defines the entry point for the container. This instructs the container to run the "dotnet" command with the argument "TestWebServerContainer.dll" when the container starts. This launches your ASP.NET Core Web API application.
 
