@@ -62,7 +62,6 @@ The DevOps lifecycle typically follows these key stages:
 
 This cyclical process emphasizes continuous improvement, with feedback from each stage informing and refining the subsequent ones.
 
-> ## Key takeaways
 >- **Automation:** DevOps heavily relies on automation throughout the entire lifecycle to improve efficiency, reduce errors, and accelerate delivery.
 >
 >- **Collaboration:** Effective communication and collaboration between development and operations teams are crucial for successful DevOps implementation.
@@ -84,7 +83,6 @@ A **continuous integration/delivery (CI/CD) server** typically **automates the p
 One of the advantages of **containers** is their **resilience to disasters**. This is especially important in **agile methodologies**, which emphasize **iterative development**. Errors are a natural part of the process; we must anticipate them and design our systems to recover quickly:
 [![Welcome to Production](https://img.youtube.com/vi/rK_7ozvm53o/0.jpg)](https://www.youtube.com/watch?v=rK_7ozvm53o)
 
-> ## Key Takeaways
 > **DevOps** is a cultural shift that emphasizes collaboration between development and operations teams to streamline the software delivery process.
 > 
 > - **Key Principles:**
@@ -208,7 +206,6 @@ By understanding the basics of containerization, you can leverage this technolog
 
 By using an orchestration tool, you can simplify the management of your containerized applications and ensure that they are reliable, scalable, and highly available.
 
-> ## Key Takeaways
 >**Virtualization** allows running multiple operating systems or applications on a single machine. 
 >
 >**VMs (Virtual Machines)** emulate entire computers, while **containers** share the host OS kernel, making them more lightweight and efficient. 
@@ -552,7 +549,6 @@ You can integrate NAS with Docker to provide persistent storage for your contain
 #### Task: Use Volumes to make the Minecraft-World persistent. 
 Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
 
-> ## Key Takeaways
 > **Docker simplifies application development and deployment using containers**, which package applications with dependencies for **portability** and **isolation**.
 > 
 >  **Dockerfile:** Defines how to build a container image using instructions like `FROM`, `COPY`, `RUN`, `WORKDIR`, and `EXPOSE`.
@@ -701,7 +697,6 @@ This Docker Compose script describes a **multi-container application** consistin
 
 The `web` and `db` services are **connected to different networks**: `frontend` and `backend`. This allows the `web` service to access the database service on the `backend` network without exposing it to the internet.
 
-> ## Key Takeaways
 > **Docker Compose** simplifies managing multi-container Docker applications by defining services and their dependencies in a single **YAML file**.
 >
 >**Key Features:**
@@ -755,7 +750,6 @@ By using JMeter, you can identify performance issues, optimize your applications
 9. **Analyze Results:**
     - Observe the generated graph to analyze the performance metrics of your web service. You can also access detailed results in other available listeners like "View Results Tree" for a more comprehensive understanding. Consider capturing a screenshot or exporting the graph for documentation purposes.
 
-> ## Key Takeaways
 > **Apache JMeter** is an open-source performance testing tool used to **simulate heavy loads** on servers and **measure performance metrics** like response time and throughput.
 >
 >**Key Features:** Supports various protocols, distributed testing, and generates detailed reports.
@@ -1014,7 +1008,6 @@ However, microservices **introduce complexity** in managing **distributed system
 However, serverless can ***introduce challenges** related to **cold starts** (initial latency when functions are triggered), **vendor lock-in**, and limitations in control over the underlying infrastructure. Despite these challenges, serverless architecture is **ideal for building highly scalable, event-driven applications**.
 ![Serverless](./files/serverless_architecture.png)
 
-> ## Key Takeaways
 > **Monolithic:** Simple for small projects, but difficult to scale and maintain as they grow.
 > 
 > **Microservices:** Flexible and scalable, but introduce complexity in managing distributed systems.
@@ -1317,7 +1310,6 @@ Now you can  open the Dashboard at the given address and configure Kubernetes. T
 
 But before you can execute or upload a configuration you must grant the necessary rights, for our local deployment we will just allow any user to change anything. (DO NOT DO THIS IN PRODUCTION)  Run `kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts` to grant all users access.
 
-> ## Key Takeaways
 > **Kubernetes** automates the deployment, scaling, and operation of containerized applications.
 > **Key Features:** Portability, scalability, reliability, efficiency, and ease of management.
 > **Core Components:** Pods, Services, Deployments, Namespaces.
@@ -1446,7 +1438,6 @@ Implement a CI/CD pipeline to automate the deployment of a containerized applica
 8. **Configure deployment strategies:** Consider using deployment strategies like `RollingUpdate` or `Recreate` to control how updates are applied to your application.
 9. **Trigger the update:** by applying an updated deployment .yaml using `kubectl apply -f deployment.yaml`
 
-> ## Key Takeaways
 > **Crucial for containerized applications:** Enables proactive issue detection, performance optimization, and ensures reliability.
 > 
 > **Key Metrics:** CPU, memory, network I/O, disk I/O, application-specific metrics.
