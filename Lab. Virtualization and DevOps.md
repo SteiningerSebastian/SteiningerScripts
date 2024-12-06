@@ -83,6 +83,7 @@ A **continuous integration/delivery (CI/CD) server** typically **automates the p
 One of the advantages of **containers** is their **resilience to disasters**. This is especially important in **agile methodologies**, which emphasize **iterative development**. Errors are a natural part of the process; we must anticipate them and design our systems to recover quickly:
 [![Welcome to Production](https://img.youtube.com/vi/rK_7ozvm53o/0.jpg)](https://www.youtube.com/watch?v=rK_7ozvm53o)
 
+## Key Takeaways
 > **DevOps** is a cultural shift that emphasizes collaboration between development and operations teams to streamline the software delivery process.
 > 
 > - **Key Principles:**
@@ -552,11 +553,15 @@ Modify the existing Minecraft server to enable persistent world storage using an
 
 ## Key Takeaways
 > **Docker simplifies application development and deployment using containers**, which package applications with dependencies for **portability** and **isolation**.
+> 
 >  **Dockerfile:** Defines how to build a container image using instructions like `FROM`, `COPY`, `RUN`, `WORKDIR`, and `EXPOSE`.
+>  
 >  **Key Commands:**
 >    - `docker run <image>:` Starts a new container from an image.
 >     - `docker build -t <image_name> .:` Builds an image from a Dockerfile in the current directory.
+>     - 
 >  **Volumes** persist data independently of the container.
+>  
 >  **Benefits:** Consistent environments, improved efficiency, faster deployment, enabling microservices architectures.
 
 # Docker-Compose
@@ -753,7 +758,9 @@ By using JMeter, you can identify performance issues, optimize your applications
 > **Apache JMeter** is an open-source performance testing tool used to **simulate heavy loads** on servers and **measure performance metrics** like response time and throughput.
 >
 >**Key Features:** Supports various protocols, distributed testing, and generates detailed reports.
+>
 >**Use Cases:** Load testing, stress testing, endurance testing, spike testing.
+>
 >**Basic Workflow:**
  >   1. Define test plan (number of users, requests).
 >    2. Configure HTTP request (server, port, method, path).
