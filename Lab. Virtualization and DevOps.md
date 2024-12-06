@@ -68,7 +68,7 @@ This cyclical process emphasizes continuous improvement, with feedback from each
 >
 >- **Continuous Improvement:** The DevOps lifecycle is iterative, with continuous feedback loops enabling teams to learn and improve their processes over time.
 
-![DevOps Toolchain](DevOpsToolchain.webp)
+![DevOps Toolchain](./files/DevOpsToolchain.webp)
 
 ## The Toolchain
 The **DevOps** toolchain is a collection of tools and practices that **automate** and **streamline** the software development and delivery lifecycle. It fosters **collaboration** between **development** and **operations** teams, enabling them to work together seamlessly from planning and coding to testing, **deployment**, and **monitoring**.
