@@ -549,8 +549,8 @@ Modify the existing Minecraft server to enable persistent world storage using an
 >  
 >  **Key Commands:**
 >    - `docker run <image>:` Starts a new container from an image.
->     - `docker build -t <image_name> .:` Builds an image from a Dockerfile in the current directory.
->     - 
+>    - `docker build -t <image_name> .:` Builds an image from a Dockerfile in the current directory.
+>    
 >  **Volumes** persist data independently of the container.
 >  
 >  **Benefits:** Consistent environments, improved efficiency, faster deployment, enabling microservices architectures.
