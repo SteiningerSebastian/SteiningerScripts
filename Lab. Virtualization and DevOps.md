@@ -502,14 +502,15 @@ docker run -v /host/path:/container/path my-image
 |Performance|Generally better performance|Can be slower due to direct file system access|
 
 #### Choosing Between Volumes and Bind Mounts:
-- **Use volumes** when you want to:
-    - **Persist data** independently of the container's lifecycle.
-    - **Share data** between multiple containers.
-    - Manage data using Docker commands.
-- **Use bind mounts** when you need:
-    - Direct **access to host system files**.
-    - To quickly **debug or test changes** to files.
-    - To **share large datasets** that don't need to be managed separately.
+**Use volumes** when you want to:
+- **Persist data** independently of the container's lifecycle.
+- **Share data** between multiple containers.
+- Manage data using Docker commands.
+
+**Use bind mounts** when you need:
+- Direct **access to host system files**.
+- To quickly **debug or test changes** to files.
+- To **share large datasets** that don't need to be managed separately.
 
 By understanding the differences between volumes and bind mounts, you can choose the appropriate method for your specific use case and ensure proper data management within your Docker environment. 
 
