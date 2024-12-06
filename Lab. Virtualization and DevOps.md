@@ -15,7 +15,7 @@ Google's Gemini assisted with the development of this script.
 - **Decision-Making:** Students can make informed decisions about the best virtualization technologies and orchestration tools for specific use cases.
 
 # Introduction
-**Virtualization has revolutionized the way we think about computing resources.** By creating virtual environments on physical hardware, we can efficiently allocate and manage resources, leading to improved scalability, flexibility, and cost-effectiveness. **DevOps, on the other hand, is a cultural shift that emphasizes collaboration between development and operations teams to automate and streamline the software delivery process.**
+**Virtualization has revolutionized the way we think about computing resources.** By creating virtual environments on physical hardware, we can efficiently allocate and manage resources, leading to improved scalability, flexibility, and cost-effectiveness. DevOps, on the other hand, is **a cultural shift that emphasizes collaboration between development and operations** teams to **automate and streamline the software delivery** process.
 
 In this course, we will explore the fundamental concepts of virtualization, including **hypervisors, virtual machines, and containers**. By understanding these technologies and practices, you will be equipped to design, implement, and manage virtualized environments and streamline your software development and delivery pipelines.
 
@@ -61,12 +61,6 @@ The DevOps lifecycle typically follows these key stages:
 - **Monitor:** Continuous monitoring is essential to track application performance, identify potential problems, and gather data for improvement. This involves collecting and analyzing logs, monitoring system metrics, and using tools like Prometheus and Grafana.
 
 This cyclical process emphasizes continuous improvement, with feedback from each stage informing and refining the subsequent ones.
-
->- **Automation:** DevOps heavily relies on automation throughout the entire lifecycle to improve efficiency, reduce errors, and accelerate delivery.
->
->- **Collaboration:** Effective communication and collaboration between development and operations teams are crucial for successful DevOps implementation.
->
->- **Continuous Improvement:** The DevOps lifecycle is iterative, with continuous feedback loops enabling teams to learn and improve their processes over time.
 
 ![DevOps Toolchain](./files/DevOpsToolchain.webp)
 
@@ -770,7 +764,7 @@ Set up a cluster of three nodes: one managing node and two working nodes. Conduc
 ## ASP.NET load-balanced Webserver
 Below is a solution for the task using only two nodes. Please expand the solution to include five nodes: one managing node and four working nodes. Then, conduct performance testing using Apache JMeter and document your findings.
 
- * Change the datatype of the ASP.NET applications functions to long, instead of int. 
+* Change the datatype of the ASP.NET applications functions to long, instead of int. 
 * Change your random number generator to `long random = Math.Abs(Random.Shared.NextInt64((1L << 52)));`
 * Rebuild the ASP.NET application using the `Release` configuration.
 * Create a new folder containing two files, `docker-compose.yaml` and `ngnix.conf`.
