@@ -80,9 +80,9 @@ One of the advantages of **containers** is their **resilience to disasters**. Th
 > **DevOps** is a cultural shift that emphasizes collaboration between development and operations teams to streamline the software delivery process.
 > 
 >**Key Principles:**
->     - **Automation:** Automating tasks throughout the entire lifecycle is crucial for efficiency, reduced errors, and faster delivery.
->     - **Collaboration:** Effective communication and collaboration between development and operations teams are essential for successful DevOps implementation.
-> 	- **Continuous Improvement:** The DevOps lifecycle is iterative, with continuous feedback loops enabling teams to learn and improve their processes over time.
+> - **Automation:** Automating tasks throughout the entire lifecycle is crucial for efficiency, reduced errors, and faster delivery.
+> - **Collaboration:** Effective communication and collaboration between development and operations teams are essential for successful DevOps implementation.
+> - **Continuous Improvement:** The DevOps lifecycle is iterative, with continuous feedback loops enabling teams to learn and improve their processes over time.
 >
 >**Core Components:**
 >    - **CI/CD Pipelines:** Automate the build, test, and deployment process, enabling faster and more frequent releases.
@@ -672,9 +672,9 @@ networks:
     driver: bridge
 ```
 
-**Version:**  `version: '3.7'` specifies the version of the Docker Compose specification used. This version indicates that the script supports features introduced in Docker Compose 3.7.
+`version: '3.7'` specifies the version of the Docker Compose specification used. This version indicates that the script supports features introduced in Docker Compose 3.7.
 
-**Services:** `services:` defines the individual services that make up the application.
+`services:` defines the individual services that make up the application.
 
 #### Web Service
 - **`web:`:** defines a service named "web."
