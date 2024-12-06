@@ -85,17 +85,17 @@ One of the advantages of **containers** is their **resilience to disasters**. Th
 
 > **DevOps** is a cultural shift that emphasizes collaboration between development and operations teams to streamline the software delivery process.
 > 
-> - **Key Principles:**
+>**Key Principles:**
 >     - **Automation:** Automating tasks throughout the entire lifecycle is crucial for efficiency, reduced errors, and faster delivery.
 >     - **Collaboration:** Effective communication and collaboration between development and operations teams are essential for successful DevOps implementation.
 > 	- **Continuous Improvement:** The DevOps lifecycle is iterative, with continuous feedback loops enabling teams to learn and improve their processes over time.
 >
->- **Core Components:**
+>**Core Components:**
 >    - **CI/CD Pipelines:** Automate the build, test, and deployment process, enabling faster and more frequent releases.
 >    - **Containerization:** Technologies like Docker provide portability, scalability, and improved resource isolation.
 >    - **Infrastructure-as-Code:** Tools like Terraform allow for the management of infrastructure as code, improving consistency and repeatability.
 >
-> - **Benefits:**
+>**Benefits:**
 >    - **Faster Time-to-Market:** Streamlined processes and automation lead to quicker software delivery.
  >   - **Improved Application Quality:** Continuous testing and feedback loops help identify and address issues early on.
 >    - **Increased Efficiency:** Automation and improved collaboration reduce manual effort and improve overall operational efficiency. 
@@ -1311,11 +1311,17 @@ Now you can  open the Dashboard at the given address and configure Kubernetes. T
 But before you can execute or upload a configuration you must grant the necessary rights, for our local deployment we will just allow any user to change anything. (DO NOT DO THIS IN PRODUCTION)  Run `kubectl create clusterrolebinding serviceaccounts-cluster-admin --clusterrole=cluster-admin --group=system:serviceaccounts` to grant all users access.
 
 > **Kubernetes** automates the deployment, scaling, and operation of containerized applications.
+> 
 > **Key Features:** Portability, scalability, reliability, efficiency, and ease of management.
+> 
 > **Core Components:** Pods, Services, Deployments, Namespaces.
+> 
 > **Deployments:** Manage the desired state of applications, enabling features like rolling updates and canary deployments.
+> 
 > **Services:** Provide a stable network layer for accessing Pods.
+> 
 > **Scaling:** Kubernetes enables automatic scaling of applications based on demand using tools like the Horizontal Pod Autoscaler (HPA).
+> 
 > **kind:** A tool for creating and managing local Kubernetes clusters, useful for development, testing, and learning.
 
 # Monitoring
