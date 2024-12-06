@@ -373,6 +373,7 @@ Now that we've built and run a Docker container from a file for a basic applicat
 To create a new ASP.NET Core Empty project with containerization enabled in Visual Studio, start by selecting the *Empty* template when creating a new project. Then, configure Docker support by choosing *Dockerfile Only* in the dialog. 
 
 ![Dialog ASP.NET Core Container](./files/CreateASPNetWithContainerSupport.png)
+
 This will set up your project with a Dockerfile, allowing you to build and run your application in a containerized environment. Once created, you can write your Prime Number functionalities within the project structure. You can build the initial Docker image using Visual Studio's build options, and then run the application in a container using the `docker run` command.
 
 By implementing these functionalities and utilizing Docker, you can **build, test, and run your ASP.NET Core application efficiently within a containerized environment**. This promotes faster iterations and consistency throughout the development process.
@@ -447,9 +448,9 @@ This script defines a multi-stage Dockerfile for building and running an ASP.NET
 - **`FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build`:** Uses the official Microsoft .NET Core SDK image with version 8.0 to build the application.
 - **`ARG BUILD_CONFIGURATION=Release`:** Defines an argument named `BUILD_CONFIGURATION` with a default value of "Release." This can be overridden when building the image depending on your needs (e.g., "Debug").
 - **`WORKDIR /src`:** Sets the working directory within this stage to `/src`.
-- **`COPY`**: Copies the project file ("TestWebServerContainer.csproj") and its folder from your local machine to the `/src` directory within the container.
+- **`COPY`:** Copies the project file ("TestWebServerContainer.csproj") and its folder from your local machine to the `/src` directory within the container.
 - **`RUN dotnet restore`:** Executes the `dotnet restore` command to download project dependencies.
-- **`COPY`**: Copies all files from the current directory (where the Dockerfile resides) to the `/src` directory.
+- **`COPY`:** Copies all files from the current directory (where the Dockerfile resides) to the `/src` directory.
 - **`WORKDIR /src/TestWebServerContainer`:** Changes the working directory to the specific project folder within the container.
 - **`RUN dotnet build`:** Executes the `dotnet build` command to build the project using the specified build configuration (`$BUILD_CONFIGURATION`). The output is placed in the `/app/build` directory.
 
