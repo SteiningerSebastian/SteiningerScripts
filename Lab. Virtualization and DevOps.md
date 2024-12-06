@@ -15,7 +15,7 @@ Google's Gemini assisted with the development of this script.
 - **Decision-Making:** Students can make informed decisions about the best virtualization technologies and orchestration tools for specific use cases.
 
 # Introduction
-**Virtualization has revolutionized the way we think about computing resources.** By creating virtual environments on physical hardware, we can efficiently allocate and manage resources, leading to improved scalability, flexibility, and cost-effectiveness. DevOps, on the other hand, is **a cultural shift that emphasizes collaboration between development and operations** teams to **automate and streamline the software delivery** process.
+**Virtualization has revolutionized the way we think about computing resources.** By creating virtual environments on physical hardware, we can efficiently allocate and manage resources, leading to improved scalability, flexibility, and cost-effectiveness. **DevOps**, on the other hand, is a **cultural shift that emphasizes collaboration between development and operations** teams to **automate and streamline the software delivery** process.
 
 In this course, we will explore the fundamental concepts of virtualization, including **hypervisors, virtual machines, and containers**. By understanding these technologies and practices, you will be equipped to design, implement, and manage virtualized environments and streamline your software development and delivery pipelines.
 
@@ -1088,22 +1088,16 @@ spec:
 - **Service Types:** Kubernetes supports different service types, including ClusterIP, NodePort, LoadBalancer, and ExternalName.
 
 ### ClusterIP Service
-- The default service type.
-- Creates a virtual IP address within the Kubernetes cluster.
-- Can only be accessed from within the cluster.
+The **default** service type, creates a **virtual IP address** within the Kubernetes cluster. Can only be **accessed from within** the cluster.
 
 ### NodePort Service
-- Exposes the service on a static port on all nodes in the cluster.
-- Can be accessed from outside the cluster using the NodeIP:NodePort format.
+**Exposes the service** on a static port on all nodes in the cluster. Can be **accessed from outside** the cluster using the NodeIP:NodePort format.
 
 ### LoadBalancer Service
-- Creates a load balancer in front of the service.
-- Can be accessed from outside the cluster using the load balancer's IP address and port.
-- Requires a cloud provider that supports load balancers.
+ Creates a **load balancer in front of the service**, which can be **accessed from outside** the cluster using the load balancer's IP address and port. **Requires a cloud provider** that supports load balancers.
 
 ### ExternalName Service
-- Resolves to an external DNS name.
-- Useful for accessing services outside of the cluster.
+Resolves to an **external DNS** name, useful for **accessing services outside** of the cluster.
 
 ``` yaml
 apiVersion: v1
