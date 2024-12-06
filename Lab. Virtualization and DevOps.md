@@ -172,7 +172,9 @@ By understanding the basics of containerization, you can leverage this technolog
 - **High Availability:** Orchestration tools can help ensure that applications remain available even if individual containers fail.
 - **Simplified Management:** Orchestrators provide a centralized platform for managing and monitoring containerized applications.
 - **Disaster Recovery:** If all fails, orchestration helps to get back online.
-- **Efficiency:** Optimal resource utilization is achieved by executing the appropriate tasks on the most suitable machines. ![Resource Utilization](./files/resourceUtilization.png)
+- **Efficiency:** Optimal resource utilization is achieved by executing the appropriate tasks on the most suitable machines. 
+
+![Resource Utilization](./files/resourceUtilization.png)
 
 [![Disaster Recovery](https://img.youtube.com/vi/uUZdCNyIOQc/0.jpg)](https://www.youtube.com/watch?v=uUZdCNyIOQc)
 
