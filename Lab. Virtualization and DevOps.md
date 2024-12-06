@@ -474,12 +474,12 @@ This Dockerfile defines a **multi-stage build process** for an ASP.NET Core Web 
 **Docker Volumes** and **Bind Mounts** are two mechanisms used to persist data within Docker containers. They provide different ways to share data between the container and the host system, or between multiple containers.
 
 ### Docker Volumes
-- **Purpose:** Volumes are specifically designed to persist data independently of the container's lifecycle. They exist as separate entities on the host filesystem and can be managed and shared across multiple containers.
-- **Creation:** Volumes are created using the `docker volume create` command. For example:
+- **Persist Data:** Volumes are specifically designed to persist data independently of the container's lifecycle. They exist as separate entities on the host filesystem and can be managed and shared across multiple containers.
+- **Docker Volume Create:** Volumes are created using the `docker volume create` command. For example:
 ```
 docker volume create my-data-volume
 ```
-- **Mounting:** Volumes are mounted to containers using the `-v` or `--volume` flag when running a container. For example, this mounts the "my-data-volume" to the `/app/data` directory within the container:
+- **Mounting:** Volumes are **mounted to containers** using the `-v` or `--volume` flag when running a container. For example, this mounts the "my-data-volume" to the `/app/data` directory within the container:
 ```
 docker run -v my-data-volume:/app/data my-image
 ```
