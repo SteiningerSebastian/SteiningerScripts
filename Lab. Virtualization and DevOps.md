@@ -988,19 +988,19 @@ datasources:
 ```
 
 # Monolithic, Microservices & Serverless
-## Monolithic Architecture
+## Monolithic
 **Monolithic architecture** is a traditional approach to building software applications, where the entire application is developed as a single, unified **codebase**. In this architecture, all components such as the user interface, business logic, and data access layers are **tightly coupled** and **run as a single process**.  This approach can **simplify development**, particularly for **smaller applications**, because all functionality is contained in one place, making it easier to test, deploy, and manage at the start. 
 
 However, as the application grows in complexity, monolithic architectures can become **difficult to scale and maintain**. Changes to one part of the system often require **redeploying the entire application**, which can lead to downtime and slow development cycles. Additionally, monolithic systems can suffer from **scalability issues**, as the entire system must scale, even if only one part of the application experiences increased demand. Monolithic applications have a more **tightly coupled** and **indivisible** nature.
 ![monolitic](./files/monolithic.png)
 
-## Microservices Architecture
+## Microservices
 **Microservices architecture** addresses the limitations of monolithic systems by breaking down applications into smaller, **independent services**, each **responsible for a specific piece of functionality**. These services communicate with each other using **lightweight protocols** such as HTTP or messaging queues. One of the main advantages of microservices is that each service can be **developed**, **deployed**, and **scaled independently**, allowing for greater flexibility and agility in development. Teams can **work on different services concurrently**, using different technologies, and release updates without affecting the entire application. This architecture also makes it easier to **scale specific services** that experience high demand without scaling the whole system. 
 
 However, microservices **introduce complexity** in managing **distributed systems**, requiring robust **monitoring**, **orchestration**, and **communication** between services. Challenges such as **network latency**, **data consistency**, and **service discovery** need to be addressed in a microservices architecture.
 ![Microservices](https://upload.wikimedia.org/wikipedia/commons/c/c9/JLupin_wiki_fig3.png)
 
-## Serverless Architecture
+## Serverless
 **Serverless architecture** is a **cloud-based computing model** where the cloud provider automatically manages the infrastructure, allowing developers to focus solely on writing **code**. In a serverless system, developers create **functions** that are executed in response to **events**, such as HTTP requests or database updates. These functions are **stateless**, and the cloud provider **dynamically allocates resources as needed** to handle requests. Serverless architectures offer the benefit of **automatic scaling**, where resources are only consumed when needed, making it **cost-effective for applications with variable workloads**. Additionally, developers don’t need to worry about managing servers, patching, or infrastructure provisioning, which can significantly **reduce operational overhead**. 
 
 However, serverless can ***introduce challenges** related to **cold starts** (initial latency when functions are triggered), **vendor lock-in**, and limitations in control over the underlying infrastructure. Despite these challenges, serverless architecture is **ideal for building highly scalable, event-driven applications**.
