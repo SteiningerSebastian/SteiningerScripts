@@ -31,7 +31,7 @@ Follow the instructions from the link and install Docker Desktop. [Docker Deskto
 
 After finishing the installation try to run the following command in the terminal to **verify that docker was installed correctly**.
 
-```
+``` Powershell
 docker --version
 ```
 
@@ -273,7 +273,7 @@ A Dockerfile is a text document that **contains instructions for building a Dock
 ### Example: A Minecraft Server
 Let's build a game server. This is a great way to experience firsthand how Docker can be used to create and manage complex applications.
 
-```
+``` Dockerfile
 #Choose the base-build.
 FROM debian:latest
 
@@ -332,7 +332,7 @@ In summary, this Dockerfile builds an image that can run a Minecraft server by i
 #### Building the Image
 The `docker build` command is used to **create a new Docker image from a Dockerfile**. In this case, we're using the following command:
 
-```
+``` Powershell
 docker build -t <repositorie>/minecraft_1_21_1:<version> .
 ```
 
@@ -356,12 +356,12 @@ You should see the newly created image listed with its tag `minecraft_1_21_1`.
 Note: If you encounter any errors during the build process, check the Dockerfile for any syntax errors or issues with the instructions. You might also need to adjust the commands or file paths based on your specific environment or requirements
 
 To **create a new container and start it**, you can use the `docker run` command to launch the server.
-```
+``` Powershell
 docker run -p 25565:25565 se.stei/minecraft_1_21_1
 ```
 
 You can **view the running container** by using this command.
-```
+``` Powershell
 docker container ls
 ```
 
@@ -380,7 +380,7 @@ This will set up your project with a Dockerfile, allowing you to build and run y
 
 By implementing these functionalities and utilizing Docker, you can **build, test, and run your ASP.NET Core application efficiently within a containerized environment**. This promotes faster iterations and consistency throughout the development process.
 
-``` Program.cs
+``` CSharp
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -402,7 +402,7 @@ app.Run();
 
 Now that this is working, let's take a look at the **docker file that was created**.
 
-```
+``` Dockerfile
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
@@ -478,11 +478,11 @@ This Dockerfile defines a **multi-stage build process** for an ASP.NET Core Web 
 ### Docker Volumes
 - **Persist Data:** Volumes are specifically designed to persist data independently of the container's lifecycle. They exist as separate entities on the host filesystem and can be managed and shared across multiple containers.
 - **Docker Volume Create:** Volumes are created using the `docker volume create` command. For example:
-```
+``` Powershell
 docker volume create my-data-volume
 ```
 - **Mounting:** Volumes are **mounted to containers** using the `-v` or `--volume` flag when running a container. For example, this mounts the "my-data-volume" to the `/app/data` directory within the container:
-```
+``` Powershell
 docker run -v my-data-volume:/app/data my-image
 ```
 - **Persistence:** Data stored in volumes persists even after the container is stopped or deleted.
@@ -490,7 +490,7 @@ docker run -v my-data-volume:/app/data my-image
 ### Bind Mounts
 - **Map a Directory:** Bind mounts directly map a directory on the host system to a directory within the container. Changes made to the host directory are immediately reflected in the container, and vice versa.
 - **Mounting:** Bind mounts are also specified using the `-v` or `--volume` flag. For example, this mounts the `/host/path` directory on the host system to the `/container/path` directory within the container:
-```
+``` Powershell
 docker run -v /host/path:/container/path my-image
 ```
 - **Persistence:** Data changes made within the container's bind mount directory are directly reflected on the host system and persisted.
@@ -528,7 +528,7 @@ You can integrate NAS with Docker to provide persistent storage for your contain
 **2. Mount the NAS Share in Docker:**
     - Use the `-v` or `--volume` flag when running a Docker container to mount the NAS share to a directory within the container.
     - For example:
-        ```
+        ``` Powershell
         docker run -v nas_share:/app/data -p 80:80 my-image
         ```        
         This mounts the NAS share named "nas_share" to the `/app/data` directory within the container.
@@ -572,7 +572,7 @@ Modify the existing Minecraft server to enable persistent world storage using an
 
 1. **Create a Docker Compose file:** Create a YAML file named `docker-compose.yml` with the desired configuration.
 2. **Run Docker Compose:** Use the `docker-compose up` command to start the defined services. For example:
-```
+``` Powershell
 docker-compose up -d
 ```
 This will start the services in detached mode, allowing you to run other commands in the terminal.
