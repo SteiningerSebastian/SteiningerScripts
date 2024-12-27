@@ -847,7 +847,7 @@ while True:
     utime.sleep(0.1)
 ```
 
-In this example:
+**Explanation**
 1. **Import necessary modules:** `machine` for hardware interaction and `utime` for time-related functions.
 2. **Define the ISR:** The `button_pressed` function is the ISR that will be executed when the button is pressed (falling edge).
 3. **Create the input pin:** `machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)` creates a digital input pin on GPIO 15 with an internal pull-up resistor.
@@ -932,7 +932,7 @@ time.sleep(1)
 # Set the LED off
 led_pin.value(0)
 ```
-In this example:
+**Explanation**
 1. **Import the `machine` module:** This module provides functions for interacting with the microcontroller's hardware.  
 2. **Create a digital output pin:** The `machine.Pin(25, machine.Pin.OUT)` line creates a digital output pin on GPIO pin 25.
 3. **Set the LED on:** `led_pin.value(1)` sets the voltage level on the pin to high, turning the LED on.
@@ -1053,22 +1053,19 @@ while True:
 	time.sleep(0.1)
 ```
 
-**Import necessary modules:**
-- `machine`: This module provides access to hardware-related functions, including ADC operations.
-- `time`: This module is used for introducing delays and timing operations.
-
-**Create an ADC object:**
-- `adc = machine.ADC(32)`: This line creates an ADC object on pin 32 of your microcontroller. The specific pin number may vary depending on your hardware setup.
-
-**Read the ADC value and convert it to voltage:**
-- `value = adc.read_uv()`: This line reads the ADC value and stores it in the `value` variable. The `read_uv()` method returns the value in microvolts.
-- `voltage = value / 1000 / 1000 * 3.3`: This line converts the ADC value (in microvolts) to voltage in volts. The conversion factor `1000 / 1000` is used to divide the value by 1 million (since the ADC value is in microvolts), and then the result is multiplied by the reference voltage (3.3V in this case) to obtain the actual voltage.
-
-**Print the voltage:**
-- `print("Potentiometer voltage:", voltage, "V")`: This line prints the calculated voltage to the console, along with a message indicating that it's the potentiometer voltage.
-
-**Delay:**
-- `time.sleep(0.1)`: This line introduces a delay of 0.1 seconds before the next ADC reading and voltage calculation. This helps to avoid overwhelming the console with output and allows for a more readable display of the potentiometer voltage.
+**Explanation**
+1. **Import necessary modules:**
+	- `machine`: This module provides access to hardware-related functions, including ADC operations.
+	- `time`: This module is used for introducing delays and timing operations.
+1. **Create an ADC object:**
+	- `adc = machine.ADC(32)`: This line creates an ADC object on pin 32 of your microcontroller. The specific pin number may vary depending on your hardware setup.
+3. **Read the ADC value and convert it to voltage:**
+	- `value = adc.read_uv()`: This line reads the ADC value and stores it in the `value` variable. The `read_uv()` method returns the value in microvolts.
+	- `voltage = value / 1000 / 1000 * 3.3`: This line converts the ADC value (in microvolts) to voltage in volts. The conversion factor `1000 / 1000` is used to divide the value by 1 million (since the ADC value is in microvolts), and then the result is multiplied by the reference voltage (3.3V in this case) to obtain the actual voltage.
+4. **Print the voltage:**
+`print("Potentiometer voltage:", voltage, "V")`: This line prints the calculated voltage to the console, along with a message indicating that it's the potentiometer voltage.
+5. **Delay:**
+	- `time.sleep(0.1)`: This line introduces a delay of 0.1 seconds before the next ADC reading and voltage calculation. This helps to avoid overwhelming the console with output and allows for a more readable display of the potentiometer voltage.
 
 **Overall Functionality:**
 The code continuously reads the ADC value from pin 32, converts it to voltage, and prints the voltage to the console. This can be used to measure the voltage output of a potentiometer connected to pin 32.
@@ -1106,32 +1103,27 @@ while True:
 
 The provided Python code combines the functionalities of controlling LED brightness using both PWM (Pulse Width Modulation) and DAC (Digital-to-Analog Converter) based on the output of a potentiometer connected to the ADC (Analog-to-Digital Converter).
 
-Here's a breakdown of the code:
-**1. Import Modules:**
+**Explanation:**
+1. **Import Modules:**
 - `machine`: Provides access to hardware functionalities like ADC, DAC, and PWM.
 - `time`: Enables sleep delays for pacing the output.
-
-**2. Create Hardware Objects:**
+2. **Create Hardware Objects:**
 - `adc = machine.ADC(32)`: Creates an ADC object on pin 32 (adjust this as needed based on your hardware).
 - `dac = machine.DAC(25)`: Creates a DAC object on pin 25 (adjust this as needed based on your hardware). This line might be commented out depending on which method you choose (PWM or DAC).
 - `pwm = machine.PWM(machine.Pin(26))`: Creates a PWM object on pin 26 (adjust this as needed based on your hardware).
-
-**3. Set PWM Frequency:**
+3. **Set PWM Frequency:**
 - `pwm.freq(1000)`: Sets the PWM frequency to 1 kHz. You can adjust this value to control the perceived flickering of the LED (higher frequencies are generally less noticeable).
-
-**4. Enter the Infinite Loop:**
+4. **Enter the Infinite Loop:**
 - `while True:`: The code continuously reads the potentiometer value and controls the LED brightness in the loop.
-
-**5. Read ADC Value and Convert:**
-- `value = adc.read_uv()`: Reads the raw value from the ADC in microvolts.
-- `scaled_value = int(value / 1000 / 1000 * 255)`: Converts the microvolt value to a scaled value between 0 and 255 suited for controlling the LED brightness. Here's the breakdown:
+5. **Read ADC Value and Convert:**
+	- `value = adc.read_uv()`: Reads the raw value from the ADC in microvolts.
+	- `scaled_value = int(value / 1000 / 1000 * 255)`: Converts the microvolt value to a scaled value between 0 and 255 suited for controlling the LED brightness. Here's the breakdown:
     - `value / 1000 / 1000`: Divides the microvolt value by 1 million to convert it to volts.
     - `* 255`: Multiplies by 255 because the PWM and DAC typically use a range of 0 to 255 to represent the brightness level.
-
-**6. Control LED Brightness:**
-- **PWM Method (if the `dac` line is commented out):**
+6. **Control LED Brightness:**
+	- **PWM Method (if the `dac` line is commented out):**
     - `pwm.duty(scaled_value)`: Sets the PWM duty cycle based on the scaled value. A higher `scaled_value` results in a higher duty cycle (longer "on" time for the LED), leading to a brighter LED.
-- **DAC Method (if the `dac` line is uncommented and `pwm` line is commented out):**
+	- **DAC Method (if the `dac` line is uncommented and `pwm` line is commented out):**
     - `dac.write(scaled_value)`: Directly sets the analog voltage output of the DAC based on the scaled value. This translates to a more directly proportional control over the LED brightness compared to PWM (which uses a square wave signal).
 
 **7. Delay:**
