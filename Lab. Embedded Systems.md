@@ -577,10 +577,6 @@ x = \hat{x} (x_{max} - x_{min}) + x_{min}
 
 Denormalization is like **reversing the scaling process**. We undo the adjustments made during normalization to get back to the original values.
 
-``` tex
-denormalized_{value} = normalized_{value} \times (max_{value} - min_{value}) + min_{value}
-```
-
 ##### Solution (Python)
 ``` python
 def denormalize_from_range(normalized_value, min_value, max_value):
