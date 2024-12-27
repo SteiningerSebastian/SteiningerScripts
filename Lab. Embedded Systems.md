@@ -1033,12 +1033,13 @@ In this example:
 - **Sampling rate:** The sampling rate of an ADC determines how frequently the analog signal is sampled. A higher sampling rate can capture faster-changing signals.  
 - **Multiple channels:** Some microcontrollers have multiple ADC channels, allowing simultaneous measurements of multiple analog signals.
 
-### Task 1: Read the value of a potentiometer
+### Tasks
+#### Task 1: Read the value of a potentiometer
 Construct a voltage divider circuit on a breadboard. Utilize a potentiometer as the variable resistor, incorporating the previously calculated fixed resistor value.
 
 Then write a MicroPython script, to read the voltage from an analog potentiometer connected to an ADC pin. The script should read the ADC value, convert it to a voltage value, print the voltage value to the console with a suitable label, and introduce a short delay between readings
 
-#### Solution
+##### Solution
 ``` python
 import machine
 import time 
@@ -1070,10 +1071,10 @@ while True:
 **Overall Functionality:**
 The code continuously reads the ADC value from pin 32, converts it to voltage, and prints the voltage to the console. This can be used to measure the voltage output of a potentiometer connected to pin 32.
 
-### Task 2: Control the Brightness of an LED using PWM and DAC
+#### Task 2: Control the Brightness of an LED using PWM and DAC
 Expand the circuit from Task 1 by incorporating two LEDs. Implement PWM control for the first LED, adjusting its brightness based on the output voltage of the potentiometer-based voltage divider. Utilize the ESP32's DAC (Digital-to-Analog Converter) to control the second LED.
 
-#### Solution
+##### Solution
 ``` python
 import machine
 import time
@@ -1148,7 +1149,7 @@ I2C offers various modes (Standard, Fast, Fast Mode Plus) with different data tr
 ![I2C Protocol](https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/I2C_analyze.jpg/799px-I2C_analyze.jpg?20190121103040)
 ([Martinfred](https://commons.wikimedia.org/wiki/User:Martinfred "User:Martinfred"), 2019)
 
-### Controlling a 7-Segment Display with I2C
+### Example: Controlling a 7-Segment Display with I2C
 Many 7-segment displays are available with I2C interfaces. These displays typically have a fixed address on the I2C bus. 
 
 **MicroPython Example:**
