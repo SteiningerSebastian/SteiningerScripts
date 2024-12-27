@@ -487,7 +487,7 @@ print("Time after sleep:", current_time_after_sleep)
 
 By effectively using the `time` module, you can manipulate time and control the flow of your Python applications.
 
-### Tasks
+## Tasks
 Having built a strong foundation of theoretical knowledge, it's now time to apply these concepts to practical scenarios. You will be presented with specific coding tasks, each accompanied by a provided solution. While these solutions can be valuable references, it's crucial to avoid simply copying them. Instead, focus on understanding the underlying principles and logic behind each solution. This deep understanding will be essential for successfully tackling future tasks where solutions are not readily available.
 
 #### Task 1. Moving Average
@@ -542,7 +542,7 @@ Implement a function that normalizes a given value to a range between 0 and 1. T
 Imagine you have a set of numbers, like **test scores**, that range from **very low to very high**. Min-max scaling is like **adjusting these scores** so they all fall **within a specific range**, for example, between 0 and 100.
 
 ``` tex
-normalized_value = \frac{value - min_value}{max_value - min_value}
+normalized_{value} = \frac{value - min_{value}}{max_{value} - min_{value}}
 ```
 
 ##### Solution (Python)
@@ -578,7 +578,7 @@ x = \hat{x} (x_{max} - x_{min}) + x_{min}
 Denormalization is like **reversing the scaling process**. We undo the adjustments made during normalization to get back to the original values.
 
 ``` tex
-denormalized_value = normalized_value \times (max_value - min_value) + min_value
+denormalized_{value} = normalized_{value} \times (max_{value} - min_{value}) + min_{value}
 ```
 
 ##### Solution (Python)
@@ -655,7 +655,7 @@ Electronics is the branch of science that **deals with the flow of electric curr
 Ohm's Law is a fundamental relationship between voltage, current, and resistance. It states:
 
 ``` tex
-U = R \cdot I
+U = R * I
 ```
 
 ## Buttons
