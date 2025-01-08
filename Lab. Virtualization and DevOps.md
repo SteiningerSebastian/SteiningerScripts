@@ -365,7 +365,7 @@ You can **view the running container** by using this command.
 docker container ls
 ```
 
-#### Task: Webserver ASP.NET C\#
+### Task: Webserver ASP.NET C\#
 Now that we've built and run a Docker container from a file for a basic application, let's explore how to **integrate this approach into your development workflow**. We'll create a ASP.NET application that includes functionalities related to prime numbers:
 
 - **Random Prime Number Generation:** An HTTP GET method will return a random prime number.
@@ -1034,6 +1034,7 @@ However, serverless can ***introduce challenges** related to **cold starts** (in
 (Wikimedia Commons, 2024)
 
 By understanding these concepts, you can effectively leverage Kubernetes to build and manage modern, scalable applications.
+
 [![Welcome to Production](https://img.youtube.com/vi/0w6kXdHXxAA/0.jpg)](https://www.youtube.com/watch?v=0w6kXdHXxAA)
 
 ## Deployments
