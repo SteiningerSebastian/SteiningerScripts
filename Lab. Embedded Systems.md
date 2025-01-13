@@ -825,7 +825,7 @@ Here's a MicroPython example demonstrating interrupt-driven I/O for a digital in
 
 ``` python
 import machine
-import utime
+import time
 
 # Define the interrupt service routine
 def button_pressed(pin):
@@ -840,11 +840,11 @@ button_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=button_pressed)
 # Main loop (optional)
 while True:
     # Perform other tasks while waiting for interrupts
-    utime.sleep(0.1)
+    time.sleep(0.1)
 ```
 
 **Explanation**
-1. **Import necessary modules:** `machine` for hardware interaction and `utime` for time-related functions.
+1. **Import necessary modules:** `machine` for hardware interaction and `time` for time-related functions.
 2. **Define the ISR:** The `button_pressed` function is the ISR that will be executed when the button is pressed (falling edge).
 3. **Create the input pin:** `machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)` creates a digital input pin on GPIO 15 with an internal pull-up resistor.
 4. **Set the interrupt handler:** `button_pin.irq(trigger=machine.Pin.IRQ_FALLING, handler=button_pressed)` configures the pin to generate an interrupt on a falling edge (when the button is pressed) and assigns the `button_pressed` function as the ISR.
@@ -854,14 +854,14 @@ while True:
 While **interrupt-driven I/O is generally preferred** for efficient event handling, polling can be used in certain scenarios.
 ``` python
 import machine
-import utime
+import time
 
 button_pin = machine.Pin(15, machine.Pin.IN, pull=machine.Pin.PULL_UP)
 
 while True:
     if button_pin.value() == 0:
         print("Button pressed!")
-    utime.sleep(0.1)
+    time.sleep(0.1)
 ```
 
 In this example, the `while True` **loop continuously checks the button** pin's value. If it's low (button pressed), a message is printed. However, polling can be **less efficient** than interrupts, especially for frequent events.
