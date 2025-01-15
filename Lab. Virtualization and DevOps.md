@@ -378,6 +378,8 @@ To create a new ASP.NET Core Empty project with containerization enabled in Visu
 
 This will set up your project with a Dockerfile, allowing you to build and run your application in a containerized environment. Once created, you can write your Prime Number functionalities within the project structure. You can build the initial Docker image using Visual Studio's build options, and then run the application in a container using the `docker run` command.
 
+If you want to run this container later on with **`docker-compose`**, you need to build a **Release build** first. You can do this in Visual Studio by changing Debug to Release in the drop-down menu and building the Container in Visual Studio then.
+
 By implementing these functionalities and utilizing Docker, you can **build, test, and run your ASP.NET Core application efficiently within a containerized environment**. This promotes faster iterations and consistency throughout the development process.
 
 ``` CSharp
