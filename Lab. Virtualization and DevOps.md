@@ -773,7 +773,7 @@ Below is a solution for the task using only two nodes. Please expand the solutio
 * Rebuild the ASP.NET application using the `Release` configuration.
 * Create a new folder containing two files, `docker-compose.yaml` and `ngnix.conf`.
 
-CRITICAL: Use UTF-8 encoding when saving nginx.conf.
+**CRITICAL**: Use UTF-8 encoding when saving nginx.conf.
 
 ``` nginx
 upstream web_servers {
@@ -789,6 +789,8 @@ server {
     }
 }
 ```
+
+**IMPORTANT**: Ensure all file paths are fully qualified. Relative paths are not supported for bind mounts.
 
 ``` yaml
 version: '3.8'
