@@ -380,6 +380,8 @@ This will set up your project with a Dockerfile, allowing you to build and run y
 
 By implementing these functionalities and utilizing Docker, you can **build, test, and run your ASP.NET Core application efficiently within a containerized environment**. This promotes faster iterations and consistency throughout the development process.
 
+Info: To run this container later using Docker Compose, you first need to create a Release build. In Visual Studio, switch from "Debug" to "Release" using the drop-down menu, and then build the container.
+
 ``` CSharp
 
 var builder = WebApplication.CreateBuilder(args);
