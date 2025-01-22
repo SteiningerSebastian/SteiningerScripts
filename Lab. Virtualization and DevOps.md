@@ -773,7 +773,7 @@ Below is a solution for the task using only two nodes. Please expand the solutio
 * Change the datatype of the ASP.NET applications functions to long, instead of int. 
 * Change your random number generator to `long random = Math.Abs(Random.Shared.NextInt64((1L << 52)));`
 * Rebuild the ASP.NET application using the `Release` configuration.
-* Create a new folder containing two files, `docker-compose.yaml` and `ngnix.conf`.
+* Create a new folder containing two files, `docker-compose.yaml` and `nginx.conf`.
 
 **CRITICAL**: Use UTF-8 encoding when saving nginx.conf.
 
