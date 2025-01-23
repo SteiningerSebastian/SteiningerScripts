@@ -602,7 +602,6 @@ By using Docker Compose, you can simplify the management of your multi-container
 A Docker Compose YAML file defines the services, networks, volumes, and other components that make up your multi-container application. Here's a breakdown of the key structures and commands used in Docker Compose:
 
 ### Top-Level Structure
-- **version:** Specifies the version of the Docker Compose specification used.
 - **services:** Defines the individual services that make up your application.
 
 ### Service Definition
@@ -645,8 +644,6 @@ Docker Compose allows you to define multiple networks within a single project. T
 ## A Website with a Database
 
 ``` yaml
-version: '3.7'
-
 services:
   web:
     image: my-web-app:latest
@@ -673,8 +670,6 @@ networks:
   backend:
     driver: bridge
 ```
-
-`version: '3.7'` specifies the version of the Docker Compose specification used. This version indicates that the script supports features introduced in Docker Compose 3.7.
 
 `services:` defines the individual services that make up the application.
 
@@ -795,8 +790,6 @@ server {
 **IMPORTANT**: Ensure all file paths are fully qualified. Relative paths are not supported for bind mounts.
 
 ``` yaml
-version: '3.8'
-
 services:
   nginx:
     image: nginx:alpine
@@ -822,14 +815,7 @@ services:
           memory: 100M
 
   web2:
-    image: containertest001
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 100M
+    extends: web1
 
 networks:
   frontend:
@@ -849,7 +835,6 @@ networks:
     - The `proxy_pass` directive forwards requests to the `web_servers` upstream group, enabling Nginx to act as a reverse proxy and distribute traffic across the two web servers.
 
 #### Docker Compose File (docker-compose.yaml)
-- **Version:** Specifies the Docker Compose version.
 - **Services:**
     - **nginx:**
         - Uses the `nginx:alpine` image.
