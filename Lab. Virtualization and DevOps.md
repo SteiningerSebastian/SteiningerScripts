@@ -1,4 +1,4 @@
-Google's Gemini assisted with the development of this script.
+Google's Gemini and Deepseek assisted with the development of this script.
 # Learning Objectives
 ## Knowledge and Understanding
 - **Virtualization Techniques:** Students demonstrate a comprehensive understanding of various virtualization techniques, including virtual machines and containers. They can articulate their advantages and disadvantages in different scenarios.
@@ -274,58 +274,40 @@ A Dockerfile is a text document that **contains instructions for building a Dock
 Let's build a game server. This is a great way to experience firsthand how Docker can be used to create and manage complex applications.
 
 ``` Dockerfile
-#Choose the base-build.
-FROM debian:latest
+# Inspired by Jannik Mülleder (2025)
+# Use a smaller base image like Alpine Linux (e.g., alpine:3.21.2) for production deployments to minimize image size and resource utilization. (in production use a specified) 
+FROM alpine:latest
 
-# Install OpenJDK-8 Inspired by: https://stackoverflow.com/questions/31196567/installing-java-in-docker-image
-
-RUN apt-get update && \
-  apt-get install wget -y && \
-  wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.deb && \
-  dpkg -i jdk-21_linux-x64_bin.deb && \
-  apt-get install -y ant && \
-  apt-get clean;
+# Install the java runtime environment necessary for the Minecraft server.
+RUN apk add openjdk21-jre-headless 
 
 # Set the working directory and copy the .jar file to the container.
 WORKDIR /minecraft
 
 ADD https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar ./server.jar
 
-# Run the .jar, this will create a run.sh.
-RUN java -jar server.jar --installServer
-
-RUN touch ./run.sh
-RUN echo '#!/bin/bash \n java -jar ./server.jar' > ./run.sh
-RUN chmod +x ./run.sh
-
-# Executing the run.sh will create some necessary files.
-RUN ./run.sh
-
-# Next it is necessary to accept the eula to start the server.
+# Headless accept the end user license agreement.
 RUN echo 'eula=true' > ./eula.txt
 
-# To connect to the server a port must be made accesible.
+# To connect to the server a port must be made accessible.
 EXPOSE 25565
 
+# Initialize the settings
+RUN java -jar server.jar --initSettings
+
 # Start the server.
-ENTRYPOINT [ "./run.sh" ]
+ENTRYPOINT ["java", "-jar", "/minecraft/server.jar"]
 ```
 
 This code snippet essentially creates a **set of instructions for building a Docker image** that can run a Minecraft server. Let's break it down step by step:
 
-1. **Choosing a Base Image:** The first line `FROM debian:latest` tells Docker to use the latest version of the "debian" image as the starting point for our Minecraft server image. This image provides a basic Linux operating system environment for our server to run on.
-2. **Installing Java:** The next section (`RUN apt-get update...`) installs the necessary software to run Java applications. It does this by updating the list of available software packages, installing `wget` (a tool for downloading files), downloading the latest OpenJDK-8 installer, installing the downloaded package, installing the `ant` build tool (potentially needed by Minecraft), and finally cleaning up the downloaded files.
+1. **Choosing a Base Image:** The first line `FROM alpine:latest` tells Docker to use the latest version of the "alpine" image as the starting point for our Minecraft server image. This image provides a minimal Linux operating system environment for our server to run on.
+2. **Installing Java:** The next call (`RUN apk add openjdk21-jre-headless`) installs the necessary software to run Java applications.
 3. **Setting Up the Container Environment:** `WORKDIR /minecraft` sets the working directory inside the container to `/minecraft`. `ADD https://piston-data.mojang.com/v1/objects/... server.jar` downloads the Minecraft server jar file from the official Mojang website and places it in the `/minecraft` directory inside the container with the name `server.jar`.
-4. **Preparing the Server Startup Script:** The next few lines (`RUN java -jar...`) are a bit more involved. They:
-	- Run the Minecraft server jar file with the `--installServer` flag, which likely creates some initial configuration files needed for the server to run.
-	- Create an empty file called `run.sh`.
-	- Fill the `run.sh` file with a simple script that starts the Minecraft server jar file using the `java -jar` command.
-	- Make the `run.sh` file executable, allowing it to be run as a program.
-5. **Initializing the Server and Exposing the Port:**
-	- `RUN ./run.sh` actually runs the `run.sh` script we just created, which likely initializes the server and creates some additional files needed for it to function.
-	- `RUN echo 'eula=true' > ./eula.txt` writes `eula=true` to the file. This is an agreement that needs to be accepted to run the Minecraft server.
-	- `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
-6. **Starting the Server:** Finally, `ENTRYPOINT ["./run.sh"]` sets the default command to run when the container starts. In this case, it tells the container to run the `./run.sh` script, which in turn starts the Minecraft server.
+4. **Accepting EULA:** The line `RUN echo 'eula=true' > ./eula.txt` accepts the EULA by adding `eula=true` into the eula.txt. This is necessary for unattended installation of the Minecraft server.
+5. **Exposing the Port:**  `EXPOSE 25565` tells Docker that the container will listen on port 25565, which is the default port used by Minecraft servers to communicate with clients.
+6. **Initialize Settings**: The line unpacks the necessary packages and loads the config files , finally it shutdowns the server.
+7. **Starting the Server:** Finally, `ENTRYPOINT [ "java", "-jar", "./server.jar" ]` sets the default command to run when the container starts. In this case, it tells the container to start the server, which in turn starts the Minecraft server.
 
 In summary, this Dockerfile builds an image that can run a Minecraft server by installing Java, downloading the server files, creating a startup script, initializing the server, and finally starting it when the container is run.
 
@@ -546,9 +528,6 @@ You can integrate NAS with Docker to provide persistent storage for your contain
 - **Permissions:** Set appropriate permissions on the NAS share to allow Docker containers to access and modify files.
 - **Network Connectivity:** Verify that your Docker host has network connectivity to the NAS device.
 
-### Use Volumes to make the Minecraft-World persistent. 
-Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
-
 > **Docker simplifies application development and deployment using containers**, which package applications with dependencies for **portability** and **isolation**.
 > 
 >  **Dockerfile:** Defines how to build a container image using instructions like `FROM`, `COPY`, `RUN`, `WORKDIR`, and `EXPOSE`.
@@ -560,6 +539,121 @@ Modify the existing Minecraft server to enable persistent world storage using an
 >  **Volumes** persist data independently of the container.
 >  
 >  **Benefits:** Consistent environments, improved efficiency, faster deployment, enabling microservices architectures.
+
+# Configuration Management in DevOps and Virtualized Systems
+
+Configuration management plays a **vital role** in DevOps practices and virtualized environments by ensuring that systems are consistently set up, maintained, and updated across different stages of development and deployment. It involves managing the **settings, files, and parameters** that define how software and infrastructure operate. In virtualized systems, where multiple containers, virtual machines, or instances are deployed, maintaining consistent configurations is crucial to **avoid errors, ensure reliability, and streamline scaling**.
+
+**Key principles of configuration management:**
+
+- **Treat configuration as code:** By storing configurations in version-controlled repositories, teams can:
+  - Track changes.
+  - Roll back to previous states.
+  - Ensure reproducibility across environments.
+- **Prevent configuration drift:** Automating configurations reduces the risk of systems unintentionally diverging due to manual changes.
+- **Enhance scalability:** Consistent configuration makes it easier to scale services without manual intervention.
+
+**Example: Minecraft Server in a Container**
+
+When setting up a Minecraft server in a container, configuration management can be implemented using **mounted volumes** or tools like **Ansible, Puppet, or Chef**. For instance:
+- Externalize configuration files such as `server.properties` or `whitelist.json`.
+- Automate their deployment to ensure the system remains easy to maintain and scale.
+- Use startup scripts to apply the desired settings, ensuring the server launches consistently.
+
+**Broader applications in DevOps:**
+
+- **Environment variables:** Manage dynamic settings like ports or memory allocation.
+- **Secrets management:** Securely handle sensitive data, such as passwords or API keys.
+- **Infrastructure orchestration:** Use tools like Terraform or Kubernetes to define and manage infrastructure as code.
+
+By applying these practices, configuration management ensures that applications are not only **stable and predictable** but also **adaptable to changing requirements**, which is a cornerstone of modern software delivery.
+
+## Task: Use Volumes to make the Minecraft-World and serv er configuration persistent. 
+Modify the existing Minecraft server to enable persistent world storage using any of the mentioned techniques. Develop a comprehensive argument for the employment the chosen technique. This may involve making changes to the Dockerfile, container configuration, or other relevant components to ensure the Minecraft world data is saved independently of the container's lifecycle.
+
+### Solution: Volumes and Configuration Management
+Certainly, there are numerous approaches to addressing this issue. In this discussion, we will focus on **storing configuration files within a volume**. Alternative methods include **cloning configuration files from a repository during build or startup**, **utilizing an API**, or **leveraging built-in options to load configurations**. Additionally, **environment variables** are often a viable option for storing critical configuration details. You can adopt any of these techniques—though this list is not exhaustive—as long as they align with the core principles of configuration management.
+
+``` Dockerfile
+# Inspired by Jannik Mülleder (2025)
+# Use a smaller base image like Alpine Linux (e.g., alpine:3.21.2) for production deployments to minimize image size and resource utilization. (in production use a specified) 
+FROM alpine:latest
+
+# Install the java runtime environment necessary for the Minecraft server.
+RUN apk add openjdk21-jre-headless 
+
+# Create a config directory and make it a volume.
+RUN mkdir /config
+VOLUME /config
+
+# Make th world a volume to make it persistence.
+VOLUME /minecraft/world
+
+# Set the working directory and copy the .jar file to the container.
+WORKDIR /minecraft
+
+# Download the Minecraft server to the container.
+ADD https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar ./server.jar
+
+# Headless accept the end user license agreement.
+RUN echo 'eula=true' > ./eula.txt
+
+# To connect to the server a port must be made accessible.
+EXPOSE 25565
+
+# Initialize the settings
+RUN java -jar server.jar --initSettings
+
+# Copie the pr
+RUN cp server.properties /config/server.properties
+
+# Copy the unattendedStart script from your machine to the container.
+COPY unattendStart.sh unattendStart.sh
+
+# Grant execution privileges to run the script. 
+RUN chmod +x ./unattendStart.sh
+
+# Remove the propteries file, it will be copied back from the config volume 
+# when the container starts.
+RUN rm server.properties
+
+# Start the server.
+ENTRYPOINT ["sh", "unattendStart.sh"]#["/bin/sh"]#["java", "-jar", "/server.jar"]
+```
+
+Save the following file as **unattendStart.sh** in the same directory as the Dockerfile. 
+
+**WARNING:** Make sure that you use Linux line endings and not Windows line endings. If you open the file in windows editor, you can check the line endings used in the bottom right corner.
+
+``` sh
+#!/bin/sh
+cp /config/server.properties server.properties
+java -jar server.jar
+```
+
+This file copies the **server.properties** from the config volume to the Minecraft server location. This way you can persist the world and settings independently from the server itself. 
+
+## Secrets Management
+Secrets management is a **critical aspect of secure application development** and deployment. In containerized environments like Docker, Docker-Compose, Kubernetes, secrets include **sensitive data such as passwords**, **API keys**, **database credentials**, and **TLS certificates**. Properly managing these secrets ensures they remain secure while being accessible to applications that need them.
+
+#### Why Secrets Management Matters
+- **Security:** Prevent unauthorized access to sensitive information.
+- **Compliance:** Meet regulatory requirements for data protection.
+- **Convenience:** Simplify secret sharing between development and production environments without exposing them in code.
+
+### Best Practices for Secrets Management*
+1. **Avoid hardcoding secrets:** Never store sensitive data directly in code or version control systems.
+2. **Use environment variables cautiously:** While convenient, they are less secure as they may be exposed through logs or process inspection tools.
+3. **Centralize secret storage:** Use tools like HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault to manage secrets externally and inject them securely at runtime.
+4. **Rotate secrets regularly:** Change credentials periodically to reduce the risk of unauthorized access.
+5. **Limit secret access:** Ensure only the containers and services that need a specific secret have access to it.
+
+> - Configuration management ensures consistent setup and updates across systems.
+> - Treating configuration as code enables tracking, rollback, and reproducibility.
+> - Automation prevents errors, configuration drift, and simplifies scaling.
+> - Tools like Ansible and Terraform streamline processes in virtualized environments.
+> - Key benefits: stability, adaptability, and efficient software delivery.
+> - Managing Secrets: Ensuring that authorized identities have access, while others do not, is one of the most crucial aspects of security. 
 
 # Docker-Compose
 **Docker Compose** is a tool that allows you to **define and run multi-container Docker applications**. It simplifies the process of managing and scaling your applications by defining all the services and their dependencies in a single YAML file.  
@@ -691,6 +785,24 @@ networks:
 This Docker Compose script describes a **multi-container application** consisting of a **web application** and a **PostgreSQL database**. The "web" service depends on the "database" service, ensuring that the database is started before the web application. The environment variables for the database service provide the necessary credentials and database name for the PostgreSQL instance.
 
 The `web` and `db` services are **connected to different networks**: `frontend` and `backend`. This allows the `web` service to access the database service on the `backend` network without exposing it to the internet.
+
+## Secrets in Docker-Compose
+While managing secrets relies on the **same principals regardless of the technology** in use, we will explore this concept more in depth with docker-compose. Secrets are securely stored in an encrypted store and only exposed to containers that require them.
+
+Secrets are mounted as a file in `/run/secrets/<secret_name>` inside the container.
+
+``` yaml
+services:
+  myapp:
+    image: myapp:latest
+    secrets:
+      - my_secret
+secrets:
+  my_secret:
+    file: ./my_secret.txt
+```
+
+To maintain security, the file `my_secrets.txt` **must not be added to the version control** system. It should be **stored in a highly secure location**, such as a dedicated vault.
 
 > **Docker Compose** simplifies managing multi-container Docker applications by defining services and their dependencies in a single **YAML file**.
 >
@@ -1220,6 +1332,90 @@ spec:
 ```
 
 This configuration creates a Deployment with 3 replicas, a Service to expose the Deployment, and an HPA to scale the Deployment based on CPU utilization.
+
+## Configuration and Secrets Management
+Configuration management in Kubernetes is essential for maintaining consistency, scalability, and reliability across applications and environments. Kubernetes provides several built-in mechanisms to manage configurations effectively:
+
+1. **ConfigMaps:** Used to store non-sensitive configuration data as key-value pairs, which can be injected into pods as environment variables or mounted as configuration files.
+2. **Secrets:** Designed to store sensitive information, such as passwords or API keys, securely. Secrets are base64-encoded and can be accessed by pods similarly to ConfigMaps.
+3. **Environment Variables:** Allow passing configuration values directly to containers, making them accessible within the application runtime.
+4. **Volume Mounts:** ConfigMaps and Secrets can be mounted as volumes, enabling applications to read configuration files directly from the filesystem.
+5. **Helm Charts:** A popular tool for managing Kubernetes applications, Helm uses templates to define and deploy configurations, making it easier to manage complex setups.
+
+By leveraging these tools, Kubernetes ensures that configurations are decoupled from application code, promoting flexibility, security, and ease of management across deployments.
+
+### ConfigMaps
+ConfigMaps are used to store **non-sensitive configuration data** in key-value pairs. They provide a way to decouple configuration details from application code, making it easier to manage and update configurations without modifying the application itself.
+
+#### Key Features
+1. **Stores Non-Sensitive Data:** ConfigMaps are ideal for configuration data like environment settings, configuration files, or command-line arguments.
+2. **Flexible Usage**
+   - **Environment Variables:** ConfigMap data can be injected into pods as environment variables.
+   - **Configuration Files:** ConfigMaps can be mounted as volumes, allowing applications to read configuration files directly from the filesystem.
+3. **Namespace-Scoped:** ConfigMaps are tied to a specific namespace, ensuring isolation and organization.
+4. **Immutable Option:** ConfigMaps can be made immutable to prevent accidental changes.
+
+#### **Example Use Cases**:
+- Storing database **connection strings (non-sensitive parts)**.
+- Managing application settings like **feature flags or logging levels**.
+- Providing **configuration files for applications** (e.g., `nginx.conf`).
+
+#### Example YAML
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_COLOR: blue
+  LOG_LEVEL: info
+```
+
+### Secrets
+Secrets are designed to store **sensitive information**, such as passwords, API keys, or TLS certificates. They are similar to ConfigMaps but include additional security measures to protect sensitive data.
+
+#### Key Features
+1. **Stores Sensitive Data:** Secrets are used for confidential information like credentials, tokens, or encryption keys.
+2. **Base64 Encoding:** Secrets are base64-encoded by default, providing a basic level of obfuscation (though they are not encrypted by default).
+3. **Flexible Usage**
+   - **Environment Variables:** Secrets can be injected into pods as environment variables.
+   - **Volume Mounts:** Secrets can be mounted as files, allowing applications to access sensitive data securely.
+4. **Namespace-Scoped:** Like ConfigMaps, Secrets are tied to a specific namespace.
+5. **Encryption Options:** Kubernetes supports encrypting Secrets at rest for enhanced security.
+
+#### Example Use Cases:
+- Storing **database credentials** (username and password).
+- Managing **TLS certificates** for secure communication.
+- Storing **API keys** or OAuth tokens.
+
+#### Example YAML
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+type: Opaque
+data:
+  username: dXNlcm5hbWU=  # base64-encoded "username"
+  password: cGFzc3dvcmQ=  # base64-encoded "password"
+```
+
+### Key Differences Between ConfigMaps and Secrets
+| Feature                | ConfigMaps                          | Secrets                          |
+|------------------------|-------------------------------------|----------------------------------|
+| **Purpose**            | Non-sensitive configuration data   | Sensitive information            |
+| **Encoding**           | Plain text                         | Base64-encoded                   |
+| **Security**           | No additional security measures    | Optional encryption at rest      |
+| **Use Cases**          | Environment settings, config files | Credentials, tokens, certificates|
+
+### Best Practices
+1. **Use Secrets for Sensitive Data:** Always use Secrets for sensitive information to leverage their additional security features.
+2. **Avoid Hardcoding:** Never hardcode configuration data or secrets in application code or container images.
+3. **Limit Access:** Use Role-Based Access Control (RBAC) to restrict access to ConfigMaps and Secrets.
+4. **Encrypt Secrets:** Enable encryption at rest for Secrets to enhance security.
+5. **Use Immutable ConfigMaps/Secrets:** For critical configurations, consider making ConfigMaps or Secrets immutable to prevent accidental changes.
+
+By using ConfigMaps and Secrets effectively, you can ensure that your Kubernetes applications are both flexible and secure.
 
 ## Kind
 ### What is kind?
