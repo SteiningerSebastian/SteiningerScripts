@@ -1403,10 +1403,10 @@ data:
 ### Key Differences Between ConfigMaps and Secrets
 | Feature                | ConfigMaps                          | Secrets                          |
 |------------------------|-------------------------------------|----------------------------------|
-| **Purpose**            | Non-sensitive configuration data   | Sensitive information            |
-| **Encoding**           | Plain text                         | Base64-encoded                   |
-| **Security**           | No additional security measures    | Optional encryption at rest      |
-| **Use Cases**          | Environment settings, config files | Credentials, tokens, certificates|
+| Purpose            | Non-sensitive configuration data   | Sensitive information            |
+| Encoding           | Plain text                         | Base64-encoded                   |
+| Security           | No additional security measures    | Optional encryption at rest      |
+| Use Cases          | Environment settings, config files | Credentials, tokens, certificates|
 
 ### Best Practices
 1. **Use Secrets for Sensitive Data:** Always use Secrets for sensitive information to leverage their additional security features.
