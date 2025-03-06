@@ -121,6 +121,8 @@ Entity Component System (ECS) promotes **.composition over inheritance**., allow
 ### ECS in Modern Game Development
 ECS is **increasingly popular in modern game development** due to its **performance benefits and flexibility**. Many game engines and frameworks now incorporate or support ECS patterns.
 
+[![Welcome to Production](https://img.youtube.com/vi/2rW7ALyHaas/0.jpg)](https://www.youtube.com/embed/2rW7ALyHaas?si=AeGzxah6-YQxf_VN)
+
 ## Mixed-Approach
 A mixed-approach **combines elements of OOP and ECS** to leverage the strengths of both patterns.
 
@@ -456,7 +458,7 @@ applyCameraTransform(-cameraX, -cameraY);
 ## Parallax Scrolling for Depth Effect
 This technique, known as **parallax scrolling**, is a classic way to **create a sense of depth** and immersion in 2D games and other graphical applications. By **moving background layers at different speeds** relative to the foreground, you can simulate the effect of distance and create a more dynamic and engaging visual experience.
 
-[![Welcome to Production](https://img.youtube.com/vi/2z4OTRFuLP8/0.jpg)](https://www.youtube.com/embed/2z4OTRFuLP8?si=2QOXovyinn-UT5gJ)
+[![Parallax](https://img.youtube.com/vi/2z4OTRFuLP8/0.jpg)](https://www.youtube.com/embed/2z4OTRFuLP8?si=2QOXovyinn-UT5gJ)
 
 #### Techniques
 - Use multiple layers with varying scroll speeds.   
