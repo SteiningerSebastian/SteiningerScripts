@@ -570,7 +570,7 @@ PixiJS is a **powerful and versatile 2D rendering engine** that has become a sta
 - **Data Visualization:** Efficiently render large datasets.
 
 ### How to Create a PixiJS Project with npm?
-1. **Prerequisites:** Install Node.js and npm.
+1. **Prerequisites:** Install [Node.js and npm.](https://nodejs.org/en/download)
 2. **Create Project Folder**
 
 ```bash
