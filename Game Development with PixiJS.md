@@ -121,7 +121,7 @@ Entity Component System (ECS) promotes **.composition over inheritance**., allow
 ### ECS in Modern Game Development
 ECS is **increasingly popular in modern game development** due to its **performance benefits and flexibility**. Many game engines and frameworks now incorporate or support ECS patterns.
 
-[![Welcome to Production](https://img.youtube.com/vi/2rW7ALyHaas/0.jpg)](https://www.youtube.com/embed/2rW7ALyHaas?si=AeGzxah6-YQxf_VN)
+[![Entity Component System](https://img.youtube.com/vi/2rW7ALyHaas/0.jpg)](https://www.youtube.com/embed/2rW7ALyHaas?si=AeGzxah6-YQxf_VN)
 
 ## Mixed-Approach
 A mixed-approach **combines elements of OOP and ECS** to leverage the strengths of both patterns.
