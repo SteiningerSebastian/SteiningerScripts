@@ -1,1 +1,1 @@
-TODO: to get started lock at 'Getting Started.md'
+TODO: to get started look at 'Getting Started.md'
