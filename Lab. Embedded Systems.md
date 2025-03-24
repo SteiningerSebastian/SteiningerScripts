@@ -1010,7 +1010,7 @@ while True:
     print(voltage)
     
     #Set a raw analog value in the range 0-255, 50% now *(1.65V)
-	dac.write(voltage / 3.3 * 255) 
+	dac.write(int(voltage / 3.3 * 255))
 	
     time.sleep(1)
 ```
