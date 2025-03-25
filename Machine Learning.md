@@ -32,7 +32,7 @@ As clusters are merged, you can represent the hierarchical structure using a den
 #### 7. Cutting the Dendrogram
 You can cut the dendrogram at a certain level to obtain a specific number of clusters. The height at which you cut the dendrogram determines the number of clusters you get. Choosing the right level often involves domain knowledge or methods like the elbow method or silhouette analysis.
 
-## Cluster Assignment
+### Cluster Assignment
 Once you’ve determined the desired number of clusters, you can assign each data point to its corresponding cluster based on the hierarchical structure you’ve created.
 
 Hierarchical clustering is a versatile method because it doesn’t require you to specify the number of clusters in advance. It allows you to explore different levels of granularity in your data, from a few large clusters to many small clusters. Additionally, the dendrogram visually represents how data points are related, making it easier to interpret the results. However, hierarchical clustering can be computationally expensive for large datasets.
@@ -40,3 +40,6 @@ Hierarchical clustering is a versatile method because it doesn’t require you t
 ![image](https://github.com/user-attachments/assets/d9ec6299-e468-4457-a676-0afabd6cdfae)
 
 Source: https://spotintelligence.com/2023/09/12/hierarchical-clustering-comprehensive-practical-how-to-guide-in-python/#How_Does_Hierarchical_Clustering_Work
+
+> Clustering is a unsupervised learning technique used to find clusters.
+> Hierarchical Clustering is a type of clustering that takes a hierarchical approachh to identify cluster centroids.
