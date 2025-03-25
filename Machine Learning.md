@@ -42,4 +42,5 @@ Hierarchical clustering is a versatile method because it doesn’t require you t
 Source: https://spotintelligence.com/2023/09/12/hierarchical-clustering-comprehensive-practical-how-to-guide-in-python/#How_Does_Hierarchical_Clustering_Work
 
 > Clustering is a unsupervised learning technique used to find clusters.
+> 
 > Hierarchical Clustering is a type of clustering that takes a hierarchical approachh to identify cluster centroids.
