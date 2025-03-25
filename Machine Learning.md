@@ -17,7 +17,8 @@ Here, you would run an unsupervised model where the algorithm doesn’t have a t
 However, you can manually assess the results and identify certain qualities that exist among groups. So while you may not be able to identify, say, people who are likely to commit fraudulent activity, you may identify classifications related to income level, shopping habits, etc.
 Examples:
 ![image](https://github.com/user-attachments/assets/67b6d678-1ec0-47b9-9d73-730ce55dd0c5)
-![image](https://github.com/user-attachments/assets/43d073c0-4d81-41dd-8938-82e588f9b4a2)
+
+[![42Entwickler Merkmale](https://github.com/user-attachments/assets/43d073c0-4d81-41dd-8938-82e588f9b4a2)](https://youtu.be/h4QnleRrV9w?si=Zk736sfmiyopqROb&t=562)
 
 ## Reinforcement Learning
 In reinforcement learning, a model uses trial and error to iteratively improve its approach to making decisions. The algorithm continually tries new things to learn how to behave better in the future.
