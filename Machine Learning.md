@@ -41,7 +41,7 @@ Calculate the pairwise distances between all clusters.
 With either:
 - Euclidean Distance 
 ```tex
-\sqrt{\sum_{i=1}^{n (p_i - q_i)^2}}
+\sqrt{\sum_{i=1}^{n} (p_i - q_i)^2}
 ```
 or
 - Manhatten Distance
