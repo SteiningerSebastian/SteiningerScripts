@@ -18,7 +18,7 @@ However, you can manually assess the results and identify certain qualities that
 Examples:
 ![Unsupervised Machine Learning visualization](https://github.com/user-attachments/assets/67b6d678-1ec0-47b9-9d73-730ce55dd0c5)
 
-[![42Entwickler Merkmale](https://github.com/user-attachments/assets/43d073c0-4d81-41dd-8938-82e588f9b4a2)](https://youtu.be/h4QnleRrV9w?si=Zk736sfmiyopqROb&t=562)
+[![42Entwickler Merkmale](https://img.youtube.com/vi/h4QnleRrV9w/2.jpg)](https://youtu.be/h4QnleRrV9w?si=Zk736sfmiyopqROb&t=562)
 
 ## Reinforcement Learning
 In reinforcement learning, a model uses trial and error to iteratively improve its approach to making decisions. The algorithm continually tries new things to learn how to behave better in the future.
