@@ -18,6 +18,8 @@ However, you can manually assess the results and identify certain qualities that
 Examples:
 ![Unsupervised Machine Learning visualization](https://github.com/user-attachments/assets/67b6d678-1ec0-47b9-9d73-730ce55dd0c5)
 
+Minute 9:22
+
 [![42Entwickler Merkmale](https://img.youtube.com/vi/h4QnleRrV9w/2.jpg)](https://youtu.be/h4QnleRrV9w?si=Zk736sfmiyopqROb&t=562)
 
 ## Reinforcement Learning
