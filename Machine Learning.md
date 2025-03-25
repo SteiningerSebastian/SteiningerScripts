@@ -1,6 +1,6 @@
 # Types of Machine Learning
-![image](https://github.com/user-attachments/assets/630d1b2d-0683-46ee-af9d-83751bab4b1f)
-![image](https://github.com/user-attachments/assets/1a3e4dd8-2e1e-4eba-bf8d-3b0d0eb50193)
+![Types of Machine Learning](https://github.com/user-attachments/assets/630d1b2d-0683-46ee-af9d-83751bab4b1f)
+![Machine Learning Types visualization](https://github.com/user-attachments/assets/1a3e4dd8-2e1e-4eba-bf8d-3b0d0eb50193)
 
 ## Supervised Learning
 In supervised learning, a model learns to predict the future based on what happened in the past.
@@ -8,7 +8,7 @@ Here, historical data with “ground-truth labels” (where there is an actual o
 The algorithm will identify correlations, patterns, and trends that are historically correlated with these ground-truth outcomes and then use them to predict the future.
 Generally, you want your predictions to match ground-truth outcomes as frequently as possible – that is, you want your model to make as many correct predictions as it can. (Although it’s worth noting that accuracy is not the only worthy measure of a machine learning model.)
 Example:
-![image](https://github.com/user-attachments/assets/7dd43068-ad6c-4f48-b6ef-f32658a31e3f)
+![Supervised learning visualization](https://github.com/user-attachments/assets/7dd43068-ad6c-4f48-b6ef-f32658a31e3f)
 
 ## Unsupervised Learning
 In unsupervised learning, a model attempts to understand what happened in the past so it can be used to classify future outcomes.
@@ -16,14 +16,13 @@ Unsupervised learning makes it possible to uncover patterns in datasets where gr
 Here, you would run an unsupervised model where the algorithm doesn’t have a target (e.g., 1 or 0) but rather looks at the behavior of different customers or other entities and tells you which ones are behaving similarly to each other. It’s “unsupervised” because the model builder never tells the AI which classifications to perform.
 However, you can manually assess the results and identify certain qualities that exist among groups. So while you may not be able to identify, say, people who are likely to commit fraudulent activity, you may identify classifications related to income level, shopping habits, etc.
 Examples:
-![image](https://github.com/user-attachments/assets/67b6d678-1ec0-47b9-9d73-730ce55dd0c5)
+![Unsupervised Machine Learning visualization](https://github.com/user-attachments/assets/67b6d678-1ec0-47b9-9d73-730ce55dd0c5)
 
 [![42Entwickler Merkmale](https://github.com/user-attachments/assets/43d073c0-4d81-41dd-8938-82e588f9b4a2)](https://youtu.be/h4QnleRrV9w?si=Zk736sfmiyopqROb&t=562)
 
 ## Reinforcement Learning
 In reinforcement learning, a model uses trial and error to iteratively improve its approach to making decisions. The algorithm continually tries new things to learn how to behave better in the future.
 Here, raw data (whether in real-time or in batches) serves as the input. The reinforcement learning algorithm learns by constantly seeking new approaches to a problem and improving upon approaches that maximize the defined “reward.” This type of learning is frequently used in robotics and gaming.
-
 
 # Clustering
 Clustering is a powerful technique that allows us to discover hidden structures and patterns within data. Imagine having a collection of data points, perhaps representing customers, images, or even biological samples. Without any prior knowledge of their categories, clustering algorithms step in to automatically group these points based on their inherent similarities. This process, known as unsupervised learning, aims to partition the data into meaningful clusters, where points within the same cluster are more alike than those in other clusters. By revealing these natural groupings, clustering provides valuable insights for tasks ranging from market segmentation and image analysis to anomaly detection and scientific discovery.
