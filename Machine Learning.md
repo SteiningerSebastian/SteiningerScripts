@@ -11,9 +11,9 @@ Initially, every data point is treated as its own individual cluster, resulting 
 #### 2. Distance Calculation
 Calculate the pairwise distances between all clusters.
 With either:
-•	Euclidean Distance	sqrt(a²+b²)
+- Euclidean Distance sqrt(a²+b²)
 or
-•	Manhatten Distance	| a + b |
+- Manhatten Distance | a + b |
 
 #### 3. Merging Clusters (Agglomerative Clustering)
 Find the two closest clusters based on the distance/similarity metric. These clusters are merged,
