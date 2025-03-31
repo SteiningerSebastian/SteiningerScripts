@@ -1186,7 +1186,7 @@ write_data(0x08)
 - Some 7-segment displays support additional features like brightness control or dot-point functionality, which can be accessed through specific I2C commands.
 
 **Driver**
-There are many different drivers available, to speed up the development. For example you can use this [Driver](https://github.com/mcauser/micropython-tm1637) for the 7 segment display. Some drivers are already built into MicroPython, such as the [DHT11 driver](https://docs.micropython.org/en/latest/esp8266/tutorial/dht.html). 
+There are many different drivers available, to speed up the development. For example you can use this [Driver](https://github.com/mcauser/micropython-tm1637) for the 7 segment display or the [ssd1306 dirver](https://github.com/Eivs/micropython-ssd1306-oled-1.3-drivers) for the OLED Screen. Some drivers are already built into MicroPython, such as the [DHT11 driver](https://docs.micropython.org/en/latest/esp8266/tutorial/dht.html).
 
 By following these steps and understanding the I2C protocol, you can effectively control 7-segment displays and other I2C devices in your MicroPython projects
 
