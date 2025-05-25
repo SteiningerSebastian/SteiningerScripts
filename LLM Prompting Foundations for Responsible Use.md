@@ -199,7 +199,6 @@ Even with robust frameworks, **some prompts require extra finesse**. These itera
 >- **Iterative Prompt Refinement** is a **continuous feedback loop** where you test, evaluate, and improve prompts.
 >- **Frameworks** like **Google's TCREI** (Task, Context, References, Evaluate, Iterate) provide structured approaches to prompt design. Other frameworks include RACE, CRISPE, BAB, STAR, and RTF.
 >- **Iteration Methods** for refining prompts include **revisiting the framework**, **breaking up prompts into multiple tasks**, **changing phrasing or using analogous tasks**, and **introducing constraints**.
-
 # Advanced Prompting Strategies
 As you move beyond basic prompting, these advanced techniques enable you to **harness LLMs** for more **complex**, **nuanced**, and **multi-faceted tasks**. They encourage deeper processing, leverage external information, and even allow the LLM to self-critique.
 ## Use AI as a Creative or Expert Partner
@@ -225,7 +224,6 @@ Using Chain-of-Thought (CoT) prompting, ask Gemini to solve a multi-step logic p
     - **Handling Complexity:** Excellent for highly complex, multi-faceted problems, open-ended ideation, and situations requiring exploration of diverse solutions. It mimics a more sophisticated problem-solving process.
 
 #### Example: Software Engineering Team for TSP Problem
-
 Imagine **a team comprised of a software engineering professor**, an algorithmics professor, and a mathematics professor. Each is tasked with independently implementing a function to solve the Traveling Salesman Problem (TSP) for a very large city bus network, represented as an adjacency matrix of bus stops and streets.
 
 Your goal is to deliver a solution that is both highly effective and clearly understandable to a customer. Therefore, for each proposed function, I require:
