@@ -229,12 +229,10 @@ Using Chain-of-Thought (CoT) prompting, ask Gemini to solve a multi-step logic p
 Imagine **a team comprised of a software engineering professor**, an algorithmics professor, and a mathematics professor. Each is tasked with independently implementing a function to solve the Traveling Salesman Problem (TSP) for a very large city bus network, represented as an adjacency matrix of bus stops and streets.
 
 Your goal is to deliver a solution that is both highly effective and clearly understandable to a customer. Therefore, for each proposed function, I require:
-
 1. A metric of its optimality.
 2. An explanation of its approximation quality.
 
 The team will follow an iterative development process:
-
 - Each expert writes down one step of their thinking for their solution.
 - These steps are shared with the entire group.
 - The team then collectively moves to the next step of their respective approaches.
