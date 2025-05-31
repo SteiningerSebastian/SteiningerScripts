@@ -763,6 +763,7 @@ networks:
     driver: bridge
   backend:
     driver: bridge
+    internal: true
 ```
 
 `services:` defines the individual services that make up the application.
@@ -934,6 +935,7 @@ networks:
     driver: bridge
   backend:
     driver: bridge
+    internal: true
 ```
 
 #### Nginx Configuration (nginx.conf)
