@@ -339,7 +339,7 @@ Note: If you encounter any errors during the build process, check the Dockerfile
 
 To **create a new container and start it**, you can use the `docker run` command to launch the server.
 ``` Powershell
-docker run -p 25565:25565 se.stei/minecraft_1_21_1
+docker run -p 25565:25565 <repositorie>/minecraft_1_21_1:<version>
 ```
 
 You can **view the running container** by using this command.
