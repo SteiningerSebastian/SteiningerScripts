@@ -220,7 +220,7 @@ To work with docker we need to know the basic commands and what they do.
 - **docker ps:** Lists all running containers.
 - **docker stop \[container_id]:** Stops a running container.
 - **docker rm \[container_id]:** Removes a stopped container.
-- **docker build  -t \<repositorie\>\/\<name\>:\<version\>:** Build an image from a Dockerfile. 
+- **docker build  -t \<repository\>\/\<name\>:\<version\>:** Build an image from a Dockerfile. 
 
 ### Image Management:
 - **docker image ls:** Lists all images on your system.
@@ -315,7 +315,7 @@ In summary, this Dockerfile builds an image that can run a Minecraft server by i
 The `docker build` command is used to **create a new Docker image from a Dockerfile**. In this case, we're using the following command:
 
 ``` Powershell
-docker build -t <repositorie>/minecraft_1_21_1:<version> .
+docker build -t <repository>/minecraft_1_21_1:<version> .
 ```
 
 `-t minecraft_1_21_1` specifies the **tag for the newly created image**. The tag may contain a namespace (similar to a username) followed by a repository name (like a project name) and a tag (like a version).
@@ -339,7 +339,7 @@ Note: If you encounter any errors during the build process, check the Dockerfile
 
 To **create a new container and start it**, you can use the `docker run` command to launch the server.
 ``` Powershell
-docker run -p 25565:25565 <repositorie>/minecraft_1_21_1:<version>
+docker run -p 25565:25565 <repository>/minecraft_1_21_1:<version>
 ```
 
 You can **view the running container** by using this command.
