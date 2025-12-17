@@ -295,6 +295,9 @@ EXPOSE 25565
 # Initialize the settings
 RUN java -jar server.jar --initSettings
 
+# Disable online-mode
+RUN sed -i 's/^online-mode=.*/online-mode=false/' server.properties
+
 # Start the server.
 ENTRYPOINT ["java", "-jar", "/minecraft/server.jar"]
 ```
