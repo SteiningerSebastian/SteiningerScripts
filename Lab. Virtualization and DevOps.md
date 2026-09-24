@@ -586,7 +586,7 @@ Certainly, there are numerous approaches to addressing this issue. In this discu
 FROM alpine:latest
 
 # Install the java runtime environment necessary for the Minecraft server.
-RUN apk add openjdk21-jre-headless 
+RUN apk add openjdk25-jre-headless 
 
 # Create a config directory and make it a volume.
 RUN mkdir /config
