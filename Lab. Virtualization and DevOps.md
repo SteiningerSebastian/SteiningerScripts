@@ -279,7 +279,7 @@ Let's build a game server. This is a great way to experience firsthand how Docke
 FROM alpine:latest
 
 # Install the java runtime environment necessary for the Minecraft server.
-RUN apk add openjdk21-jre-headless 
+RUN apk add openjdk25-jre-headless 
 
 # Set the working directory and copy the .jar file to the container.
 WORKDIR /minecraft
@@ -297,6 +297,9 @@ RUN java -jar server.jar --initSettings
 
 # Disable online-mode
 RUN sed -i 's/^online-mode=.*/online-mode=false/' server.properties
+
+# Disable white-list
+RUN sed -i 's/^white-list=.*/white-list=false/' server.properties
 
 # Start the server.
 ENTRYPOINT ["java", "-jar", "/minecraft/server.jar"]
