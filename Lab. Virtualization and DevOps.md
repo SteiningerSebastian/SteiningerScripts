@@ -21,7 +21,7 @@ In this course, we will explore the fundamental concepts of virtualization, incl
 
 Throughout the course, we will use practical examples and hands-on exercises to reinforce our learning. You will have the opportunity to experiment with **popular virtualization platforms**, gaining valuable experience that will prepare you for real-world applications.  Until now, we've primarily focused on developing applications on our local machines. While this is essential for prototyping and testing, the ultimate goal is to **deploy these applications to production environments** where they can be accessed by users. In this course, we'll explore the techniques and best practices involved in bringing your applications from development to production.
 
-[![Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)](https://www.youtube.com/watch?v=NaR8WlLtPw0)
+[![Welcome to Production](https://img.youtube.com/vi/NaR8WlLtPw0/0.jpg)]([https://www.youtube.com/watch?v=NaR8WlLtPw0](https://www.youtube.com/embed/NaR8WlLtPw0?si=DJJwaZmMuBq3C9U-))
 
 Check out this video for some inspirational tunes to boost your productivity.
 [![Forrest Brazeal Performance at fwd:cloudsec 2024](https://img.youtube.com/vi/HlTBGgQgNL4/0.jpg)](https://www.youtube.com/watch?v=HlTBGgQgNL4) 
