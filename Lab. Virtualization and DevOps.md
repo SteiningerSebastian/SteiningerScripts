@@ -716,7 +716,9 @@ view-distance=10
 white-list=false
 ```
 
-``` cmd
+To start the minecraft server and interact with it you can use the argument *-it*. To start the server for production without shell, you can use *-d*.
+
+```
 docker run -it -v myWorld:/minecraft/world -v E:/tmp/DockerLab2627_1/whitelist.json:/minecraft/whitelist.json -p 25565:25565 sebastiansteininger/minecraft:26.3
 ```
 
