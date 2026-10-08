@@ -599,7 +599,7 @@ VOLUME /minecraft/world
 WORKDIR /minecraft
 
 # Download the Minecraft server to the container.
-ADD https://piston-data.mojang.com/v1/objects/59353fb40c36d304f2035d51e7d6e6baa98dc05c/server.jar ./server.jar
+ADD https://piston-data.mojang.com/v1/objects/33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c/server.jar ./server.jar
 
 # Headless accept the end user license agreement.
 RUN echo 'eula=true' > ./eula.txt
@@ -624,7 +624,10 @@ RUN chmod +x ./unattendStart.sh
 RUN rm server.properties
 
 # Start the server.
-ENTRYPOINT ["sh", "unattendStart.sh"]#["/bin/sh"]#["java", "-jar", "/server.jar"]
+ENTRYPOINT ["sh", "unattendStart.sh"]
+# Alternative entrypoints:
+# ENTRYPOINT ["/bin/sh"]
+# ENTRYPOINT ["java", "-jar", "/server.jar"]
 ```
 
 Save the following file as **unattendStart.sh** in the same directory as the Dockerfile. 
@@ -638,6 +641,80 @@ java -jar server.jar
 ```
 
 This file copies the **server.properties** from the config volume to the Minecraft server location. This way you can persist the world and settings independently from the server itself. 
+
+```
+#Minecraft server properties
+#Thu Sep 24 07:51:20 GMT 2026
+accepts-transfers=false
+allow-flight=false
+broadcast-console-to-ops=true
+broadcast-rcon-to-ops=true
+bug-report-link=
+chat-spam-threshold-seconds=10
+command-spam-threshold-seconds=10
+difficulty=easy
+enable-code-of-conduct=false
+enable-jmx-monitoring=false
+enable-query=false
+enable-rcon=false
+enable-status=true
+enforce-secure-profile=true
+enforce-whitelist=false
+entity-broadcast-range-percentage=100
+force-gamemode=false
+function-permission-level=2
+gamemode=survival
+generate-structures=true
+generator-settings={}
+hardcore=false
+hide-online-players=false
+initial-disabled-packs=
+initial-enabled-packs=vanilla
+level-name=world
+level-seed=
+level-type=minecraft\:normal
+log-ips=true
+management-server-allowed-origins=
+management-server-enabled=false
+management-server-host=localhost
+management-server-port=0
+management-server-secret=ez3VOHYqqwlAMZIOIweFrUeR1JjA9BuyBwb5pYpy
+management-server-tls-enabled=true
+management-server-tls-keystore=
+management-server-tls-keystore-password=
+max-chained-neighbor-updates=1000000
+max-players=20
+max-tick-time=60000
+max-world-size=29999984
+motd=A Minecraft Server
+network-compression-threshold=256
+online-mode=false
+op-permission-level=4
+pause-when-empty-seconds=60
+player-idle-timeout=0
+prevent-proxy-connections=false
+query.port=25565
+rate-limit=0
+rcon.password=
+rcon.port=25575
+region-file-compression=deflate
+require-resource-pack=false
+resource-pack=
+resource-pack-id=
+resource-pack-prompt=
+resource-pack-sha1=
+server-ip=
+server-port=25565
+simulation-distance=10
+spawn-protection=16
+status-heartbeat-interval=0
+sync-chunk-writes=true
+text-filtering-config=
+text-filtering-version=0
+use-native-transport=true
+view-distance=10
+white-list=false
+```
 
 ## Secrets Management
 Secrets management is a **critical aspect of secure application development** and deployment. In containerized environments like Docker, Docker-Compose, Kubernetes, secrets include **sensitive data such as passwords**, **API keys**, **database credentials**, and **TLS certificates**. Properly managing these secrets ensures they remain secure while being accessible to applications that need them.
