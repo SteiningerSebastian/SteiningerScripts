@@ -716,6 +716,10 @@ view-distance=10
 white-list=false
 ```
 
+``` cmd
+docker run -it -v myWorld:/minecraft/world -v E:/tmp/DockerLab2627_1/whitelist.json:/minecraft/whitelist.json -p 25565:25565 sebastiansteininger/minecraft:26.3
+```
+
 ## Secrets Management
 Secrets management is a **critical aspect of secure application development** and deployment. In containerized environments like Docker, Docker-Compose, Kubernetes, secrets include **sensitive data such as passwords**, **API keys**, **database credentials**, and **TLS certificates**. Properly managing these secrets ensures they remain secure while being accessible to applications that need them.
 
