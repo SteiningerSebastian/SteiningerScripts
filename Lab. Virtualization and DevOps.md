@@ -998,7 +998,7 @@ services:
     ports:
       - "8888:80"
     volumes:
-      - <PATH>/ngnix.conf:/etc/nginx/conf.d/default.conf
+      - <PATH>/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - web1
       - web2
