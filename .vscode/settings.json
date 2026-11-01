@@ -1,0 +1,4 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "cmake.sourceDirectory": "E:/SteiningerScripts/files/robotit-hal-starter/hal"
+}
