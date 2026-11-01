@@ -78,7 +78,7 @@ Most of the experiments need no robot at all. When the robots are limited, you s
 - **Real robots:** The number available changes from week to week. Your instructor says at the start of each meeting who works on hardware.
 - **Bare boards:** Boards without motors or sensors are still useful for the schematic work and for anything that only needs the serial console.
 
-[Download the HAL starter kit](./files/robotit-hal-starter.zip)
+[Download the HAL starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit-hal-starter.zip)
 
 That archive contains the HAL, a simulated backend, a self test and a complete example application with three tasks. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter.
 
@@ -302,7 +302,7 @@ Everything after this chapter is an explanation of the choices inside that file.
 # The Hardware and the Schematic
 The schematic is the truth about the hardware. Everything else, including the pin names in the code, is a claim you should be able to verify. This chapter walks the four pages of the board schematic and connects each one to something you will meet in software.
 
-[Download the full schematic as PDF](./files/RobotITSchematic.pdf)
+[Download the full schematic as PDF](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/RobotITSchematic.pdf)
 
 The PDF is the reference for detail. Each page also appears below as an image, and each one gets a section of its own, because a schematic nobody explains is just a wall of lines.
 

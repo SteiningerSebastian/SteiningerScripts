@@ -224,15 +224,22 @@ python -c "import pymupdf; d=pymupdf.open('files/Thing.pdf'); [p.get_pixmap(dpi=
 - **Still link the original PDF** as a download if students need to zoom further, but
   never rely on the link alone — explain the content in text and images.
 
-**Downloadable files (code, starter kits, archives).** A downloadable asset is a normal
-Markdown link to a file under `files/`:
+**Downloadable files (code, starter kits, archives).** A relative link to a zip under
+`files/` **does not download** — the renderer treats it as a page route, not as a file
+transfer. Link to the **raw file on GitHub** instead, so the browser downloads it directly
+from that server:
 
 ```markdown
-[Download the HAL starter kit](./files/robotit-hal-starter.zip)
+[Download the HAL starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit-hal-starter.zip)
 ```
 
-- Keep the folder **and** the zip in `files/` during development; the link must point at
-  the zip, which is what students download.
+- **Use the `/raw/refs/heads/main/` form**, not `blob/`. The `blob` URL opens GitHub's
+  file viewer; only the `raw` URL serves the bytes. Verify it once with a `HEAD` request:
+  the answer must be `200` with `Content-Type: application/zip`.
+- **Relative `./files/…` links still work for images and PDFs** (section 3.5) — only the
+  actual **download** of a binary needs the absolute raw URL. Do not convert image links.
+- **Assets must be committed and pushed** before the link can resolve. A link that works
+  locally but points at an unpushed file is a 404 for every student.
 - **Never reference code that does not exist.** If the text says "look at the reference
   firmware", there must be a real, downloadable archive behind that sentence, or the code
   must be short enough to appear inline in the script. A dangling reference to a private
@@ -775,6 +782,7 @@ const empties = await page.$$eval('li', lis => lis.filter(li => {
 | List item loses text while presenting | No bold lead-in before the colon (section 9) |
 | Bullets only say "Strength / Weakness / Typical use" | The lead-in names a category instead of the content (section 3.3) |
 | Download link goes nowhere | The archive was never committed under `files/`, or the link points at a folder |
+| Download link opens a viewer instead of downloading | Relative `./files/…` path or a `blob/` GitHub URL; use the **`raw/refs/heads/main/`** URL |
 | Students cannot follow a referenced program | The script mentions code that is not included or downloadable (section 3.5) |
 
 ### 10.5 Quick verification routine
@@ -840,8 +848,8 @@ Observed results for otherwise identical headings (all verified live):
 - Use `**Term:** explanation` for every list item, where **Term is the content**.
 - Use `./files/...` for local images; YouTube thumbnails for videos.
 - Render a PDF to one PNG per page and discuss each page; never embed the PDF as an image.
-- Ship downloadable code as a zip under `files/` and link it; never reference code the
-  student cannot obtain.
+- Ship downloadable code as a zip under `files/` and link it with the **absolute GitHub
+  `/raw/refs/heads/main/` URL**; never reference code the student cannot obtain.
 - Use ```tex``` code blocks for math, with `\,` between a command and a following letter.
 - Use ```<language>``` for code (common highlight.js language names).
 - End every chapter with a `> Summary` blockquote.
@@ -873,6 +881,8 @@ Observed results for otherwise identical headings (all verified live):
 - Don't ask students to probe a live battery or charger circuit with a multimeter. If a
   measurement can damage hardware or injure a student, describe the safe observation
   instead (a reading printed by the firmware) and drop the physical task.
+- Don't link a downloadable zip with a relative `./files/…` path — it renders as a page
+  route and does not download. Use the absolute GitHub raw URL instead.
 - Don't share a `file://` URL — it only works in the uploader's own tab and renders
   `undefined` anywhere else (section 10.1).
 
