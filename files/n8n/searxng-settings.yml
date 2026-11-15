@@ -1,0 +1,17 @@
+use_default_settings: true
+
+search:
+  formats:
+    - html
+    - json
+
+engines:
+  - name: wikidata
+    disabled: true
+    inactive: true
+  - name: ahmia
+    disabled: true
+    inactive: true
+  - name: torch
+    disabled: true
+    inactive: true

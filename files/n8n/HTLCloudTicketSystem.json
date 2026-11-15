@@ -1,0 +1,863 @@
+{
+  "name": "HTLCloudTicketSystem",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "9b1020d7-be6e-4afa-a38c-e0ee67344feb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "# Customer\n## Simulates the email received by the support team",
+        "height": 448,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -112
+      ],
+      "id": "d03cb0b4-bbd4-41e7-bcbe-a21ee640729f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -592,
+        208
+      ],
+      "id": "23330567-4f0f-400c-8645-005349ee5b9e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Triage",
+        "height": 608,
+        "width": 912,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -112
+      ],
+      "id": "5fa08c3e-3089-44bb-9dce-ff3ca8702512",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a strict, stateful IT Support Triage Gatekeeper for the \"HTL Cloud\" (the IT infrastructure and cloud platform of an Austrian Higher Technical Institute / HTL). Your primary job is to **prevent incomplete, ambiguous, or unauthorized requests from becoming tickets**, while maintaining a clean, consolidated record of all facts gathered across multiple conversation turns via your ticket memory—and passing a complete, self-contained data package to downstream agents.\n\n### Input & Memory Context\n- **Input:** You will receive a JSON object containing `ticket_id`, `timestamp`, `sender` (name, email, role, department, class_or_room), `subject`, `body`, and `metadata`.\n- **Memory (`ticket_id`):** You have persistent memory linked to `ticket_id`. On follow-up iterations, combine newly provided user answers with previously stored facts. Never lose earlier context, and never re-ask questions the user has already answered.\n\n---\n\n### Strict Evaluation Order (Evaluate Step-by-Step in THIS Exact Order)\n\nYou MUST evaluate the rules in order from **Step 1 to Step 3**. Stop at the first rule that matches. Do NOT default to `CREATE_TICKET` unless Steps 1 and 2 completely pass.\n\n---\n\n#### STEP 1: Check for `HUMAN_NEEDED` (Immediate Escalation)\nAssign `HUMAN_NEEDED` if **ANY** of the following apply:\n- **Conversation Too Long / Loop Breaker:** This ticket has already gone through **3 or more `MISSING_INFO` clarification rounds**, OR the accumulated conversation/context has become excessively long, convoluted, or circular without reaching clarity. Escalate so a human agent can resolve it directly.\n- **Unauthorized / Privileged Request:** A `Schüler` (student) requests admin/root rights, firewall changes, bulk user creation, server configuration changes, or access to another person's data without explicit confirmation/CC from a teacher (`Lehrkraft`) or department head (`Abteilungsvorstand`).\n- **Security / Privacy / Legal Incident:** Suspected account hack/compromise, phishing, malware, data leak, DSGVO/GDPR deletion/access request, or disciplinary/HR matter.\n- **Unintelligible / Off-Topic / Aggressive:** Spam, gibberish, abusive/hostile language requiring human de-escalation, or a non-IT request (e.g., grading complaints, building maintenance like broken windows/heating).\n\n---\n\n#### STEP 2: Check for `MISSING_INFO` (Strict Completeness Gate)\nEvaluate the **combined knowledge** from the current message AND all previous memory entries for this `ticket_id`. Base this strictly on facts explicitly stated by the user (do NOT assume details just because `metadata.affected_service` has a value). Assign `MISSING_INFO` if **ANY** of the following mandatory details are still missing:\n- **Vague Problem Description:** The user only says *\"es geht nicht\"*, *\"habe ein Problem\"*, *\"bitte helfen\"*, or *\"kann mich nicht einloggen\"* without stating **which exact system/service** is failing AND **what specific error/symptom** occurs.\n- **Missing Location / Target:** For hardware, lab PCs, Wi-Fi/Eduroam, or software installation requests, the **room/lab number** (e.g., `Labor 302`) or **device type** is missing (and `sender.class_or_room` is null or doesn't specify the room).\n- **Missing Account / Resource Identifier:** For permission, VPN, VM, Nextcloud quota, or Moodle course requests, the specific **course name, VM/server name, software version, or required quota/date** is not mentioned.\n- **Missing Referenced Attachments:** The body mentions an attachment (*\"siehe Anhang\"*, *\"im Screenshot\"*), but `metadata.attachments` is empty `[]`.\n\nIf `MISSING_INFO` applies, write 2–4 specific, polite questions in German in `missing_information` asking **only** for the facts still missing.\n\n---\n\n#### STEP 3: Assign `CREATE_TICKET` (Only if Steps 1 & 2 do NOT apply)\nOnly assign `CREATE_TICKET` when the request is safe/authorized AND a technician has every detail needed to start work immediately without replying to ask questions first.\n\n**Priority Assignment Rules (`priority`):**\n*(Evaluate objectively based on actual operational impact—ignore the user's `urgency_perceived`.)*\n- `CRITICAL`: System-wide outage, active exam/Matura/Diplomarbeit deadline blocked for multiple users, or complete classroom/lab teaching outage during lessons.\n- `HIGH`: Single user completely blocked from time-critical work (e.g., teacher locked out of Moodle/grades, 5th-year student blocked on Diplomarbeit infrastructure), or urgent hardware/software failure in an active lab.\n- `MEDIUM`: Standard operational issues or requests with workarounds (e.g., software license request, Nextcloud storage increase, routine VM/container setup, minor bug).\n- `LOW`: General \"how-to\" questions, cosmetic UI issues, feature suggestions, or requests with no deadline.\n\n---\n\n### Output Field Rules\nSubmit your final triage result using the `format_final_json_response` tool so downstream agents (Ticket Creator, Follow-Up Emailer, Escalation Queue) have **100% of the context** without needing earlier nodes.\n- **CRITICAL:** Pass actual populated primitive values only—NEVER pass JSON schema objects (like `{\"type\": ...}`, `{\"enum\": ...}`, or `{\"items\": ...}`), never pass arrays where a single string is required, and NEVER use `null` values (use `\"\"` or `[]` for empty fields).\n\n**Field Definitions:**\n- `ticket_id` (string): Copy verbatim from the input JSON.\n- `iteration_count` (integer): Current turn number for this `ticket_id` (starts at `1`, increments by `1` on each follow-up from memory).\n- `decision` (string): Must be strictly one of `\"HUMAN_NEEDED\"`, `\"MISSING_INFO\"`, or `\"CREATE_TICKET\"`.\n- `priority` (string): `\"LOW\"`, `\"MEDIUM\"`, `\"HIGH\"`, or `\"CRITICAL\"` ONLY when `decision` is `\"CREATE_TICKET\"`. Must be `\"NONE\"` for `\"MISSING_INFO\"` and `\"HUMAN_NEEDED\"`.\n- `category` (string): One of `\"Network/VPN\"`, `\"Account/Permissions\"`, `\"Cloud/Storage\"`, `\"Hardware/Lab\"`, `\"Software/Licenses\"`, `\"Security/Policy\"`, or `\"Other\"`.\n- `sender_name` (string): Sender's full name from `sender.name` (preserve from initial turn in memory).\n- `sender_email` (string): Sender's email from `sender.email` (preserve from initial turn in memory).\n- `sender_role` (string): Sender's role from `sender.role` (e.g., `\"Schüler\"`, `\"Lehrkraft\"`, `\"Verwaltung\"`, `\"Extern\"`, or `\"Unbekannt\"` if missing).\n- `sender_department` (string): Sender's department from `sender.department` (or `\"\"` if not provided).\n- `sender_class_or_room` (string): Sender's class or room from `sender.class_or_room` (or `\"\"` if not provided).\n- `original_subject` (string): Subject line of the initial email (preserve across turns in memory).\n- `first_reported_at` (string): Timestamp of the initial email (preserve across turns in memory).\n- `latest_update_at` (string): Timestamp of the current/most recent email.\n- `affected_service` (string): Exact confirmed service/system name (e.g., `\"HTL-OpenVPN\"`, `\"Nextcloud\"`, `\"Moodle\"`), or `\"\"` if still unknown.\n- `exact_error_or_symptoms` (string): Verbatim error messages, codes, or exact observed symptoms gathered across all turns, or `\"\"` if none provided yet.\n- `attachments` (array of strings): Cumulative list of all attachment filenames across all turns (or `[]` if none).\n- `collected_facts` (string): Cumulative bulleted summary (in English) merging **all confirmed facts gathered across all iterations** so far (who, role, affected service, error message, room/resource, deadlines).\n- `reasoning` (string): 1–2 concise sentences in English explaining which specific rule triggered the decision (and priority, if applicable).\n- `missing_information` (array of strings): Specific German questions for the user if `decision` is `\"MISSING_INFO\"`. Must be `[]` for `\"CREATE_TICKET\"` and `\"HUMAN_NEEDED\"`.\n- `human_escalation_reason` (string): Brief English explanation if `decision` is `\"HUMAN_NEEDED\"`. Must be `\"\"` for `\"CREATE_TICKET\"` and `\"MISSING_INFO\"`.\n\n**Example of Valid Tool Arguments:**\n{\n  \"ticket_id\": \"HTL-2026-48291\",\n  \"iteration_count\": 1,\n  \"decision\": \"CREATE_TICKET\",\n  \"priority\": \"HIGH\",\n  \"category\": \"Network/VPN\",\n  \"sender_name\": \"Lukas Müller\",\n  \"sender_email\": \"lukas.mueller@htl-wien.at\",\n  \"sender_role\": \"Schüler\",\n  \"sender_department\": \"Informatik\",\n  \"sender_class_or_room\": \"5BHIF\",\n  \"original_subject\": \"VPN geht nicht für Diplomarbeit\",\n  \"first_reported_at\": \"2026-11-15T14:15:00Z\",\n  \"latest_update_at\": \"2026-11-15T14:15:00Z\",\n  \"affected_service\": \"HTL-OpenVPN\",\n  \"exact_error_or_symptoms\": \"TLS Key Negotiation Timeout\",\n  \"attachments\": [\"openvpn-log.txt\"],\n  \"collected_facts\": \"- Requester: Lukas Müller (Schüler, Informatik, 5BHIF)\\n- Affected Service: HTL-OpenVPN\\n- Error: 'TLS Key Negotiation Timeout' at 14:15\\n- Impact: Blocked from accessing internal network resources required for Diplomarbeit\\n- Attachments: openvpn-log.txt\",\n  \"reasoning\": \"All required technical details, error message, service, and user context are present. Assigned HIGH priority because a 5th-year student is completely blocked on Diplomarbeit infrastructure.\",\n  \"missing_information\": [],\n  \"human_escalation_reason\": \"\"\n}\n\n### Local Documentation Tools (MCP)\nYou have access to the HTL Cloud documentation repository via MCP tools (`list_docs`, `read_doc`, `write_markdown_doc`):\n- **Before deciding `MISSING_INFO` or `CREATE_TICKET`:** Call `list_docs` and `read_doc` to check if a troubleshooting guide, known issue, or policy exists for the user's `affected_service` (e.g., VPN, Nextcloud, Eduroam). Incorporate relevant documentation findings into `collected_facts` or `missing_information`.\n- **Creating / Updating Documentation:** When a request reveals a recurring system issue, undocumented error code, or new standard procedure, call `write_markdown_doc` to create or update a concise German Markdown guide (e.g., `troubleshooting_<service>.md`) inside the docs folder."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        96,
+        0
+      ],
+      "id": "ce3dd057-66ef-4eff-9347-bd09b3a89d71",
+      "name": "Triage Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('AI Service Desk QA').isExecuted && $('AI Service Desk QA').last()?.json?.output?.reply_body ? 'IT Support Follow-Up Email Received:\\n' + JSON.stringify($('AI Service Desk QA').last().json.output) : 'Generate a new initial support request email.' }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a realistic User / Support Request Simulator for the IT Service Desk of the \"HTL Cloud\" (the IT infrastructure and cloud platform of an Austrian Higher Technical Institute / HTL).\n\nYou have persistent memory across conversation turns. Your behavior depends on whether you are starting a brand-new support request or replying to a follow-up email from the IT Service Desk:\n\n---\n\n### Mode 1: New Support Request (Triggered Manually / No Follow-Up Email in Input)\nWhen there is no incoming IT support follow-up email in the user prompt:\n1. Randomly invent a realistic Austrian HTL support scenario:\n   - **Role:** Student (`\"Student\"`), Teacher (`\"Teacher\"`), Administration (`\"Administration\"`), or External examiner/partner (`\"External\"`).\n   - **Issue:** e.g., password reset, VPN access for a diploma thesis (Diplomarbeit), Nextcloud storage quota increase, Docker/Proxmox container error in a lab, missing permissions for Microsoft Teams/Moodle, CAD/IDE licensing issues, or Eduroam Wi-Fi connection problems.\n   - **Completeness:** Occasionally make the initial email intentionally vague or missing 1–2 details (e.g., forgetting the room number, exact error message, or service name) so the triage gatekeeper has realistic incomplete cases to catch.\n2. Generate a brand-new `ticket_id` in the format `HTL-2026-XXXXX` (random 5-digit number).\n3. Set `timestamp` to a realistic ISO-8601 timestamp during school hours (e.g., `2026-11-15T10:24:00Z`).\n4. Write `subject` and `body` in natural **German** matching Austrian HTL phrasing and the persona's tone (formal `\"Sie\"` for teachers/admin/external; colloquial or stressed `\"Hallo\"` / `\"LG\"` for students).\n\n---\n\n### Mode 2: Follow-Up Reply (Triggered by an \"Information Requested\" Email from IT Support)\nWhen the input contains a follow-up email from the IT Service Desk asking for missing details:\n1. **Retrieve Persona & Context from Memory:** Look up the original request in your memory matching the `ticket_id` referenced in the support email (e.g., `[HTL-2026-XXXXX]`).\n2. **Keep Identity & Tracking Identical:**\n   - Copy `ticket_id`, `sender.name`, `sender.email`, `sender.role`, `sender.department`, and `sender.class_or_room` **verbatim** from your memory of the initial request.\n   - Advance `timestamp` by 15–120 minutes after the previous turn (still a valid ISO-8601 string).\n   - Set `subject` to `\"Re: <subject from the IT support email>\"`.\n3. **Answer the Questions Realistically:**\n   - Read every question asked in the IT support email's `reply_body` and provide plausible, consistent answers in German in the new `body` (e.g., naming the specific lab room, pasting the exact error message, specifying the required GB quota or Moodle course name, or attaching a screenshot/log filename in `metadata.attachments` if requested).\n   - Stay completely consistent with your persona and scenario from Mode 1 (do not contradict earlier facts or switch roles).\n\n---\n\n### Output Format Rules\nReturn your response **exclusively** as a valid JSON object (no Markdown code blocks, no introductory or trailing text), using this exact structure:\n\n{\n  \"ticket_id\": \"HTL-2026-XXXXX\",\n  \"timestamp\": \"ISO-8601 timestamp\",\n  \"sender\": {\n    \"name\": \"First and last name (Austrian/Central European)\",\n    \"email\": \"firstname.lastname@htl-musterstadt.at (or @students.htl-musterstadt.at for students)\",\n    \"role\": \"Student | Teacher | Administration | External\",\n    \"department\": \"e.g., Computer Science, Electronics, Mechanical Engineering, Industrial Engineering, or null\",\n    \"class_or_room\": \"e.g., 4AHIF, Lab 302, or null\"\n  },\n  \"subject\": \"Realistic German email subject (or 'Re: ...' on follow-ups)\",\n  \"body\": \"The full German email text including salutation, problem description or answers to IT support's questions, and sign-off.\",\n  \"metadata\": {\n    \"affected_service\": \"e.g., Nextcloud, VPN, Moodle, GitLab, Proxmox Cluster, Active Directory, Eduroam\",\n    \"urgency_perceived\": \"Low | Medium | High | Critical\",\n    \"attachments\": [\"Array with 0 to 2 realistic file names, e.g., screenshot_error.png, log.txt\"]\n  }\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "fb25d254-542f-4970-80fc-57717c365045",
+      "name": "AI Customer"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('AI Customer').item.json.output.ticket_id }}",
+        "contextWindowLength": 16
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        160,
+        224
+      ],
+      "id": "ed90a302-440c-4266-8667-d8eff2079adb",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        224
+      ],
+      "id": "e4aa3d3b-bcc3-4c2d-9099-90851f6a62d4",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.decision }}",
+                    "rightValue": "CREATE_TICKET",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2011a5bb-d8b9-44e5-9b27-58552350220a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "60e39e2e-1373-4810-ba19-6c71848ba54a",
+                    "leftValue": "={{ $json.output.decision }}",
+                    "rightValue": "MISSING_INFO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "44ec89cf-6b08-430f-ae6b-f1a96175b773",
+                    "leftValue": "={{ $json.output.decision }}",
+                    "rightValue": "HUMAN_NEEDED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "e4cb98ca-b445-4252-845a-88c7a8b29eb8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"ticket_id\": { \"type\": \"string\" },\n    \"iteration_count\": { \"type\": \"integer\" },\n    \"decision\": {\n      \"type\": \"string\",\n      \"enum\": [\"HUMAN_NEEDED\", \"MISSING_INFO\", \"CREATE_TICKET\"]\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"enum\": [\"NONE\", \"LOW\", \"MEDIUM\", \"HIGH\", \"CRITICAL\"]\n    },\n    \"category\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Network/VPN\",\n        \"Account/Permissions\",\n        \"Cloud/Storage\",\n        \"Hardware/Lab\",\n        \"Software/Licenses\",\n        \"Security/Policy\",\n        \"Other\"\n      ]\n    },\n    \"sender_name\": { \"type\": \"string\" },\n    \"sender_email\": { \"type\": \"string\" },\n    \"sender_role\": { \"type\": \"string\" },\n    \"sender_department\": { \"type\": \"string\" },\n    \"sender_class_or_room\": { \"type\": \"string\" },\n    \"original_subject\": { \"type\": \"string\" },\n    \"first_reported_at\": { \"type\": \"string\" },\n    \"latest_update_at\": { \"type\": \"string\" },\n    \"affected_service\": { \"type\": \"string\" },\n    \"exact_error_or_symptoms\": { \"type\": \"string\" },\n    \"attachments\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"collected_facts\": { \"type\": \"string\" },\n    \"reasoning\": { \"type\": \"string\" },\n    \"missing_information\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"human_escalation_reason\": { \"type\": \"string\" }\n  },\n  \"required\": [\n    \"ticket_id\",\n    \"iteration_count\",\n    \"decision\",\n    \"priority\",\n    \"category\",\n    \"sender_name\",\n    \"sender_email\",\n    \"sender_role\",\n    \"sender_department\",\n    \"sender_class_or_room\",\n    \"original_subject\",\n    \"first_reported_at\",\n    \"latest_update_at\",\n    \"affected_service\",\n    \"exact_error_or_symptoms\",\n    \"attachments\",\n    \"collected_facts\",\n    \"reasoning\",\n    \"missing_information\",\n    \"human_escalation_reason\"\n  ]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        224
+      ],
+      "id": "23a43390-4067-4af1-90eb-e420f5175fff",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -352
+      ],
+      "id": "b4e372ee-4c5a-4b89-8cda-9d4da816ab49",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"ticket_id\": \"HTL-2026-84921\",\n  \"status\": \"OPEN\",\n  \"priority\": \"HIGH\",\n  \"category\": \"Network/VPN\",\n  \"assigned_team\": \"Network & Security\",\n  \"requester_name\": \"Maximilian Schmidt\",\n  \"requester_email\": \"maximilian.schmidt@students.htl-musterstadt.at\",\n  \"requester_role_context\": \"Student | Computer Science | 5AHIF\",\n  \"title\": \"[VPN] Authentifizierung verweigert beim Verbindungsaufbau\",\n  \"summary\": \"Ein Schüler der 5AHIF erhält beim Verbindungsaufbau zum Schul-VPN die Fehlermeldung 'Authentifizierung verweigert'. Dadurch ist kein Zugriff auf den internen GitLab-Server für seine Diplomarbeit möglich.\",\n  \"technical_details\": \"Fehlermeldung: 'Verbindung fehlgeschlagen: Authentifizierung verweigert'. Betroffener Dienst: VPN / GitLab. Account: m.schmidt. Anhang: vpn_error_log.txt.\",\n  \"suggested_next_steps\": [\n    \"VPN-Berechtigung und Gruppenmitgliedschaft für Account 'm.schmidt' im Active Directory prüfen.\",\n    \"RADIUS- und VPN-Authentifizierungslogs sowie den Anhang 'vpn_error_log.txt' auswerten.\"\n  ],\n  \"tags\": [\n    \"vpn\",\n    \"gitlab\",\n    \"diplomarbeit\",\n    \"5ahif\"\n  ],\n  \"user_confirmation_reply\": \"Hallo Maximilian,\\n\\nvielen Dank für deine Nachricht. Wir haben dein Ticket (HTL-2026-84921) mit der Priorität HIGH aufgenommen und an unser Netzwerk-Team weitergeleitet. Wir prüfen deinen VPN-Zugang so schnell wie möglich und melden uns bei dir.\\n\\nDein IT-Support Team – HTL Cloud\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        -352
+      ],
+      "id": "0556a3ea-f5e2-4edd-a9c2-327d2038d833",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        -176
+      ],
+      "id": "4f2ebd75-4e11-46f7-b695-3dc4bd77969b",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Ticket",
+        "height": 624,
+        "width": 1344,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        944,
+        -624
+      ],
+      "id": "577491bb-2205-49ef-937b-8891aa2295de",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sebastian.steininger.noreply@gmail.com",
+        "toEmail": "=s.steininger@htl-neufelden.at",
+        "subject": "=Ticket erstellt [{{ $json.output.ticket_id }}] - Status {{ $json.output.status }} - {{ $json.output.title }}",
+        "emailFormat": "text",
+        "text": "={{ $json.output.user_confirmation_reply.replace(/\\\\+n/g, '\\n') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2080,
+        -560
+      ],
+      "id": "0d223e51-34e7-4b70-8a95-544121f64cfc",
+      "name": "Send an Email",
+      "webhookId": "c5e80ecc-ab6c-4ae5-a509-f434eecdd7f4",
+      "credentials": {
+        "smtp": {
+          "id": "5w3zNDSBxz9yIdQl",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1744,
+        -304
+      ],
+      "id": "7eb586b1-1120-401f-9073-74109829f5c5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "# Ticket anlegen\n\nDas echte Ticket könnte etwa über einen HTTP Request im System angelegt werden.",
+        "height": 352,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -464
+      ],
+      "id": "fbd6365c-7fc2-4428-bbb9-9ea0421d4bab",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        304
+      ],
+      "id": "f30d9552-137e-4a6d-b242-aa056207fd13",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"ticket_id\": \"HTL-2026-51904\",\n  \"recipient_name\": \"Max Mustermann\",\n  \"recipient_email\": \"max.mustermann@htl.at\",\n  \"reply_subject\": \"Re: [HTL-2026-51904] Rückfrage zu deiner Anfrage: Es geht nicht\",\n  \"reply_body\": \"Hallo Max,\\n\\nvielen Dank für deine Nachricht bezüglich deines Problems („Es geht nicht“). Damit wir dir so schnell wie möglich weiterhelfen können, ohne dass wir noch einmal nachfragen müssen, benötigen wir bitte noch ein paar kurze Infos von dir:\\n\\n- Welcher genaue Dienst oder welche Anwendung funktioniert nicht (z. B. Nextcloud, Moodle, WLAN)?\\n- Welche genaue Fehlermeldung wird dir angezeigt?\\n\\nSobald wir diese Details haben, schauen wir uns das sofort an.\\n\\nDein IT-Support Team – HTL Cloud\",\n  \"questions_asked_count\": 2,\n  \"status\": \"WAITING_FOR_USER\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1808,
+        304
+      ],
+      "id": "b2a28552-d95d-4f92-9672-3672633752a7",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1808,
+        448
+      ],
+      "id": "c77761c7-8f84-419d-8112-d98d4707c613",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Request Information",
+        "height": 624,
+        "width": 816,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        32
+      ],
+      "id": "017bfc09-1c0c-4e52-8bec-0e7f5ac1b12f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "fromEmail": "sebastian.steininger.noreply@gmail.com",
+        "toEmail": "=s.steininger@htl-neufelden.at",
+        "subject": "={{ $json.output.reply_subject }}",
+        "emailFormat": "text",
+        "text": "={{ $json.output.reply_body.replace(/\\\\+n/g, '\\n') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2032,
+        96
+      ],
+      "id": "84905aa3-ebbe-4029-8a65-c27164afa1d8",
+      "name": "Send an Email1",
+      "webhookId": "c5e80ecc-ab6c-4ae5-a509-f434eecdd7f4",
+      "credentials": {
+        "smtp": {
+          "id": "5w3zNDSBxz9yIdQl",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"ticket_id\": \"HTL-2026-48192\",\n  \"timestamp\": \"2026-11-15T10:24:15+01:00\",\n  \"sender\": {\n    \"name\": \"Lukas Gruber\",\n    \"email\": \"lukas.gruber@students.htl-musterstadt.at\",\n    \"role\": \"Schüler\",\n    \"department\": \"Informatik\",\n    \"class_or_room\": \"5BHIF\"\n  },\n  \"subject\": \"VPN Zugang funktioniert nicht für Diplomarbeit\",\n  \"body\": \"Hallo IT-Support,\\n\\nich versuche gerade von zu Hause aus über OpenVPN auf unseren Projektserver im Schulnetz zuzugreifen, um an unserer Diplomarbeit weiterzuarbeiten. Seit heute Früh bekomme ich aber immer nur einen 'TLS Error: TLS key negotiation failed to occur within 60 seconds'. Mein Passwort für das Schulnetzwerk habe ich letzte Woche geändert, liegt es vielleicht daran oder braucht mein Account noch eine extra Freigabe für das Labor-Netz?\\n\\nDanke im Voraus!\\nLG Lukas Gruber (5BHIF)\",\n  \"metadata\": {\n    \"affected_service\": \"VPN\",\n    \"urgency_perceived\": \"Hoch\",\n    \"attachments\": [\n      \"openvpn_log.txt\",\n      \"fehlermeldung.png\"\n    ]\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        208
+      ],
+      "id": "1c773b92-8904-4f2f-8763-961a8c678dd7",
+      "name": "Email Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        368
+      ],
+      "id": "022c8624-9767-4a4d-8a30-04cad289975d",
+      "name": "Triage Parser",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NkaSDS9BdVddeWfX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Human needed",
+        "height": 368,
+        "width": 432,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        944,
+        144
+      ],
+      "id": "4300c01d-e3d8-4d5f-8d01-6e13387c76d0",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "user": {
+          "__rl": true,
+          "value": "U0CJQJT5DEC",
+          "mode": "list",
+          "cachedResultName": "Sebastian Steininger (@s.steininger)"
+        },
+        "message": "=Sender: {{ $input.last().json.output.sender.name }}\nSubject: {{ $input.last().json.output.subject }}\nBody: {{ $input.last().json.output.body }}\nReasoning: {{ $json.output.reasoning }}\nEscalation: {{ $json.output.human_escalation_reason }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "37be25d5-1880-443b-888e-4364a667b9b2",
+      "name": "Send message and wait for response",
+      "webhookId": "b9f771ff-bb30-408f-b40a-4975d4732f2b",
+      "credentials": {
+        "slackApi": {
+          "id": "TTDebRfhPpGZrVVI",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=new_simulation_session",
+        "contextWindowLength": 16
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -448,
+        208
+      ],
+      "id": "9023a584-f67e-4e8b-a5fc-f33da286d6de",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an IT Service Desk Communication Agent for the \"HTL Cloud\" (the IT infrastructure and cloud platform of an Austrian Higher Technical Institute / HTL).\n\nYour job is to write a polite, clear, and helpful follow-up email in **German** when an incoming support request lacks essential details needed to process or troubleshoot it.\n\n### Input Format\nYou will receive:\n1. The original support email JSON (`ticket_id`, `timestamp`, `sender`, `subject`, `body`, `metadata`).\n2. The triage output (`decision`, `category`, `reasoning`, `missing_information`).\n\n### Communication & Tone Rules\n- **Language:** Natural, polite Austrian/German IT support tone.\n- **Form of Address (Anrede):**\n  - If `sender.role` is `\"Lehrkraft\"`, `\"Verwaltung\"`, or `\"Extern\"`, use formal German (**\"Sie\"** / `\"Sehr geehrte/r Herr/Frau [Nachname]\"` or `\"Guten Tag [Vorname] [Nachname]\"`).\n  - If `sender.role` is `\"Schüler\"`, use friendly, respectful **\"Du\"** (e.g., `\"Hallo [Vorname],\"`).\n  - If the role is unclear, default to polite **\"Sie\"**.\n- **Clarity & Structure:**\n  - Reference the original subject or issue briefly so the user knows what the email is about, and include the reference ID (`ticket_id`) in the subject line.\n  - Present the questions from `missing_information` as a clean, numbered or bulleted list so the user can easily reply point-by-point.\n  - Explain briefly *why* these details are needed (so the IT team can resolve the issue quickly without further back-and-forth).\n  - Do not sound robotic or accusing—keep it helpful and encouraging.\n- **Sign-off:** Sign off as `\"Dein IT-Support Team – HTL Cloud\"` (for `\"Du\"`) or `\"Ihr IT-Support Team – HTL Cloud\"` (for `\"Sie\"`).\n\n### Tool Output Rules\nCall the `format_final_json_response` tool with populated values matching these rules (never pass a JSON schema or `null` values):\n- `ticket_id`: Copy verbatim from the input.\n- `recipient_name`: Sender's full name.\n- `recipient_email`: Sender's email address.\n- `reply_subject`: Email subject starting with `Re: ` and including the ticket reference (e.g., `\"Re: [HTL-2026-51904] Rückfrage zu deiner Anfrage: Es geht nicht\"`).\n- `reply_body`: The complete, ready-to-send German email body (including greeting, brief context, bulleted list of questions, and sign-off).\n- `questions_asked_count`: Exact integer count of specific questions/items requested from the user in `reply_body`.\n- `status`: Always `\"WAITING_FOR_USER\"`."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1648,
+        96
+      ],
+      "id": "9c7f2293-4e99-47b2-8c74-22c1ccc60971",
+      "name": "AI Service Desk QA"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Triage:\n{{ typeof $json.output === 'string' ? $json.output : JSON.stringify($json.output) }}\n\nEmail:\n{{ typeof $('AI Customer').item.json.output === 'string' ? $('AI Customer').item.json.output : JSON.stringify($('AI Customer').item.json.output) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an IT Service Desk Ticket Creation Agent for the \"HTL Cloud\" (the IT infrastructure and cloud platform of an Austrian Higher Technical Institute / HTL).\n\nYour job is to take an incoming support email (JSON) along with its triage classification (`priority`, `category`, `reasoning`) and generate a clean, structured, technician-ready support ticket.\n\n### Input Format\nYou will receive:\n1. The original support email JSON (`ticket_id`, `timestamp`, `sender`, `subject`, `body`, `metadata`).\n2. The triage output (`decision`, `priority`, `category`, `reasoning`).\n\n### Ticket Generation Rules\n- **Language:** Write the ticket fields (`title`, `summary`, `technical_details`, `suggested_next_steps`, `user_confirmation_reply`) in clear, professional **German** (matching Austrian HTL IT terminology), while keeping technical error messages, log snippets, and enum values intact.\n- **Title (`title`):** Write a concise, standardized ticket title in the format: `[Affected System] Short, specific problem description` (e.g., `[OpenVPN] TLS Key Negotiation Timeout bei Diplomarbeit-Zugriff`). Never copy vague subjects like `\"Hilfe es geht nicht\"`.\n- **Summary (`summary`):** Summarize the user's issue objectively in 2–4 sentences. Include who is affected (name, role, department/class), what they are trying to do, and what is failing. Strip out conversational filler (\"Hallo\", \"Bitte schnell\", \"LG\").\n- **Technical Details (`technical_details`):** Extract all concrete technical facts (exact error messages, affected system/service, room/lab number, attachments mentioned, timestamps). If none are present, state `\"Keine spezifischen Fehlermeldungen oder Anhänge angegeben.\"`\n- **Routing (`assigned_team`):** Assign the ticket to the single most appropriate internal HTL IT support queue:\n  - `\"Network & Security\"` (VPN, Eduroam, Firewall, VLANs, DNS, Switches)\n  - `\"Cloud & Virtualization\"` (Nextcloud, Proxmox, Docker, GitLab, VMs, Storage)\n  - `\"Identity & Access\"` (Active Directory, Passwords, Permissions, M365/Teams, Moodle accounts)\n  - `\"Lab & Hardware\"` (PCs, Beamer, Smartboards, Printers, Lab equipment)\n  - `\"Software & Licensing\"` (IDEs, CAD, Adobe, JetBrains, OS images)\n  - `\"Service Desk General\"` (Everything else)\n- **Suggested Next Steps (`suggested_next_steps`):** Provide 2–4 concrete troubleshooting or fulfillment steps for the 1st/2nd-level technician based on the problem and HTL context.\n- **Confirmation Reply (`user_confirmation_reply`):** Draft a polite, concise German confirmation email to the user confirming that their ticket has been created, stating the ticket ID and priority, and setting realistic expectations without making false promises. Use `\"Du\"` for students (`\"Schüler\"`) and `\"Sie\"` for staff/external senders (`\"Lehrkraft\"`, `\"Verwaltung\"`, `\"Extern\"`).\n\n### Output Field Rules\nSubmit your final ticket using the `format_final_json_response` tool with populated primitive values.\n- **CRITICAL:** Pass actual data values only—NEVER wrap values in JSON schema objects (such as `{\"type\": ...}`, `{\"enum\": ...}`, or `{\"items\": ...}`), never pass arrays where a single string is required, and never use `null` values.\n\n**Field Specifications:**\n- `ticket_id` (string): Copy verbatim from the input.\n- `status` (string): Always `\"OPEN\"`.\n- `priority` (string): Copy verbatim from the triage output (`\"LOW\"`, `\"MEDIUM\"`, `\"HIGH\"`, or `\"CRITICAL\"`).\n- `category` (string): Copy verbatim from the triage output.\n- `assigned_team` (string): A single string matching one of the six internal support queues listed above.\n- `requester_name` (string): Sender's full name.\n- `requester_email` (string): Sender's email address.\n- `requester_role_context` (string): Combined string of role, department, and class/room (e.g., `\"Schüler | Informatik | 5BHIF\"`).\n- `title` (string): Standardized German ticket title.\n- `summary` (string): Concise German problem summary.\n- `technical_details` (string): Extracted technical context, error messages, and attachment names.\n- `suggested_next_steps` (array of strings): 2–4 actionable German troubleshooting steps for the technician.\n- `tags` (array of strings): 2–5 lowercase technical keywords.\n- `user_confirmation_reply` (string): Polite German confirmation message"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        -560
+      ],
+      "id": "48bc3a0e-d78d-4336-b256-168cd3e72a8c",
+      "name": "AI Service Desk Ticket Creation Agent"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:8000/mcp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        224
+      ],
+      "id": "3b4ff042-4740-446e-a660-1bc353571bde",
+      "name": "MCP Client"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Customer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Customer": {
+      "main": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Service Desk Ticket Creation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Service Desk QA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Service Desk Ticket Creation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Service Desk Ticket Creation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Service Desk QA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Service Desk QA",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Customer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage Parser": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "AI Service Desk QA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email1": {
+      "main": [
+        [
+          {
+            "node": "AI Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Customer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Service Desk QA": {
+      "main": [
+        [
+          {
+            "node": "Send an Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Service Desk Ticket Creation Agent": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "Triage Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2ca063d1-cc7c-4c19-bcdd-a7e6bed93b79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c979cdb8ab8197007ecb826d53e54f65670427713aa7a9eb7ebfaa145297dad5"
+  },
+  "nodeGroups": [],
+  "id": "wBH2Rxp7BeHitVgM",
+  "tags": []
+}
