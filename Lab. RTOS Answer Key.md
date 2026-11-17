@@ -20,7 +20,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 | Checkpoint | Chapter | Pass condition | Evidence |
 |---|---|---|---|
-| Toolchain | Toolchain, Build and First Flash | A program runs and prints its backend name and at least one task line | Serial log or screenshot |
+| Toolchain | Toolchain, Build and First Flash | The blink project runs in the simulator and on the physical hardware, the LED blinks at 500 ms on both, and the student names one difference between the two logs | Screenshot of the monitor from both |
 | Timing | Tasks, Scheduling and Priorities | Four measured numbers: worst period and worst execution time, both delay functions | Printed log lines |
 | Data | Sharing Data Between Tasks | Torn read counter at zero with the mutex and climbing without it | Two runs, same test |
 | Health | Diagnostics and Fault Handling | The system reports its own health without a debugger | LED codes on hardware or printed heartbeats in the simulator |
@@ -35,7 +35,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Assessment is formative:** the point of a checkpoint is to catch a wrong mental model in week two, not to produce a mark. Say that out loud, or groups will hide mistakes.
 - **Keep the failure case first:** every experiment in this lab is more valuable when something breaks. If a group reports "everything worked", ask them to break it on purpose.
 - **Safety supervision:** nobody runs new motor code on the table with the wheels down. Check this yourself, do not rely on the written rule. The rule about lifting the robot before the first run of new motor code is the one that prevents injury and destroyed boards.
-- **Robot scarcity:** decide at the start of each meeting who has hardware and write it on the board. Simulator groups work in parallel, so nobody waits.
+- **Simulation and hardware workflow:** students can run every exercise in the Velxio simulator and on the physical RobotIT hardware side by side, so nobody ever waits to test code.
 
 # Introduction
 
@@ -45,8 +45,9 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Goal:** the sentence "a real time system is not a fast system, it is a system that can promise something about time" must survive the meeting. Everything later is a consequence of it.
 - **Watch for:** students who equate real time with fast. Ask them for the deadline of a mouse and then for the deadline of a dashboard. The contrast does the work.
 - **The superloop counter example is the hook:** one blocking I2C read and the motors keep their last command. Groups that have already built a line follower will recognise this immediately.
+- **The Simone Giertz video break:** the opening video is *Why you should make useless things*, and it is not a joke for its own sake. Her machines fail on camera and she treats each failure as the most interesting thing that happened. Say that out loud before you press play, because it sets the tone for a lab where breaking things on purpose is the method. It is twelve minutes, so do not treat it as a full screening: start it, let the room settle while the installer runs, and cut it when the first machine fails on camera. That first failure is the whole point.
 
-## Try it yourself - deadlines around you
+## Check your understanding - deadlines around you
 
 - **Mouse, about one millisecond:** a gaming mouse reports every 1 ms, an office mouse every 8 ms. A late report is a stuttering cursor. The consequence is annoyance, not damage.
 - **Drone, about two and a half milliseconds:** an attitude loop at 400 Hz. A missed deadline means the controller is late to a disturbance, which produces oscillation, and oscillation in the air is a crash.
@@ -70,7 +71,8 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Goal:** students answer the question "can a late answer still be a correct answer?" automatically by the end.
 - **The comparison table is the exam:** if a student can fill it from memory, the chapter landed.
 - **Watch for:** the belief that an RTOS is a small Linux. Correct it early: no memory protection, no fairness, no files, no processes.
-- **The Digi-Key video is fifteen minutes of the meeting:** play it, do not assign it as homework that nobody does.
+- **The Linux video break:** the Fireship *Linux in 100 Seconds* clip sits inside the Linux section, right after the trade off paragraph. It is the one video in the chapter that is easy to misplace, so use it there and not at the end: the point lands only while the group still has "no timing promise" in their ears.
+- **The short video breaks:** the videos throughout the script (Simone Giertz, Fireship, ElectroBOOM, Boston Dynamics, Phil Koopman, Mark Rober, The IT Crowd) are deliberately lighthearted breaks between theory and hands-on practice rather than dry lectures. Each one sits where a group needs a pause, and each caption tells the student what to look for, so treat them as part of the teaching material and not as filler.
 
 ## Check your understanding - which call to move out of the loop
 
@@ -89,7 +91,16 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Teacher info, three minutes:** the exact answer you want is "a delay is not a period". Write the formula on the board: real period equals work plus delay. Then write the `vTaskDelayUntil` version next to it, because the fix is taught later and previewing it costs nothing.
 - **Watch for:** "they run in parallel because there are two cores". Only true if they are pinned to different cores, and never true with only one task per core doing nothing else.
 
-## Try it yourself - the HAL example as one bare metal loop
+## Check your understanding - a 400 Hz drone control loop
+
+- **The loop lives in bare metal or an RTOS, never in Linux:** at 400 Hz the period is two and a half milliseconds, so a jitter of tens of milliseconds is a fifty times overrun. It runs on a microcontroller with a hardware timer, and preferably with the loop driven by that timer rather than by a scheduler tick.
+- **A 100 Hz tick cannot schedule a 400 Hz loop:** the loop needs a hardware timer or a faster tick rate. This is the practical detail that catches groups: a delay of two and a half milliseconds rounds to zero or one tick at the default rate.
+- **The camera can live there, but not the loop:** the video stream belongs on a separate processor or on the same chip only if it is buffered and its timing is not on the control path. A dropped frame is a dropped frame, a late attitude correction is a crash.
+- **The usual real design:** a flight controller on a microcontroller and a companion computer for video, navigation and telemetry, linked by a protocol where losing the link makes the flight controller enter its own safe state.
+- **Teacher info, three minutes:** the arithmetic is the answer, and the second point about the tick rate is the one worth writing on the board. It previews the tick section of the task chapter.
+- **Watch for:** "use a faster chip". Speed does not fix determinism, and a faster chip with a general purpose operating system still has an unbounded tail.
+
+## Try it yourself - the robot jobs as one bare metal loop
 
 - **Acceptable loop order:** read sensors, compute control, set the motor duty, update odometry, then everything slow (status, printing, network) behind a counter so it runs rarely.
 - **The blocking points:** the sensor read is the first, about fifteen milliseconds per sensor and up to forty five milliseconds for all three. The network or print is the second and it is unbounded.
@@ -106,15 +117,6 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Teacher info, four minutes:** this is the best question in the chapter because it forces the phrase "hard part". Reward the student who names the boundary rather than the board.
 - **Watch for:** "use the Pi because it is faster". Ask what the jitter of a Python loop on a Pi is, and whether they would bet a five millisecond stop on it.
 
-## Check your understanding - a 400 Hz drone control loop
-
-- **The loop lives in bare metal or an RTOS, never in Linux:** at 400 Hz the period is two and a half milliseconds, so a jitter of tens of milliseconds is a fifty times overrun. It runs on a microcontroller with a hardware timer, and preferably with the loop driven by that timer rather than by a scheduler tick.
-- **A 100 Hz tick cannot schedule a 400 Hz loop:** the loop needs a hardware timer or a faster tick rate. This is the practical detail that catches groups: a delay of two and a half milliseconds rounds to zero or one tick at the default rate.
-- **The camera can live there, but not the loop:** the video stream belongs on a separate processor or on the same chip only if it is buffered and its timing is not on the control path. A dropped frame is a dropped frame, a late attitude correction is a crash.
-- **The usual real design:** a flight controller on a microcontroller and a companion computer for video, navigation and telemetry, linked by a protocol where losing the link makes the flight controller enter its own safe state.
-- **Teacher info, three minutes:** the arithmetic is the answer, and the second point about the tick rate is the one worth writing on the board. It previews the tick section of the task chapter.
-- **Watch for:** "use a faster chip". Speed does not fix determinism, and a faster chip with a general purpose operating system still has an unbounded tail.
-
 # How an RTOS Application Is Organized
 
 ## Teaching Notes for the Layering Chapter
@@ -124,34 +126,29 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **The whiteboard exercise:** draw the four layer stack and have groups shout out where printing belongs, where a PID belongs, where a pin belongs. Printing is genuinely ambiguous and worth two minutes.
 - **Watch for:** the student who wants the HAL to brake when an obstacle is near. That is the design bug the chapter exists to prevent, so spend time on it.
 
-## Try it yourself - build and run the starter kit
-
-- **Expected output:** one line per part from the self test, then a monitor line per task containing at minimum the task name, the counters, the sensor values and the measured period.
-- **Every column of the monitor line should have an owner:** task name, run counter, distance per sensor, battery voltage, measured period, worst period. If a student cannot say what a column means, they have not read the example.
-- **Teacher info, fifteen minutes per group:** do this in the first or second meeting and do not let it slide. A group that has not run the example will struggle with every later chapter.
-- **Common failure:** the backend was left at `real` while running in the simulator, so the self test reports missing hardware instead of simulated values. Check `HAL_BACKEND` in the top level `CMakeLists.txt` first, always.
-
-## Check your understanding - one thing in the HAL, one thing not
+## Check your understanding - one thing in the HAL, one thing not and the obstacle rule
 
 - **Must be in the HAL:** the knowledge of which pin, which bus, which register and which timing a part needs, exposed as one function with an error return and a documented worst case blocking time. Any hardware specific number belongs here and nowhere else.
 - **Must not be in the HAL:** any decision. Braking on an obstacle, retrying a failed read in a loop, logging, or deciding that a stale value is unacceptable is policy, and policy changes per project and must be testable without hardware.
-- **Second acceptable "must not":** task creation or long delays. The HAL reports and returns, it does not take ownership of time.
-- **Teacher info, two minutes:** grade the sentence, not the example. "The HAL does not decide" and "the HAL is bounded" are the two sentences that matter.
-- **Watch for:** "the obstacle check belongs in the HAL because it needs the sensor". That is the exact confusion the next item resolves.
+- **Where the obstacle rule belongs:** components or tasks, never the HAL. "Wall closer than 12 cm means stop" is a policy with a tunable threshold that changes per project. The HAL reports 80 mm; the component or task decides that 80 mm triggers a stop.
+- **Teacher info, three minutes:** grade the sentence, not the example. "The HAL does not decide" and "the HAL is explicit about time" are the two sentences that matter.
 
-## Try it yourself - a wall at eight centimetres
+## Check your understanding - two things identical and two different between simulator and hardware
 
-- **Expected:** after `hal_sim_set_distance(1, 80)` the control task applies its obstacle limit and the motor duty goes to zero, so the simulated speed drops to zero and the monitor prints the stop.
-- **Second step:** remove the distance check and the robot keeps driving with the commanded speed. The monitor shows a nonzero duty and a nonzero wheel speed right up to the wall.
-- **Teacher info, five minutes:** the value of the exercise is the **before and after**, so make the group run it both ways and look at the duty column, not only at the log text. A group that only reads the source and predicts the result has not done the experiment.
-- **Watch for:** sensor index. Index one is the front sensor on the reference board. If the group changes index two nothing happens, which is a fine teaching moment about the sensor array.
+- **Identical in both:** the FreeRTOS scheduler (task priorities, preemption, mutexes, queues), the application code in `main/main.c`, and all `robot_hal` function signatures and header files.
+- **Different between the two:** motor PWM frequency (20 kHz hardware LEDC on the robot versus ~20 Hz software toggle in Velxio), encoder resolution (4200 counts per wheel revolution on the geared N20 versus 40 counts per revolution in Velxio), ToF distance readings (real laser ranging versus a 3-channel sine-wave generator), ADC calibration (calibrated eFuse versus raw fallback reading ~4.1 V), and buzzer audio (audible PWM versus silent).
+- **Teacher info, three minutes:** make sure students name the encoder constant (4200 vs 40) early, as forgetting it during the hardware port is a classic mistake.
 
-## Check your understanding - which layer the obstacle check belongs to
+## Try it yourself - the full test loop versus blink tasks
 
-- **Components or tasks, never the HAL:** "wall closer than twelve centimetres means stop" is a policy with a tunable threshold. It changes with the project, the robot and the speed, so it cannot live in a thin driver.
-- **Why not the HAL, in one sentence:** the HAL must be reusable by any project and must never decide, otherwise the same driver would brake in a logger and not brake in a follow robot.
-- **Where to draw the line:** the HAL answers "the front sensor reports eighty millimetres". The component answers "eighty is closer than my stop distance, so the limit is active". The task answers "the limit is active, so command zero duty".
-- **Teacher info, two minutes:** accept "components" or "tasks" but ask which one and why. The component is the better answer because it can be unit tested on a laptop with no scheduler.
+- **Expected:** in `VelxioRobotITFullExample.vlx`, one `while (1)` loop ticks every 10 ms (`vTaskDelay(pdMS_TO_TICKS(10))`) and multiplexes button polling, LED blinking, ToF sensor stepping (`tick_count % 15`), telemetry logging (`tick_count % 30`), and motor phase switching (`tick_count % 150`). If a sensor read inside that loop blocks for 40 ms, every other activity in the loop—button polling, LED toggling, motor phase updates, and status printing—is delayed by 40 ms.
+- **Teacher info, five minutes:** contrast that single path with `blink`, where each rhythm lives in its own task so one blocked task does not stall another higher priority task.
+
+## Check your understanding - waiting for each other versus waiting for time in blink
+
+- **Waiting for each other:** `xSemaphoreTake(s_state.mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS))` (paired with `xSemaphoreGive`) makes `blink_task` and `monitoring_task` wait for exclusive access to the shared state.
+- **Waiting for time:** `vTaskDelay(pdMS_TO_TICKS(BLINK_PERIOD_MS))` blocks each task for 500 ms until its next round.
+- **Teacher info, two minutes:** have students point to both calls in `blink_task` and state what task state (`Blocked`) both calls enter while waiting.
 
 # The Hardware and the Schematic
 
@@ -161,6 +158,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Goal:** every pin number in the code traces to page three. The student should know that the schematic is the authority and the code is a claim.
 - **Print the four pages:** one paper copy per group beats a PDF on a shared laptop. Groups annotate the paper and keep it.
 - **Nobody probes the power circuitry with a multimeter:** say it twice, at the start and before the charger page.
+- **The ElectroBOOM video break:** it sits at the end of page four, right before `From Schematic to Code`, and it is the only break in the chapter that earns its place as a safety lesson. Let it play after the H-bridge table, not before page two, because the group needs to have read the charger and protection pages first to understand what he is doing wrong. The line to repeat afterwards is the one from the script: none of it was a surprise to the person holding the probe.
 - **Watch for:** groups that jump to page three and skip pages one and two. Page two is what explains a board that charges slowly and survives reversed polarity, and page four explains why the motor call takes a duty and not a boolean.
 
 ## Check your understanding - why the two motors are treated differently
@@ -199,11 +197,11 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Try it yourself - one line per pin table row
 
-- **Expected:** for each row of the pin table, one line in the HAL that uses that pin, for example the LED pin in `hal_led_set`, the two PWM pins in the motor init, the pulse counter channels for the encoders, the ADC channel for the battery, the I2C pins in the bus init and the three enable pins in the sensor addressing sequence.
-- **What to look for in the student's answer:** they can point at a line and say "this number is that number on page three". They are not expected to understand a register write, and they should be told so.
-- **The interesting finding:** the battery divider ratio appears as a multiplication by two in the code, and the encoder constant appears as four thousand two hundred counts per revolution. Both trace to the schematic, not to a datasheet.
+- **Expected:** for each row of the pin table, one macro in `robot_hal/include/pinout.h` and its matching driver in `robot_hal/src/`, for example `LED` (`GPIO_NUM_2`) in `status_led.c`, `MOTOR_LEFT_IN1_GPIO` / `IN2_GPIO` (`GPIO_NUM_5`, `GPIO_NUM_6`) in `dc_motor.c`, `ENCODER_LEFT_A` / `B` in `encoder.c`, `BATTERY_VOLTAGE_ADC_GPIO` (`GPIO_NUM_4`) in `battery.c`, `SENSOR_ARRAY_I2C_SDA` / `SCL` (`GPIO_NUM_10`, `GPIO_NUM_11`) and `XSHUT_SENSOR_1..3` (`GPIO_NUM_12..14`) in `sensor_array.c`.
+- **What to look for in the student's answer:** they can point at a macro in `pinout.h` and say "this number is that number on page three". They are not expected to understand a register write, and they should be told so.
+- **The interesting finding:** `BATTERY_DIVIDER_RATIO` appears as `2.0f` (`100k + 100k`) in `pinout.h`, and the encoder constant is 4200 counts per wheel revolution on the real geared N20 motor (versus 40 counts per revolution in the Velxio N20 simulation chip).
 - **Teacher info, fifteen minutes:** let them search, do not hand them a line number. The search is the lesson.
-- **Watch for:** groups who only look at `hal.h`. The pin numbers are in the implementation, so point them at the real and simulated source files.
+- **Watch for:** groups who never open `pinout.h` or the `robot_hal/src/` files.
 
 ## Check your understanding - one schematic detail with no effect on the code
 
@@ -222,6 +220,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Goal:** every student has built the starter kit and seen it run, in the simulator at minimum.
 - **Start the download in the first five minutes:** this is the single most important scheduling decision in the whole lab.
 - **Have spares ready:** three known good USB cables, one known good board, one prepared ESP-IDF export environment, and one screen with the install page open.
+- **The C in 100 Seconds video break:** it sits right after the install steps, which is where the download is still running and the room has nothing to do. Use it as scheduled waiting time rather than as a reward at the end, and say why C matters here before you press play: no garbage collector, no runtime, every byte accounted for. It is also the natural moment to mention that the motor call has to be predictable, not merely fast.
 - **Watch for:** the installer not run as administrator. The USB driver step then fails silently and the port never appears.
 - **Do not debug students' installations in the room one by one:** keep a working reference machine on the side so the group can continue while the broken one is fixed.
 
@@ -240,11 +239,17 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Teacher info, ten minutes:** have each group report the number in kilobytes and one thing they could remove. The number is the evidence, the removal is the understanding.
 - **Watch for:** groups who report percentages without a size. Ask for the absolute numbers first.
 
+## Try it yourself - comparing the blink log and tracing the LED wire in Velxio
+
+- **Expected output:** the blink log from `blink_task` and `monitoring_task` alternating every 500 ms (`[blink] LED state: ON/OFF` and `[monitor] LED state: ON/OFF`). The log lines and task tags match across simulator and physical hardware, while boot timestamps and eFuse calibration messages legitimately differ.
+- **Tracing the LED wire:** in the Velxio circuit diagram, the red status LED is connected to `IO2` on the ESP32-S3 module, which matches `#define LED GPIO_NUM_2` in `robot_hal/include/pinout.h`.
+- **Teacher info, ten minutes per group:** have every group run the project both in **Velxio** and on the **physical hardware** and point to the `IO2` wire in the circuit editor.
+
 ## Checkpoint - the toolchain gate
 
-- **Pass condition:** a program runs and prints at least one line from a task, and the line names the backend.
-- **What to look at, not just for:** the student can say which backend they ran and why, and can name the task that printed. A group that ran `real` without a robot and got an empty log has not passed.
-- **Evidence to keep:** a screenshot of the monitor with the boot log and the backend line. Ask for it, because it is the first item of the final report.
+- **Pass condition:** the `blink` project runs both in **Velxio** and on the **physical hardware**, the LED blinks at 500 ms on both, and the student can name one difference between the two logs (for example boot timestamps or eFuse calibration messages).
+- **What to look at, not just for:** the student can explain why `[blink]` prints before `tasks started, main task is finished` (`blink_task` has priority 2 while `app_main` runs at priority 1).
+- **Evidence to keep:** a screenshot of the monitor from both the simulator and the physical hardware. Ask for it, because it is the first item of the final report.
 - **Teacher info, five minutes per group:** this checkpoint exists to stop a group from drifting three chapters behind with a broken toolchain. Do not wave it through, and do not let a group continue without it.
 - **If a group fails:** do not debug in the group. Send them to the troubleshooting table, give them the spare board and cable, and check again in twenty minutes.
 
@@ -254,7 +259,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 - **Time:** one full meeting for tasks and priorities, a second one if the group needs it. This and the shared data chapter are the heart of the lab.
 - **Goal:** the student can predict which task runs next, and can defend four numbers per task.
-- **The priority inversion video:** play it at the start of the meeting, and again after the shared data chapter. It lands twice.
+- **The Boston Dynamics dancing robots video break:** play the short *Do You Love Me* clip right before `Breaking the scheduler on purpose` to contrast perfectly synchronised control loops with what happens when a spinning task starves the scheduler. The video sits after the priority rules and before the experiment, which is exactly the right moment: the group has just been told the rules, has not yet believed them, and this is the picture that makes the experiment worth running.
 - **A well written task is blocked almost all of the time:** that single sentence is what everything else in the chapter builds on.
 - **Watch for:** students who measure nothing and claim "it works". The checkpoint is the four numbers, and averages do not count.
 
@@ -262,19 +267,27 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 - **There is no memory manager:** the RTOS has no MMU and no virtual memory, so every stack must be carved out of a fixed heap at creation time. Nothing can grow on demand.
 - **Overflow is corruption, not an exception:** on a PC the operating system can catch a bad access, here a task that overruns its stack writes into the neighbour's memory. With `configCHECK_FOR_STACK_OVERFLOW` you get a hook, without it you get a mysterious panic or a wrong value.
-- **The unit is words:** four bytes on this chip, so four thousand ninety six means about sixteen kilobytes. This is why the numbers look large and why students who assume bytes over-allocate by four times.
-- **Teacher info, three minutes:** the answer you want is "the stack is statically assigned because there is no protected memory". Mention the word unit and move on.
+- **The unit in ESP-IDF is bytes:** unlike vanilla FreeRTOS (which specifies stack depth in words), ESP-IDF's `xTaskCreate` and `uxTaskGetStackHighWaterMark` use **bytes**, so `2048` in `blink` is 2 kB and `4096` is 4 kB.
+- **Teacher info, three minutes:** the answer you want is "the stack is statically assigned because there is no protected memory". Point out the ESP-IDF bytes vs. vanilla FreeRTOS words distinction and move on.
 - **Watch for:** "the default is fine". Ask what the default is and how they would know. Then ask for the watermark, which is the next section.
 
-## Try it yourself - a blocking task and a spinning task
+## Try it yourself - watching the blink startup log order
 
-- **Build two tasks, one blocking and one spinning:** the blocking task increments a counter and delays one millisecond, the spinner increments its own counter and never blocks. Print both counters from a third task once per second.
-- **On one core at equal priority the ratio is about ten to one:** the delayed task gets roughly a tenth of the increments of the fast one, because each activation costs one tick of delay. The exact ratio depends on the work per iteration.
-- **A sharper experiment starves the delayed task completely:** raise the spinner to a higher priority and the delayed task stops incrementing entirely, because a task that never blocks and outranks it is never preempted.
-- **A low priority spinner still steals everything spare:** run the spinner at priority one and a good task at priority ten. The good task keeps its period, but the idle task never runs, so free heap drops and, with idle starvation detection on, a watchdog complaint appears.
-- **Reversing the two proves the rule the other way:** spinner above the good task and the good task stops counting entirely, for the same reason as the sharper experiment.
-- **Teacher info, fifteen minutes:** this is the most valuable experiment in the chapter. Make every group do all three steps and write the numbers on the board.
-- **Watch for:** measuring only the counters. Ask which task states were occupied. The correct description is "the spinner is running or ready at every instant".
+- **Expected observation:** `[blink] LED state: OFF` appears in the serial log **before** `tasks started, main task is finished`, because `blink_task` is created at priority 2 while `app_main` runs at priority 1 (and the ESP32-S3 has two cores).
+- **The monitor line:** `monitoring_task` is at priority 1 (same as `app_main`), so its first log line may appear either before or after `tasks started, main task is finished`.
+- **Teacher info, five minutes:** use this to show that task creation order in `app_main` is not execution order.
+
+## Check your understanding - task states and what runs while blink sleeps
+
+- **State during the 500 ms sleep:** both `blink_task` and `monitoring_task` are in the **Blocked** state, consuming zero CPU time.
+- **What runs on the core while they sleep:** the FreeRTOS **idle task** (at priority 0), which feeds the task watchdog and puts the core into a low power wait until the next tick interrupt wakes a task.
+- **Teacher info, two minutes:** make sure students distinguish **Blocked** (waiting on a timer or event, zero CPU) from **Ready** (waiting for a core).
+
+## Try it yourself - tick conversion from milliseconds to ticks
+
+- **Expected values at the default 100 Hz tick rate:** one tick is 10 ms, so `pdMS_TO_TICKS(10)` evaluates to `1`, while `pdMS_TO_TICKS(5)` truncates to `0` ticks.
+- **What happens when `BLINK_PERIOD_MS` is set to 5 ms:** `vTaskDelay(0)` yields to equal priority tasks without sleeping for a tick, so `blink_task` runs continuously without blocking for 5 ms, flooding the serial monitor and starving lower priority tasks on its core.
+- **Teacher info, ten minutes:** this five-line experiment makes tick resolution concrete before students ever write a 400 Hz or 200 Hz loop.
 
 ## Check your understanding - ready versus running at the same priority
 
@@ -284,11 +297,13 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Teacher info, three minutes:** this question separates the students who read the scheduler rules from those who memorised them. Ask the follow up: what if the running task never blocks? Then the ready one waits forever unless time slicing saves it.
 - **Watch for:** "priority decides", which is true but not the answer here, because the priorities are equal.
 
-## Try it yourself - breaking the scheduler on purpose
+## Try it yourself - swapping priorities and breaking the scheduler on purpose
 
+- **Swapping priorities in blink:** when `monitoring_task` is given priority 2 and `blink_task` priority 1, the monitor prints its first line before `blink_task` toggles the LED, so the initial `ON` state set in `app_main` is logged before the first toggle.
 - **Step one, two good tasks:** roughly a ten to one ratio between the one millisecond task and the ten millisecond task, because activations are one order of magnitude apart. Report the actual counters, not the theory.
 - **Step two, spinner instead of the fast task:** the slow counter stops or crawls. The spinner is always ready or running, so the slow task is ready but never scheduled on that core.
 - **Step three, slow task above the fast one:** predict first. The slow task keeps its ten millisecond rhythm because it preempts the fast one, and the fast task gets whatever is left and therefore runs **less** often than before, not more.
+- **Spinner at priority 1 vs priority 10:** when the spinner is at priority 1 and the good task is at priority 10, the good task keeps its period because it preempts the spinner whenever its delay expires (though the idle task starves). When reversed (spinner at 10, good task at 1), the good task never runs at all.
 - **Teacher info, twenty minutes:** collect the predictions on paper before any run. The group whose prediction fails learns more than the group that guessed right.
 - **Watch for:** students who think preemption happens only at the tick. Rule three is the surprise: a higher priority task interrupts immediately, not at the next tick.
 
@@ -316,11 +331,11 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **A second drawback worth mentioning:** you must then maintain the second core yourself, and both cores still share memory, buses, cache and power, so pinning removes interference from the scheduler and not from the hardware.
 - **Teacher info, three minutes:** the honest answer "I did not pin it and here is how I measured that it does not matter" is a pass in the review. Say so, or students will pin everything to look competent.
 
-## Try it yourself - four numbers for one task
+## Try it yourself - blink timestamp drift and four numbers for one task
 
-- **Expected shape of the four numbers:** vTaskDelay without extra work, about ten milliseconds. vTaskDelay with three milliseconds of busy work, about thirteen. vTaskDelayUntil without extra work, about ten. vTaskDelayUntil with three milliseconds of busy work, about ten.
-- **What the numbers prove:** the delay function waits from now, the delay until function waits until the next absolute deadline. Only the second holds the period.
-- **The fifth number, which separates good groups:** the jitter, meaning the worst period minus the target. With delay from now it equals the work, with delay until it is a small tick granularity artefact.
+- **Subtracting 30 consecutive blink timestamps:** because `blink` uses `vTaskDelay(pdMS_TO_TICKS(500))`, any execution time spent taking the mutex and formatting `ESP_LOGI` adds to the 500 ms delay, so the measured interval is slightly above 500 ms and drifts over time.
+- **Expected shape of the four numbers for the 10 ms task:** `vTaskDelay` without extra work, about ten milliseconds. `vTaskDelay` with three milliseconds of busy work, about thirteen. `vTaskDelayUntil` without extra work, about ten. `vTaskDelayUntil` with three milliseconds of busy work, about ten.
+- **What the numbers prove:** `vTaskDelay` waits relative to now, while `vTaskDelayUntil` waits until the next absolute deadline. Only the second holds the period.
 - **Teacher info, twenty minutes:** require all four numbers written on paper, with the units. Then require the group to say which one they would use in a control loop and why.
 - **Watch for:** students who measure the period with a print inside the loop and do not notice that the print is part of the work. Ask them what the print costs, and let them measure it.
 
@@ -347,17 +362,9 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 - **Time:** one and a half meetings. This chapter is the densest in the lab and it deserves the time.
 - **Goal:** the student chooses the mechanism from the problem: mutex for latest value, queue for events and for state, sequence number for freshness.
+- **The Mars Pathfinder video break:** play the Phil Koopman clip (`L19 08 Mars Pathfinder Incident`, two minutes) after the three task priority inversion story and before `The Blink Mutex and Four Ways to Break It`. It is the same argument with a real spacecraft as the cost of getting it wrong, and the question to leave them with is which of the three tasks in the clip is the medium priority one.
 - **The three mechanisms are not interchangeable:** say that in every meeting, and refuse answers that say "a mutex and a queue are both for sharing data".
 - **The stress test is the evidence:** torn reads at zero with the mutex and climbing without it. Do not accept a verbal claim of correctness.
-- **Watch for:** the group whose consumer is fast and whose producer is slow, so the race never appears. They must run the asymmetric load or they will learn nothing.
-
-## Try it yourself - the unprotected version and torn reads
-
-- **Build an asymmetric pair, writer ten milliseconds and reader slower:** increment a counter inside the writer, and let the reader check that the two halves of the data belong to the same cycle.
-- **Expect a nonzero torn read count within seconds:** it appears fastest when the reader is on the other core. On a single core it may take longer to appear, which is itself a lesson.
-- **The three forms to look for:** a torn read, where one field is new and another is old. A half finished update, where the reader runs between two assignments. A split value, where a wider value is read while it is being written.
-- **Teacher info, twenty minutes:** require the counter, not just the demonstration. Then require the same test with the mutex, and compare.
-- **Watch for:** the reader copying field by field outside a lock and calling that "protected". That is the exact failure the next section fixes.
 
 ## Check your understanding - why a race is more likely on two cores
 
@@ -373,6 +380,26 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Priority inheritance is the fix:** FreeRTOS mutexes boost the holder to the priority of the highest waiter for the length of the critical section. The delay is then bounded by the critical section, and that is why critical sections must be short.
 - **Teacher info, five minutes:** draw the three task timeline on the board. Ask what the delay is when the medium task loops forever. The answer is "no bound", which is the sentence you want in the report.
 - **Watch for:** "a few milliseconds". That is the answer with inheritance, not without it, and confusing the two is the single most common error in this chapter.
+
+## Try it yourself - breaking the blink mutex in four ways and adding a blink counter
+
+- **Experiment 1, removing the mutex and widening the window:** a bare boolean toggle is fast enough to hide the race most of the time, but reading `led_on` into a local variable, delaying 100 ms, and writing it back without the mutex makes `monitoring_task` report stale or mismatched states immediately.
+- **Experiment 2, `portMAX_DELAY`:** behaves identically while healthy, but removes the safety timeout so a stuck lock freezes both tasks forever.
+- **Experiment 3, forgetting `xSemaphoreGive`:** `monitoring_task` times out after `MUTEX_TIMEOUT_MS` (100 ms) and prints the busy warning on every round. On its second iteration, `blink_task` also fails `xSemaphoreTake` because a normal (non-recursive) FreeRTOS mutex cannot be taken twice by the same owner without giving it back first.
+- **Experiment 4, swapping priorities and adding `blink_count`:** swapping priorities changes who runs first at boot, but `(s_state.led_on, s_state.blink_count)` stays 100 percent consistent across both tasks when updated and read inside the mutex.
+- **Teacher info, fifteen minutes:** make sure every group notices why `blink_task` also blocks itself on round two of Experiment 3.
+
+## Check your understanding - noticing an infinite mutex wait before the system hangs
+
+- **By code review or by injecting a fault:** while the lock is released on time, `portMAX_DELAY` and a 100 ms timeout behave identically at runtime. You only notice the missing timeout either by enforcing a rule during code review ("no unbounded waits on a control or monitoring path") or by deliberately holding the lock in a test and watching the waiter hang forever instead of logging a timeout warning.
+- **A software watchdog / heartbeat monitor:** if a task blocks forever on `portMAX_DELAY`, its heartbeat counter stops incrementing, which a separate monitor task can flag.
+- **Teacher info, three minutes:** the lesson is that absence of a timeout is invisible on the happy path and fatal on the fault path.
+
+## Try it yourself - button press event queue in blink
+
+- **Expected implementation:** a third task calls `boot_button_poll()` every 10 ms, detects a rising edge on `boot_button_is_pressed()`, and sends an event to a normal queue (`xQueueCreate(4, sizeof(uint8_t))`) using `xQueueSend`. Inside `blink_task`, a non-blocking `xQueueReceive(..., 0)` drains pending press events and halves the current period (down to a sensible floor such as 50 ms).
+- **Why a normal queue fits:** each button press is a discrete event that should halve the period once; dropping a rapid double-press would ignore user input.
+- **Teacher info, fifteen minutes:** verify that students use zero timeout when polling the event queue inside `blink_task` so the LED rhythm is not delayed by waiting for a button press.
 
 ## Check your understanding - why an overwrite queue is wrong for buttons
 
@@ -404,7 +431,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Expected stress test configuration:** producer at ten milliseconds, a second producer at one millisecond, consumer at five milliseconds, two minutes of runtime, counters for accepted reads, rejected stale reads and torn reads.
 - **Expected numbers:** torn reads stable at zero with the mutex. Rejected reads nonzero but small, which proves the freshness check is reachable and not dead code. Accepted reads in the thousands.
 - **Expected damaged run:** with the mutex removed, torn reads climb within seconds. That run is the evidence that the test is real; a test that never fails a broken design proves nothing.
-- **Teacher info, thirty five minutes, no robot needed:** this is the chapter's main deliverable and it feeds the project directly. Circulate and check three things: the struct copy is inside the lock, the queue is a length one overwrite, and the torn read counter exists before the mutex is added.
+- **Teacher info, thirty five minutes:** this is the chapter's main deliverable and it feeds the project directly. Circulate and check three things: the struct copy is inside the lock, the queue is a length one overwrite, and the torn read counter exists before the mutex is added.
 - **The getter returning a pointer is the most common error:** it defeats the mutex completely, because the reader dereferences it after the lock is released. Fix it in the group, gently, and make them run the damage test again.
 - **A delay or a printf inside the critical section is the second:** ask how long the section takes, and what every other waiter is doing during it.
 
@@ -437,7 +464,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Time:** one meeting, including the network milestone if the hardware is available.
 - **Goal:** the student sees the control path as a pipeline, and treats a millisecond as an engineering quantity rather than a style preference.
 - **The four odd lines in the reference control task are the chapter:** rate limit in both directions, raw value for the hard stop, held value through flicker, latched stop. Each one is a bug that was fixed.
-- **The PID video:** play it, but tell the group they are not expected to derive a controller. They only need to recognise the shape.
+- **The Motion Tracking Dartboard video break:** use the Mark Rober clip between the HAL boundary theory and the control pipeline section to highlight how sensor latency, prediction and actuator limits add up against a hard physical deadline. Point at the pipeline diagram while it plays if the room is small, because the video and the diagram are the same argument in two different languages.
 - **Watch for:** the group that reports a clean simulator measurement and an ugly hardware measurement and calls the hardware broken. The honest numbers are the point, so make them explain the difference.
 
 ## Check your understanding - a seven millisecond control task in a ten millisecond period
@@ -448,22 +475,14 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Teacher info, four minutes:** insist on the word **margin**. A task that meets its period by three milliseconds is not finished if it has no measured headroom against its own worst case.
 - **Watch for:** the answer "raise the priority". Priority does not make work smaller and does not solve an overrun.
 
-## Try it yourself - a seven millisecond delay versus a busy wait
+## Try it yourself - the HAL blocking calls list
 
-- **With a delay:** the period becomes about seventeen milliseconds, because the delay is relative and the work adds to it. The CPU load is low but the timing is wrong.
-- **With a busy wait:** the wall clock period is about ten milliseconds, because the wait absorbs the difference, but the task never blocks, so it holds the core and starves everything at or below its priority on that core. The CPU load is a hundred percent.
-- **The conclusion the group should reach:** neither is acceptable. The correct answer is to make the work fit and use the absolute deadline, so the task blocks for the remainder and gives the core back.
-- **Teacher info, fifteen minutes:** run both and compare not only the period but the runtime statistics. The busy wait version should show an obvious CPU share, and that number is the argument.
-- **Watch for:** groups who measure the delay with `esp_timer_get_time` inside the same task and forget that their own measurement code is work. Ask them to subtract it or to measure outside.
-
-## Try it yourself - the HAL worst case list
-
-- **Expected list:** initialization about sixty milliseconds, motors immediate and never blocking, sensor read one at most about fifteen milliseconds, sensor read all up to about forty five milliseconds, battery about one millisecond, LED and buzzer immediate.
-- **Avoid hal_sensor_read_all inside a ten millisecond task:** forty five milliseconds is four and a half periods. One sensor per tick is the fix, or read in the sensor task and publish.
+- **Expected list:** `status_led_set` / `on` / `off` / `toggle` / `blink`, `motor_set_duty` / `stop` / `brake` / `read_counts`, `boot_button_poll` / `is_pressed` are immediate; `buzzer_play` / `pulse` / `melody` queue to a background task and return immediately; `battery_read_voltage` takes one ADC sample; `status_led_blink_for` blocks for `duration_ms`; `sensor_array_next` and `sensor_array_read_current` wait for one ranging measurement (up to `read_timeout_ms`, plus `boot_delay_ms` when switching XSHUT); `sensor_array_read_all` blocks across all three sensors in turn.
+- **Avoid `sensor_array_read_all` and `status_led_blink_for` inside a ten millisecond task:** `sensor_array_read_all` cycles through all three XSHUT pins and waits for three full reads, easily exceeding a 10 ms period. Stepping one sensor at a time with `sensor_array_next` in a separate sensor task (or using the non-blocking `vl53l0x_start_measurement` / `vl53l0x_result_ready` / `vl53l0x_fetch_result` split) is the fix.
 - **Avoid initialization after start-up too:** it belongs in the start-up or in an init task before the control loop exists.
-- **The general rule to state:** a call whose worst case is larger than your period is not a blocking call you tolerate, it is a design error. The worst case is part of the interface, which is why the HAL documents it.
-- **Teacher info, twelve minutes:** the list must include the **worst case number**, not just the function name. A list of names is not engineering.
-- **Watch for:** students who read only `hal.h` and not the documentation in the header. The numbers are in the comments and in the appendix of the script.
+- **The general rule to state:** a call whose worst case is larger than your period is not a blocking call you tolerate, it is a design error.
+- **Teacher info, twelve minutes:** the list must include **why** a call blocks, not just the function name.
+- **Watch for:** students who only check `status_led.h` and miss `sensor_array.h` and `vl53l0x.h`.
 
 ## Try it yourself - duty and RPM for a step from zero to half speed
 
@@ -506,6 +525,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **The LED code table is the deliverable:** by the end of the meeting every group has its own table, written down, with the codes they actually use.
 - **Watch for:** groups whose only diagnostic is `printf` in the fast loop. Measure the cost with them and let the number make the argument.
 - **The monitor task discipline:** report, never repair. A monitor that takes action becomes part of the failure.
+- **The IT Crowd video break:** it sits after the diagnostic tools and before `Timeouts, Watchdogs and Safe States`, and it is 41 seconds. Use it as a teaching trap: "turn it off and on again" genuinely works, because it clears state and gives you a clean run to compare against. Ask the group what a reboot has just told them. Then ask what it has not told them. The second answer is the whole chapter.
 
 ## Try it yourself - heartbeat counter and worst execution time
 
@@ -538,7 +558,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Measure, then set the number:** read the watermark of the same task with a generous stack, then set the real size with a margin. Guessing is what caused the panic.
 - **Teacher info, ten minutes:** do this on purpose, early, so the panic message is familiar before it appears by accident. A student who has seen it once debugs in a minute instead of an hour.
 - **Watch for:** panic output that scrolls past. Say the monitor paging command or scroll up in the terminal, because the top of the message is what names the cause.
-- **Caution:** do this in the simulator or on a bare board, not on the shared robot during a demo slot.
+- **Caution:** test crash conditions in the simulator or on the test bench first, rather than during a live driving demo.
 
 ## Check your understanding - reboots at full duty on both motors
 
@@ -607,11 +627,11 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Provoking faults in the simulator
 
-- **The three provocations:** a wall at six centimetres with the distance setter, a silent sensor with the missing setter, an almost empty cell with the battery setter. Each one must produce a visible, defined reaction.
+- **The interactive Velxio provocations:** clicking the `Sensor_Array` chip to raise **Random Jitter Amplitude** (`noise_mm` up to 50 mm) or **Sine Wave Frequency** (`wave_freq_hz`), clicking a motor chip to increase **Mechanical Shaft Load** or lower **Motor Supply Voltage**, disconnecting an `XSHUT` or `SDA` wire in the circuit editor to trigger a timeout/I2C error, pressing the `IO0` pushbutton to inject events, or changing the `60k` voltage divider resistor to `110k` to drop the simulated battery reading to ~3.1 V.
 - **What to record:** the code or the log line the fault produced, and the state the robot ended in. A fault with no visible reaction is an untested design.
-- **The simulator limits:** no motor physics, no real I2C timing, no reliable WiFi. A design that depends on the network needs a substitute producer, and the design page must say so.
-- **Teacher info, ten minutes per group, and repeat it:** faults are provokable only in the simulator, so this is the cheapest evidence in the whole lab. Do not let a group leave the design phase without at least two provoked faults.
-- **Watch for:** `hal_sim_*` calls left in code that is later flashed to hardware. They return not supported on real hardware, which is a clean failure, but the fallback path should be tested too.
+- **The simulator limits:** simplified motor inertia, 20 Hz software PWM (`dc_motor.c` in Velxio), 40 counts per revolution (`N20_COUNTS_PER_REV`) instead of 4200, blank eFuse ADC calibration requiring a raw ADC fallback, and no buzzer audio.
+- **Teacher info, ten minutes per group, and repeat it:** interactive faults are provokable in seconds in Velxio, so this is the cheapest evidence in the whole lab. Do not let a group leave the design phase without at least two provoked faults.
+- **Watch for:** students copying the simulator's `dc_motor.c`, `encoder.c` or `motor.c` over the real hardware drivers in the ESP-IDF project, or forgetting to change counts per revolution from 40 to 4200 when moving to a built robot.
 
 ## Evidence collection - the minimum set
 
@@ -643,10 +663,11 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Teaching Notes for the Porting Chapter
 
-- **Time:** two to three meetings, and the bottleneck is robot availability, not understanding.
+- **Time:** two to three meetings for porting, hardware verification and the final review.
 - **Goal:** a small port, honest numbers, a three minute demo with a deliberate failure.
 - **The port should be small:** if it is large, that is the lesson and it belongs in the report. Ask what had to change and why, and treat the answer as evidence of the design quality.
 - **Lift the robot before the first run of new motor code, every time, in every group:** this is the one rule you enforce personally.
+- **The Atlas farewell video break:** it opens the chapter, before any porting work, and it is the right place for it. Tell the group what they are watching: a decade of highlight clips, each of which cost thousands of hours of testing that looked nothing like the clip. Then say the sentence they need before they touch the hardware: your simulator project is the polished edit, and the next hour is the outtake reel. Play it while boards are still being handed out, so it costs no teaching time.
 - **Watch for:** the group that changes three things at once and cannot say which one broke it. Enforce one step at a time, with a check after each.
 
 ## The port order and what each step proves
@@ -657,7 +678,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 - **Check the boost converter fourth:** no wake pin, no motor power. It is the first suspect for "nothing moves", not the code.
 - **Tune slowly fifth:** watch the measured RPM, not the wheels. The numbers tell you what the eye cannot, and the eye cannot see a deadband or a slow rate limit.
 - **Run the safety case sixth:** stop the producer, cut the network, put a hand in front of a sensor. Confirm the designed safe state and the diagnostic code.
-- **Teacher info, one slot per group on the shared robot:** enforce the order. A group that starts by tuning control gains will spend the slot debugging a sleeping boost converter.
+- **Teacher info, porting on the physical robot:** enforce the order. A group that starts by tuning control gains will spend their time debugging a sleeping boost converter.
 - **Watch for:** the robot moving unexpectedly while someone reads the screen. Stop the run, say the rule again, and continue. Nobody is exempt.
 
 ## Check your understanding - which files change when the command source moves to the network
@@ -719,9 +740,9 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## The three sentences students should leave with
 
-- **A real time system promises correct values at the correct time, and the worst case is the number that matters.**
-- **Every task blocks, every shared variable has exactly one mechanism, and every actuator has a safe state.**
-- **Never claim timing you have not measured, and always report the worst case against a target.**
+- **First principle:** A real time system promises correct values at the correct time, and the worst case is the number that matters.
+- **Second principle:** Every task blocks, every shared variable has exactly one mechanism, and every actuator has a safe state.
+- **Third principle:** Never claim timing you have not measured, and always report the worst case against a target.
 
 ## The five mistakes that recur every year
 
@@ -741,7 +762,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 | 4 | Shared data, mutexes, queues, stress test | The data checkpoint lands here |
 | 5 | Control path, diagnostics, health checkpoint | Network milestone if hardware is free |
 | 6 | Project design review, simulator build | Design page reviewed before code |
-| 7 | Simulator checkpoint, port to hardware | Robot slots assigned at the start |
+| 7 | Simulator checkpoint, port to hardware | Run in simulation and try on physical hardware |
 | 8 | Demos, review, final quiz | Three minutes demo, three minutes questions |
 
 - **Adjust freely:** the table is a plan, not a contract, and the script says so. Groups move at different speeds and nothing later breaks.

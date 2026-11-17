@@ -10,7 +10,7 @@ This script was developed and refined with the assistance of advanced language m
 - **Failure and observability:** Students understand **watchdogs**, **timeouts**, **status codes**, **safe states** and **graceful degradation** in a system that must not run away.
 
 ## Skills and Abilities
-- **Build and run:** Students can set up an **ESP-IDF** project, build it, run it against a **simulated hardware layer** and flash it to a real **ESP32-S3** board.
+- **Build and run:** Students can set up an **ESP-IDF** project, build it, run it in the **Velxio simulator**, flash the same source to the **physical RobotIT hardware** and explain what differs between simulation and real hardware.
 - **Design a task table:** Students can split a problem into cooperating tasks and justify the chosen **core**, **priority**, **period** and **stack size** for each one.
 - **Implement communication:** Students can implement **mutex protected shared data**, an **event queue**, a **state queue** and a **freshness counter**, and show that the data stays consistent under load.
 - **Measure and prove:** Students can measure the **period**, **worst case jitter** and **execution time** of their tasks and present the numbers as evidence instead of a claim.
@@ -34,11 +34,11 @@ The classic counter example is the **superloop**. One `while (1)` loop does ever
 
 A **real time operating system** fixes that by letting you write separate tasks and letting the **scheduler** decide who runs. That brings new problems with it, which is exactly why this lab spends a good part of its time on the theory before you build your own thing.
 
-- **Try it yourself:** Look at any device around you that reacts to the physical world, a mouse, a drone, an ABS brake. For each one ask: what is the deadline, and what happens when it is missed?
+- **Check your understanding:** Look at any device around you that reacts to the physical world, a mouse, a drone, an ABS brake. For each one ask: what is the deadline, and what happens when it is missed?
 
-[![Introduction to RTOS, Part 1 - What is a Real Time Operating System](https://img.youtube.com/vi/F321087yYy4/0.jpg)](https://www.youtube.com/embed/F321087yYy4)
+[![Why you should make useless things - Simone Giertz](https://img.youtube.com/vi/c0bsKc4tiuY/0.jpg)](https://www.youtube.com/watch?v=c0bsKc4tiuY)
 
-A ten minute introduction from Digi-Key that puts the same idea in different words. Watch it early. If one explanation does not click, the other one usually does.
+Before we get serious about deadlines and determinism, take a breather with the Queen of Shitty Robots. Her machines chop vegetables, cut hair and apply lipstick, and almost none of them work. **That is the point.** Watch how she reacts to a machine that fails: not as a disaster, but as the most interesting thing that happened all day. Every failure mode in this lab is a machine telling you something. The skill is hearing it.
 
 ## How This Lab Runs
 The lab is organised in **topic chapters**, not in a fixed number of sessions. A cohort that moves quickly may cover the theory part in fewer meetings, and one that needs more time for the hardware will spend an extra afternoon on it. The content is the same either way.
@@ -49,12 +49,13 @@ A typical run has **six to eight meetings of about three teaching hours**, split
 |---|---|---|
 | Set up | Install the toolchain, first build, first flash | 1 meeting, start it immediately |
 | Theory and experiments | The three worlds, tasks, priorities, data sharing, timing, faults | 3 to 4 meetings |
-| Project | Your own idea, built in the simulator, then on the robot | 2 to 3 meetings |
+| Project | Your own idea, built and tested in the simulator and on the physical robot | 2 to 3 meetings |
 
-- **Expect the first meeting to be mostly installation.** The download is large and the first build is slow. Start it in the first five minutes and read on while it installs.
-- **Nothing here is tied to a date.** If your group needs a second meeting for priorities, take it. Nothing later breaks.
-- **Quizzes open each meeting** and cover the chapter from the previous meeting, so they double as a warm up.
-- **The project is not a fixed brief.** You bring the idea and the success criteria, and your instructor tells you whether it is doable in the time you have.
+- **Expect the first meeting to be mostly installation:** The download is large and the first build is slow. Start it in the first five minutes and read on while it installs.
+- **Simulate and run on the real robot:** Every exercise and project runs in the **Velxio simulator** in your browser and on the **physical RobotIT hardware**. Both environments use the exact same source code and HAL headers, so you can test in simulation first and then flash to the real robot, or work side by side on both.
+- **Nothing here is tied to a date:** If your group needs a second meeting for priorities, take it. Nothing later breaks.
+- **Quizzes open each meeting:** They cover the chapter from the previous meeting, so they double as a warm up.
+- **The project is not a fixed brief:** You bring the idea and the success criteria, and your instructor tells you whether it is doable in the time you have.
 
 **The goal of the lab is not a fast robot. The goal is a robot whose behaviour you can explain.**
 
@@ -65,30 +66,40 @@ We use a small **differential drive robot** built around an **ESP32-S3**. It has
 - **Drive:** Two **DC motors** with **quadrature encoders**, driven through an **H-bridge**.
 - **Power:** A **charger and boost converter** section that fills the battery from USB and raises its voltage for the motors.
 - **Sensing:** Three **time of flight distance sensors** on one shared **I2C bus**.
-- **Feedback:** A single **status LED**, one **power LED** and an **active buzzer**.
-- **Link:** A **WiFi** connection to a small web server, so the robot can reach the outside world.
+- **Feedback:** A single **status LED**, one **power LED**, a **BOOT button** you can use as an input and, on some builds, a **buzzer**.
+- **Link:** The **WiFi** built into the ESP32-S3, so the board can reach the network.
 
 You do not need to build any of this and you do not need to write the hardware drivers. This lab starts at the **hardware abstraction layer**, not at the pin.
 
-## Hardware, Simulator and Teams
-Most of the experiments need no robot at all. When the robots are limited, you share them, and the simulated hardware layer keeps your work moving.
+## The Simulator and the Physical Robot
+You have two ways to run your code throughout this lab: in the **Velxio simulator** and on the **physical RobotIT hardware**. The same ESP-IDF project builds for both, so you move between simulation and hardware without rewriting anything.
+- **The Velxio simulator:** **Velxio** is a browser based simulator that emulates an **ESP32-S3** and runs your real **ESP-IDF** firmware. Our virtual circuit includes the status LED, the BOOT button, a motor driver, two motors with encoders, a three sensor distance array and a battery divider. You can run and test the entire robot on any laptop at any time.
+- **The physical RobotIT hardware:** The real ESP32-S3 robot with its battery, boost converter, H-bridge, geared DC motors with quadrature encoders, three time of flight distance sensors, status LED, BOOT button and buzzer. Even when testing on a standalone board on the bench without wheels attached, the ESP32-S3, status LED, BOOT button, buzzer, USB connection and WiFi work identically.
+- **The HAL:** A small ESP-IDF component called **robot_hal** hides every pin and every driver behind a clean function, one header per part. It is the same component on the physical hardware and in the simulator.
 
-- **The simulator:** A browser based **ESP-IDF** simulator, so you can build and run **ESP32-S3** firmware without plugging anything in. Login details come from your instructor.
-- **The HAL:** A small library that hides every pin and every driver behind a clean function. You are given it, both for real hardware and for a **simulated version with no hardware at all** so you can keep working when no robot is free.
-- **Real robots:** The number available changes from week to week. Your instructor says at the start of each meeting who works on hardware.
-- **Bare boards:** Boards without motors or sensors are still useful for the schematic work and for anything that only needs the serial console.
+| Part | Velxio simulator | Physical hardware |
+|---|---|---|
+| Tasks, priorities, queues, mutexes | Full FreeRTOS on emulated ESP32-S3 | Full FreeRTOS on real ESP32-S3 |
+| Status LED and BOOT button | Virtual LED on IO2 and button on IO0 | On-board LED on IO2 and button on IO0 |
+| Buzzer | Calls work, silent in the browser | Passive PWM buzzer on IO1 |
+| Battery voltage | Fixed value around 4.1 V from a divider | Real cell through a 2 to 1 divider |
+| Motors and encoders | Simulated N20 motors (40 counts per rev) | Geared N20 motors (4200 counts per rev) |
+| Distance sensors | Simulated three sensor array | Three VL53L0X sensors on shared I2C |
+| Timing numbers | Rehearsal and logic checks | Honest hardware numbers for your report |
 
-[Download the HAL starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit-hal-starter.zip)
+[Download the RobotIT starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/espIDFRobotITStarterKit.zip)
 
-That archive contains the HAL, a simulated backend, a self test and a complete example application with three tasks. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter.
+That archive contains a complete ESP-IDF project with the **robot_hal** component and the **blink** example, plus the two Velxio project files. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter. The two Velxio files are also available on their own.
+- **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
+- **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
 
 ## Safety
-- **Lift the robot before the first run of new motor code.** Always. Use your hand as a switch: if it drives towards you, tip it up.
-- **Keep the power switch reachable** while a program with new motor code is running.
-- **Look at the robot, not the screen,** when the motors are powered.
+- **Lift the robot before the first run of new motor code:** Always. Use your hand as a switch: if it drives towards you, tip it up.
+- **Keep the power switch reachable:** Make sure you can reach it while a program with new motor code is running.
+- **Look at the robot, not the screen:** Watch the hardware when the motors are powered.
 - **Battery handling:** A full cell measures about **4.05 V** and an empty one about **3.3 V**. Never leave a deeply discharged cell in the robot, and never let a cell get hot.
-- **Do not probe the power circuitry with a multimeter.** The battery, the charger and the boost converter are not things to poke at while connected. Everything you need to know about them is either printed by the firmware or explained in the schematic chapter of this script.
-- **Reach a safe state from software.** Every project must have a way to stop, and you must be able to name it.
+- **Do not probe the power circuitry with a multimeter:** The battery, the charger and the boost converter are not things to poke at while connected. Everything you need to know about them is either printed by the firmware or explained in the schematic chapter of this script.
+- **Reach a safe state from software:** Every project must have a way to stop, and you must be able to name it.
 
 ## How This Lab Is Assessed
 The assessment is **formative**. The point is not a grade at the end, the point is that you notice in the second hour what you would otherwise learn in the last week.
@@ -102,7 +113,7 @@ The assessment is **formative**. The point is not a grade at the end, the point 
 > Summary
 > A real time system promises **correct values at the correct time**, and the only number that matters is the **worst case**. Bare metal runs one path, an **RTOS** lets several tasks run and a **scheduler** decides, and a normal **OS** gives you services at the cost of guaranteed timing.
 > The lab is organised by **topic**, not by session number, because real groups move at different speeds.
-> The hardware and the drivers are provided, and the **HAL** comes with a **simulated backend** so your work continues when no robot is free. Download the starter kit and build it before the first theory chapter.
+> The drivers are provided as the **robot_hal** component. The same source runs in the **Velxio simulator** and on the **physical RobotIT hardware**. Download the starter kit and build it before the first theory chapter.
 > The work starts at the **HAL** and the question is always the same: **can you prove it?**
 
 # The Three Worlds - Bare Metal, RTOS and Linux
@@ -158,10 +169,6 @@ void control_task(void *arg) {
 
 The kernel is small, usually a few tens of kilobytes, and it does not give you files, memory protection or processes. It gives you **tasks, queues, semaphores and time**, and nothing else.
 
-[![How to Multitask with FreeRTOS on the ESP32](https://img.youtube.com/vi/WQGAs9MwXno/0.jpg)](https://www.youtube.com/embed/WQGAs9MwXno)
-
-A short, practical walkthrough of creating tasks on an ESP32. You will recognise the two task functions above after about two minutes of it.
-
 - **Check your understanding:** Both tasks above have a 10 ms delay. Does that mean they both run every 10 ms? Under what condition would one of them miss its rhythm?
 
 ## Linux on a Raspberry Pi - Services and No Timing Promise
@@ -179,9 +186,9 @@ while true; do ./read_sensor; sleep 0.01; done
 
 This is not a criticism of Linux. It is the deliberate trade: you give up a timing guarantee and you get an operating system. A robot with a camera and a web dashboard usually has **both** worlds on board, an MCU for the motors and a Linux computer for the thinking.
 
-[![Arduino vs Raspberry Pi - which is best](https://img.youtube.com/vi/7vhvnaWUZjE/0.jpg)](https://www.youtube.com/embed/7vhvnaWUZjE)
+[![Linux in 100 Seconds - Fireship](https://img.youtube.com/vi/rrB13utjYV4/0.jpg)](https://www.youtube.com/watch?v=rrB13utjYV4)
 
-A calm comparison of the two worlds, without a winner. Watch it if you are unsure why anyone would not simply use the more powerful board.
+Two and a half minutes of dry humour on the world we just told you not to trust with a deadline. Notice what it is genuinely good at: processes, files, drivers, users, all free. Notice what it never once promises: **when** any of it happens.
 
 - **Check your understanding:** A drone needs a control loop at 400 Hz. Which world does the loop live in, and could the camera also live there?
 
@@ -204,7 +211,7 @@ The decision is usually made by one question: **can a late answer still be a cor
 
 The important insight: **the RTOS does not make your chip faster, it makes your timing organisable.** Everything else in this lab follows from that.
 
-- **Try it yourself:** Take the HAL example from the starter kit, which uses three tasks, and imagine rewriting it as one bare metal loop. Write the loop order on paper. Where would it block, and what would stop working?
+- **Try it yourself:** Imagine writing our robot's four jobs (reading three distance sensors, computing the control law, updating motor duties and sending a status line over WiFi) as one bare metal loop on paper. Write down the loop order, then mark which calls can block and what stops working while they wait.
 - **Check your understanding:** Your project needs a camera stream to a browser and a motor that must stop within 5 ms. Which worlds do you use, and where is the hard part?
 
 > Summary
@@ -224,61 +231,87 @@ A project that grew without a structure is impossible to debug, and every real t
 - **Application start-up:** One file that creates the objects, connects them and starts the tasks.
 
 ```text
-main.c               application start-up: create hardware, wire it, start tasks
-  |
-  +-- tasks/         sensor_task, control_task, monitor_task
-  |     each task owns a rhythm, a priority and a stack
-  |
-  +-- components/    reusable logic, no pins, no driver calls
-  |     pid, motor_controller, differential_drive, odometry, shared_data
-  |
-  +-- hal/           one thin driver per part, error returns, bounded blocking
-  |     hal.h plus a real and a simulated backend
-  |
-  +-- hardware       pins, timers, I2C bus, ADC channels
+main/                  your application
+  main.c               start-up: create hardware, wire it, start tasks
+  sensor_task.c        one function per rhythm: sensor, control, monitor
+  pid.c, shared_data.c reusable logic you write, no pins, no driver calls
+robot_hal/             one thin driver per part, supplied
+  include/             status_led, buzzer, boot_button, battery, step_up,
+                       dc_motor, encoder, motor, vl53l0x, sensor_array, kv_store
+  src/                 the implementations
+hardware               pins, timers, I2C bus, ADC channels
 ```
 
 Read the list from the bottom up and you get the dependency direction: **tasks call components, components call the HAL, the HAL calls the hardware.** It never goes the other way. A HAL function that calls a task, or a component that reads a pin directly, is a design bug even if the program works.
 
-- **The HAL is bounded:** Every function returns an error code and blocks no longer than a documented worst case. That number is part of the interface, because your task periods depend on it.
-- **The HAL does not decide:** It does not brake, does not log and does not retry in a loop. It reports. The task decides what an error means.
+- **The HAL is explicit about time:** Functions return an error code, and the calls that wait say so. A sensor read blocks until a result arrives or its configured timeout runs out. That number is part of your period.
+- **The HAL does not decide:** It does not decide what an error means, brake the robot or retry in a loop. It reports, and the task decides.
 - **Components are pure logic:** No delays allowed, so they can be stepped from any task and reasoned about on paper.
 - **Start-up stays readable:** If you cannot read the whole start-up on one screen, something should move into a component.
 
 ## Why the Boundaries Matter for Timing
 Timing problems do not appear in the middle of a well written function. They appear where two worlds meet.
 
-- **A driver that blocks** turns a 10 ms task into a 45 ms task and silently breaks the controller behind it.
-- **A component that allocates memory** occasionally takes microseconds instead of nanoseconds, which is invisible until it is not.
-- **A task that prints** inside a fast loop spends more time formatting text than doing work.
-- **A callback that calls into a task layer** inverts the dependency and makes the timing impossible to follow.
+- **A driver that blocks:** Waiting inside a driver turns a 10 ms task into a 45 ms task and silently breaks the controller behind it.
+- **A component that allocates memory:** Dynamic allocation occasionally takes microseconds instead of nanoseconds, which is invisible until it is not.
+- **A task that prints:** Formatting text inside a fast loop spends more time formatting text than doing work.
+- **A callback that calls into a task layer:** Calling upward inverts the dependency and makes the timing impossible to follow.
 
 A clean layering does not prevent those problems, it **localises** them. When the period of your control task degrades, you have four places to look instead of forty.
 
-## The Simulated Backend and Why It Is the Point
-The HAL in this lab has **two backends** with the same header. One talks to real pins, the other simulates the parts so plausible numbers come out.
+- **Check your understanding:** Name one thing that belongs inside the HAL and one thing that must never live there. Where does the obstacle rule ("stop when the wall is closer than 12 cm") belong?
 
-- **Same application code:** Your tasks, priorities, mutexes, queues and measurements run unchanged in both, because they only ever call `hal.h`.
-- **No hardware required:** When no robot is free, the simulated backend keeps the real time part of your project moving.
-- **Safer experiments:** You can command a full speed motor and see what your code does to it without a robot driving off a table.
-- **Provokable faults:** In the simulator you can make a sensor go silent and prove your safe state works. On real hardware you would have to unplug something.
+## One Code Base for the Simulator and the Physical Robot
+The starter kit gives you **one set of headers** and **two places to run them**. Your tasks, priorities, mutexes, queues and measurements call the same functions in both.
+- **Same source:** The ESP-IDF project in the zip and the project inside the Velxio file contain the same main.c and the same robot_hal headers.
+- **Same toolchain:** Velxio compiles with a real **ESP-IDF** and runs the firmware on an emulated **ESP32-S3** with **FreeRTOS**, so priorities, mutexes and queues behave the way they do on the physical hardware.
+- **Different parts underneath:** The simulated circuit replaces the physical parts with virtual stand-ins, listed in the table below.
+- **Three lightweight motor files:** Inside the Velxio project, dc_motor, encoder and motor are lightweight versions with the exact same headers. Every other driver is identical to the hardware version.
 
-The rule that follows is worth writing on your hand: **if your code compiles against `hal.h` and never touches a pin directly, you can develop without hardware.**
+Here is the circuit that comes with the Velxio files. Find the LED on IO2, the button on IO0, the two motors with their encoder wires, the sensor array and the two resistors that form the battery divider on IO4.
 
-- **Try it yourself:** Unzip the starter kit, set the backend to the simulated one, build and run it. Watch the console until you can explain every column of the monitor line.
-- **Check your understanding:** Name one thing that must be in the HAL and one that must not be. Explain both in one sentence each.
+![The simulated RobotIT circuit in Velxio](./files/VelxioCircuit.png)
 
-## Reading the Provided Example
-The starter kit contains a complete application you should read before writing your own. It is deliberately small.
+| Real robot | In the simulator | What it means for you |
+|---|---|---|
+| Hardware PWM at 20 kHz | Software PWM at about 20 Hz | Duty cycle works, but the wave is slow and coarse |
+| Hardware pulse counter on the encoder | Encoder polled every 500 microseconds | Counts are right, but they come from software |
+| Geared N20 motor with 4200 counts per revolution | Simulated N20 motor with 40 counts per revolution | Keep counts per revolution in one constant |
+| Boost converter and H-bridge | L293D motor driver | Direction and duty work, the electrical details differ |
+| Three VL53L0X sensors | One chip with three simulated sensors | Distance sweeps between 20 and 80 cm like a sine wave, with adjustable jitter |
+| Battery with a 2 to 1 divider and calibrated ADC | Resistor divider on the 3.3 V rail, blank calibration | Reads a constant of about 4.1 V, and battery_init may fail |
+| Buzzer on IO1 | Not in the circuit | Calls succeed, nothing is audible |
 
-- **Two tasks on one core:** `sensor` and `control`, both priority 10, both 10 ms. They are the real time part.
-- **One task on the other core:** `monitor`, priority 4, every 250 ms. It watches the other two and prints.
-- **One mutex and one queue:** The mutex protects a struct with a sequence number and a timestamp, the queue carries commands with overwrite semantics.
-- **One safe state:** If the data is stale, the motors stop instead of being driven on old information.
-- **One measurement:** The worst period and the worst execution time are recorded and printed.
+- **Write once:** Because your code only calls the robot_hal headers and never touches a raw pin, you can move between the simulator and the physical robot at any time.
+- **Safer experiments:** You can command full speed on a simulated motor and see what your code does to it before putting the real robot on the floor.
+- **Provokable faults:** In the simulator you can raise sensor jitter or load a motor with a mouse click. On real hardware you would have to physically block a wheel or unplug a cable.
+- **Honest limits:** The emulator is not the physical chip. Treat its timing as a rehearsal, and take the final timing numbers for your report from the real hardware.
+
+- **Check your understanding:** Name two things that behave identically in the simulator and on the physical robot, and two that do not.
+
+## Reading the Starter Kit Examples
+The starter kit contains two programs. Read both before you write your own.
+- **Blink:** The small one. Two tasks and one mutex share one LED. It is commented line by line, and you will come back to it in every chapter from here on.
+- **The full hardware test:** The big one, in VelxioRobotITFullExample.vlx. One endless loop ticking every 10 ms drives the LED, the button, the buzzer, the battery reader, the boost converter, two motors with encoders and the three distance sensors, and prints one status line every 300 ms.
+
+Blink shows the whole shape of an RTOS application in one start-up function. This is a shortened version of its app_main.
 
 ```c
-/* the shape of every task in this project */
+void app_main(void)
+{
+    s_state.mutex = xSemaphoreCreateMutex();     /* create before any task exists */
+    ESP_ERROR_CHECK(status_led_init());          /* claim the hardware */
+    status_led_set(true);
+    s_state.led_on = true;
+
+    xTaskCreate(monitoring_task, "monitor", 2048, NULL, 1, NULL);
+    xTaskCreate(blink_task,      "blink",   2048, NULL, 2, NULL);
+}
+```
+
+Every task in this project has the same shape: a loop that does a little work and then waits.
+
+```c
 static void control_task(void *arg) {
     TickType_t last_wake = xTaskGetTickCount();
     for (;;) {
@@ -288,16 +321,18 @@ static void control_task(void *arg) {
 }
 ```
 
-Everything after this chapter is an explanation of the choices inside that file.
+- **Blink is the RTOS world:** Two independent rhythms, each task blocked almost all the time, and one lock to share data.
+- **The full test is the bare metal shape:** Every job is a counter inside one loop, such as tick_count modulo 15 for the sensors and modulo 30 for the status line. It works because nothing in it waits for long. Your project turns that loop into tasks.
+- **Start-up stays short:** In both programs main.c creates the hardware objects, wires them together and starts things. The real work lives elsewhere.
 
-- **Try it yourself:** In the example, change `hal_sim_set_distance(1, 80)` to a wall at 8 cm and watch the control task stop the robot. Then remove the distance check and watch it not stop.
-- **Check your understanding:** Which layer does the obstacle check belong to, and why not the HAL?
+- **Try it yourself:** Compare the two snippets above with the bare metal superloop from the previous chapter. If a sensor read inside the full test loop suddenly blocked for 40 ms, which other activities in that loop would be delayed?
+- **Check your understanding:** In blink, which call makes the tasks wait for each other, and which call makes them wait for time?
 
 > Summary
 > A project is layered into **hardware, HAL, components, tasks and one start-up**. The dependency direction is always downward and never reverses.
 > The HAL is **thin, bounded and non deciding**: it returns errors, blocks for a documented worst case and never logs or brakes.
 > Real time bugs live at the **boundaries**, so a clean layering localises them instead of preventing them.
-> The HAL has two backends, **real** and **simulated**, and that is what lets you keep working when no robot is free.
+> The same headers run in the **simulator** and on the **physical robot**, so you can test logic safely in the browser and verify real timing on hardware. A few stand-ins differ, so you know them before you trust a number.
 
 # The Hardware and the Schematic
 The schematic is the truth about the hardware. Everything else, including the pin names in the code, is a claim you should be able to verify. This chapter walks the four pages of the board schematic and connects each one to something you will meet in software.
@@ -341,15 +376,15 @@ This is the page most people skip, and it is the page that explains two strange 
 
 The charger in the middle is a **BQ25060**. Three things about it matter to you:
 
-- **It limits its input current to about 0.5 A**, because the board must also work on a plain USB 2.0 port. A bigger charger does not charge faster.
-- **It limits the charge current to about 0.8 A**, set by a resistor. This is why a full charge takes a while and why you should not expect a fast top-up between two meetings.
-- **It has a temperature sensing input**, which the schematic comments say is not used here.
+- **Input current limited to about 0.5 A:** A plain USB 2.0 port must be able to feed the board. A bigger charger does not charge faster.
+- **Charge current limited to about 0.8 A:** Set by a resistor. This is why a full charge takes a while and why you should not expect a fast top-up between two meetings.
+- **Temperature sensing input:** Present on the chip, which the schematic comments say is not used here.
 
 The protection block on the right is a small circuit with two transistors and a second chip. Its job is to stop a **reversed battery** from being destructive, and the schematic note tells you it is there specifically because a student can plug the cell in the wrong way round.
 
-- **A power switch** disconnects the system rail from the charger rail, so you can run the board from USB with the battery switched out.
-- **A green LED** shows the system rail is alive. If the board seems dead, that LED is the first thing to look at.
-- **The 3.3 V regulator** at the bottom right produces the logic rail from whatever the system rail happens to be, and it has its own small capacitors.
+- **A power switch:** Disconnects the system rail from the charger rail, so you can run the board from USB with the battery switched out.
+- **A green LED:** Shows the system rail is alive. If the board seems dead, that LED is the first thing to look at.
+- **The 3.3 V regulator:** Sits at the bottom right and produces the logic rail from whatever the system rail happens to be. It has its own small capacitors.
 
 **This is why you do not probe this page.** The interesting measurements are inside a charging loop that reacts to what it sees, and a probe tip in the wrong place is at best a short. Everything you need to know is written on the schematic, and the firmware can tell you the battery voltage whenever you want it.
 
@@ -369,7 +404,7 @@ Three details on this page are worth more than the rest:
 | Signal | ESP32-S3 Pin | What to remember |
 |---|---|---|
 | Status LED | IO2 | Active high, one small indicator only |
-| Buzzer | IO1 | Active buzzer, level driven, no PWM needed |
+| Buzzer | IO1 | Passive buzzer on some builds, pitch set by a PWM frequency |
 | Boost converter wake | IO21 | Must be high or the motors get no power |
 | Left motor inputs | IO5 and IO6 | PWM at 20 kHz, above the audible range |
 | Left encoder | IO17 and IO18 | Quadrature, counted in hardware |
@@ -390,10 +425,10 @@ The last page is where the robot physically moves. It contains the two parts tha
 
 ![Schematic page 4 - boost converter and H-bridge](./files/RobotITSchematic-p4.png)
 
-- **The boost converter** raises the battery voltage to a motor rail of about **10 V**, because a single cell cannot turn a geared motor well. Its **enable pin is driven by the ESP32**, and that is the wake pin you saw on page 3.
-- **Its switching frequency is set by a resistor** and is deliberately placed above the audible range, so the robot does not whistle.
-- **The H-bridge** is a single chip driving both motors, with two logic inputs and two outputs per motor. It also has current sensing resistors and a fault output that the software can read.
-- **The output capacitors are rated for voltage spikes**, which tells you the motor rail is not a clean supply. Motors generate spikes, and the board is built to survive them.
+- **The boost converter:** Raises the battery voltage to a motor rail of about **10 V**, because a single cell cannot turn a geared motor well. Its **enable pin is driven by the ESP32**, and that is the wake pin you saw on page 3.
+- **Switching frequency set by a resistor:** It is deliberately placed above the audible range, so the robot does not whistle.
+- **The H-bridge:** It is a single chip driving both motors, with two logic inputs and two outputs per motor. It also has current sensing resistors and a fault output that the software can read.
+- **Output capacitors rated for voltage spikes:** This tells you the motor rail is not a clean supply. Motors generate spikes, and the board is built to survive them.
 
 **The H-bridge is why the motor is controlled with PWM.** Both inputs accept a fast switching signal, so the software sets a **20 kHz** duty cycle rather than a simple on or off. Slow switching would be audible and would create larger current ripple. That single decision is the reason a motor call in the HAL takes a duty between minus one and plus one and never a raw boolean.
 
@@ -405,19 +440,23 @@ The last page is where the robot physically moves. It contains the two parts tha
 | Fast switching on one input | Average power set by the duty cycle |
 
 - **Both low is the safe state:** It is what the HAL does when you stop, and it is what you should do when your data is stale.
-- **The current limit matters:** Full duty on a stalled motor asks for a current spike that can brown out the whole board, which reboots the ESP32. This is why the HAL clamps the duty and rate limits it.
+- **The current limit matters:** Full duty on a stalled motor asks for a current spike that can brown out the whole board, which reboots the ESP32. The driver only clamps the duty to the range minus one to plus one, so limiting the duty and ramping it is your job.
 
 - **Check your understanding:** Why does the HAL take a duty between minus one and plus one instead of a direction and a power separately?
+
+[![How NOT to Make an Electric Guitar - ElectroBOOM](https://img.youtube.com/vi/TwIvUbOhcKE/0.jpg)](https://www.youtube.com/watch?v=TwIvUbOhcKE)
+
+A loud, spark-filled break from ElectroBOOM, and the best three minutes you can spend on why we keep our multimeters out of the charger and boost converter. Watch what happens when live rails, unguarded current and bare probes meet. Then read the next paragraph and notice that none of it was a surprise to the person holding the probe.
 
 ## From Schematic to Code
 Every pin in the firmware traces to one of these four pages, and every one of them has a consequence for the software.
 
-- **The wake pin** is why a robot with perfectly good motor code can still not move.
-- **The mirrored right motor** is why one motor needs its sign inverted, and why "forward" can turn into "spin".
-- **The shared sensor address** is why the sensor driver must enable the sensors one after another.
-- **The 2 to 1 divider** is why the measured battery voltage must be doubled, and why a wrong ratio gives a confidently wrong percentage.
+- **The wake pin:** Explains why a robot with perfectly good motor code can still not move.
+- **The mirrored right motor:** Explains why one motor needs its sign inverted with the invert flag of its motor configuration, and why "forward" can turn into "spin".
+- **The shared sensor address:** Explains why the sensor driver must enable the sensors one after another.
+- **The 2 to 1 divider:** Explains why the measured battery voltage must be doubled, and why a wrong ratio gives a confidently wrong percentage.
 
-- **Try it yourself:** Open the HAL source in the starter kit and find one line for each row of the pin table. You are not expected to understand every register write, only to see that the number in the code is the number on the schematic.
+- **Try it yourself:** Open robot_hal/include/pinout.h in the starter kit and find one line for each row of the pin table. You are not expected to understand every register write, only to see that the number in the code is the number on the schematic.
 - **Check your understanding:** Name one schematic detail that has no effect on your code, and explain why it does not.
 
 > Summary
@@ -434,15 +473,19 @@ Nothing else in this lab works until your toolchain does, and the installation i
 The toolchain is the **ESP-IDF**, the official development framework for Espressif chips. It brings a compiler, a build system, a monitor and the drivers you need.
 
 - **The installation manager:** Download it from [Espressif's install page](https://dl.espressif.com/dl/eim/index.html) and start it **as administrator**, or the USB driver step silently fails.
-- **The version:** Take the current stable release. Note the number, because the simulator may use a slightly different one and the difference occasionally matters.
+- **The version:** Take the current stable release. The starter kit is written for **ESP-IDF 6.0**, and 5.x should also work. Note the number, because the simulator may use a slightly different one.
 - **The folder:** The default path is fine. Avoid spaces and OneDrive folders, they cause strange build errors.
 - **The driver step:** Accept it when the installer offers to install the USB drivers. This is why it needs administrator rights.
 - **The time:** The download is several hundred megabytes. Start it, then read the rest of this chapter while it runs.
 
 If the manager does not open at all, download it directly from the link above instead of through the documentation page, which sometimes points at a stale build.
 
+[![C in 100 Seconds - Fireship](https://img.youtube.com/vi/U3aXWizDbQ4/0.jpg)](https://www.youtube.com/watch?v=U3aXWizDbQ4)
+
+Two and a half minutes to fill while the download runs, on why this whole course still speaks C. No garbage collector to blame, no runtime to hide behind, and every byte of memory is your personal responsibility. That last sentence is the entire reason a motor can stop within five milliseconds.
+
 ## VS Code and the Extension
-- **VS Code** is the editor. Install the **ESP-IDF extension** from the marketplace.
+- **VS Code is the editor:** Install the **ESP-IDF extension** from the marketplace.
 - **Configure the extension once:** Point it at the ESP-IDF folder and the tools folder that the installer created. There is a setup wizard for exactly this.
 - **Useful buttons:** Build, flash, monitor and the target selector. You can do all of it from the terminal too, which is what the rest of this script assumes.
 
@@ -480,48 +523,69 @@ These are recorded from real setup sessions. Almost every first-day failure is o
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `idf.py` is not recognised | The environment was not exported in this terminal | Run `export.ps1` again, in this shell |
-| No COM port at all | Charge only USB cable, or missing driver | Try a different cable **first**, then reinstall the driver |
+| idf.py is not recognised | The environment was not exported in this terminal | Run export.ps1 again, in this shell |
+| No COM port at all | Charge only USB cable, or missing driver | Try a different cable first, then reinstall the driver |
 | Flashing fails at a random percentage | Stale monitor holding the port, or a hub | Close the monitor, plug directly into the PC |
-| Build succeeds but nothing runs | Target never set, or wrong chip | `idf.py set-target esp32s3`, then full rebuild |
+| Build succeeds but nothing runs | Target never set, or wrong chip | Run idf.py set-target esp32s3, then full rebuild |
 | The board resets in a loop | Panic or brownout | Read the backtrace, check motor duty limits |
 | The board appears twice | One port is the serial console, one is the debug interface | Try both, the console one prints the boot log |
 | Debugger will not attach | Conflicting driver on the USB JTAG interface | Reinstall the device in Device Manager, then replug |
 | Everything builds, robot does nothing | Boost converter asleep | Check the wake pin before suspecting your code |
+| Nothing in the monitor on the board | Board is in download mode | Press the reset button |
+| Simulator build is slow or fails once | Velxio compiles on a server and the first build is cold | Wait for the first build, then retry once before changing code |
+| Works in the simulator, not on the board | A part or a timing the simulator does not model | Check the table of simulator stand-ins, then print what the driver returns |
 
 **When the debugger cannot connect,** the documented fix is: open Device Manager, switch to **Devices by container**, find both USB JTAG entries for the board, uninstall them **with** the "delete the driver" box ticked, unplug the board, wait a few seconds and plug it back in. Windows then enumerates it fresh and binds the correct driver. Do not use a driver replacement tool unless that fails.
 
 - **Predict before you run:** Your colleague's command says `-p COM5` and yours says `-p COM7`. Whose is wrong?
-- **Try it yourself:** Run `idf.py size` after a build. Which part of your image is the largest, and why does that matter on a chip with limited flash?
 
-## Build the Starter Kit
+## Build the Starter Kit on Physical Hardware
 The first build should be the provided example, not your own code, so that a failure is clearly the toolchain and not you.
 
 ```powershell
-# unzip the starter kit, then from its folder
+# unzip the starter kit, then from the folder that contains CMakeLists.txt
 idf.py set-target esp32s3
 idf.py build
 idf.py -p <YOUR_PORT> flash monitor
 ```
 
-- **Set the backend first:** In the top level `CMakeLists.txt`, set `HAL_BACKEND` to `sim` to run with no robot, or to `real` for the board.
-- **Start with `sim`** if no robot is free. It builds, it runs, and it proves your toolchain in about two minutes.
-- **Then try `real`** on a board. You should see the self test print one line per part.
+- **The project:** The zip unzips into a normal ESP-IDF project with CMakeLists.txt, main/main.c and the robot_hal folder. The top level CMakeLists.txt adds robot_hal through EXTRA_COMPONENT_DIRS, so nothing needs installing.
+- **What you should see:** The monitor prints one line per task and the status LED on the hardware goes on for 500 ms and off for 500 ms.
+- **The timestamps:** The number in parentheses is milliseconds since boot. Yours will differ slightly.
+- **The LED stays dark:** A board revision may use another pin. Check the value of LED in robot_hal/include/pinout.h.
 
-**Checkpoint:** Show a running program that prints from at least one task, and show the backend name in its output.
+```text
+I (312) blink: starting the blink sample
+I (322) blink: [blink]   LED state: OFF
+I (332) blink: [monitor] LED state: OFF
+I (342) blink: tasks started, main task is finished
+I (822) blink: [blink]   LED state: ON
+I (832) blink: [monitor] LED state: ON
+```
+
+- **Try it yourself:** Run `idf.py size` after your build finishes. Which part of your image is the largest, and why does that matter on a chip with limited flash?
+
+## Run the Same Project in the Simulator
+The Velxio simulator runs the exact same program in your browser. [Download the Velxio starter project](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITStarterKit.vlx) or take the file from the starter kit archive.
+- **Open Velxio:** Go to [velxio.dev](https://velxio.dev), or to the address your instructor gives you if the lab runs its own instance.
+- **Import the project:** Use the import entry of the project menu and choose the .vlx file. It brings the circuit, the board settings and all source files, including robot_hal.
+- **Check the board:** The board must be an **ESP32-S3** in **ESP-IDF** mode. Both are already set in the file.
+- **Compile:** Press compile. Velxio builds on a server, so the first build takes longer than the ones after it.
+- **Run and watch:** Start the simulation and open the serial monitor. You should see the same log lines as on the physical hardware, and the simulated LED lights and goes dark every 500 ms.
+- **Poke it:** The pushbutton in the circuit is wired to IO0, the BOOT pin. Press it with the mouse while a program that reads it is running.
+
+- **Try it yourself:** Let the blink project run for ten seconds in both the simulator and on the physical hardware, and compare your logs with the excerpt above. Then trace the status LED wire in the Velxio circuit diagram and verify it matches `LED` in `robot_hal/include/pinout.h`.
+
+**Checkpoint:** Show the blink log from the simulator and from the physical hardware, the LED blinking at 500 ms, and name one difference you can see between the two logs.
 
 > Summary
 > Install **ESP-IDF as administrator** so the USB driver step works, and start the download in the first five minutes because it is slow.
 > The build loop is **`export.ps1`, `set-target`, `build`, `flash monitor`**, and `export.ps1` has to be repeated in every new terminal.
-> **The port is not always `COM5`.** Find yours in Device Manager or with `idf.py -p detect`.
+> **The port is not always `COM5`.** Find yours in Device Manager or with `idf.py -p detect`, and import the **Velxio** project to run the exact same firmware in the browser.
 > Most first day failures are a **charge only cable**, an **unexported shell**, a **missing target** or a **stale monitor**. The troubleshooting table covers the rest.
 
 # Tasks, Scheduling and Priorities
 You have seen that an RTOS gives you tasks. This chapter is about what a task really is, how the **scheduler** chooses between them, what a **priority** does, and how to prove your timing instead of hoping for it.
-
-[![Introduction to RTOS, Part 11 - Priority Inversion](https://img.youtube.com/vi/C2xKhxROmhA/0.jpg)](https://www.youtube.com/embed/C2xKhxROmhA)
-
-A short episode on what happens when priorities collide. Watch it now for the intuition, and again after the chapter on shared data, when it will make much more sense.
 
 ## Threads to Tasks
 You already know threads from Java, C# or C++. An RTOS task is the same idea with three differences that matter.
@@ -529,12 +593,12 @@ You already know threads from Java, C# or C++. An RTOS task is the same idea wit
 | Property | Thread on a PC | FreeRTOS task |
 |---|---|---|
 | Created with | new Thread and start | xTaskCreate or xTaskCreatePinnedToCore |
-| Memory for locals | Managed by the OS, usually large | You provide the stack size in words |
+| Memory for locals | Managed by the OS, usually large | You provide the stack size in bytes |
 | Scheduling | Fair, time sliced | Priority, preemptive, no fair share |
 | Blocking | Sleep, locks, IO | Sleep, queues, semaphores, notifications |
 | On overflow | Managed by the OS | Memory corruption or a panic |
 
-- **The stack is yours:** You give the size in **words**, not bytes, which is why the numbers look so large. A value of 4096 is about 16 kB on this chip.
+- **The stack is yours:** In ESP-IDF you give the size in **bytes**. Vanilla FreeRTOS counts in words, which is a classic trap when you read other tutorials. A value of 4096 is 4 kB, and the blink example gets by with 2048.
 - **There is no fairness:** A high priority task that loops forever starves everything below it. On a PC an infinite loop is annoying, on an RTOS it is a crashed robot with spinning motors.
 - **Blocking is the normal state:** A well written task is blocked almost all the time and becomes ready only when there is work.
 
@@ -543,13 +607,13 @@ You already know threads from Java, C# or C++. An RTOS task is the same idea wit
 - **Core:** Which of the two cores it may run on, or no affinity for either.
 - **Priority:** How urgent it is relative to the others.
 - **Period:** How often it must run, or which event wakes it.
-- **Stack:** How much stack it needs, in words.
+- **Stack:** How much stack it needs, in bytes.
 
 ```c
 xTaskCreatePinnedToCore(
     control_task,   /* function        */
     "control",      /* name, for logs  */
-    4096,           /* stack, in words */
+    4096,           /* stack, in bytes */
     NULL,           /* argument        */
     10,             /* priority        */
     NULL,           /* handle out      */
@@ -558,6 +622,43 @@ xTaskCreatePinnedToCore(
 ```
 
 - **Check your understanding:** Why does an RTOS task need an explicit stack size when a PC thread does not?
+
+## The Blink Example - Two Tasks and One LED
+Time to watch tasks run. The starter kit contains a small, complete RTOS program called **blink**, and this chapter and the next one keep coming back to it. Two tasks share one LED and one variable that says whether the LED is lit. Open main/main.c and compare it with this table.
+
+| Task | Priority | Period | Stack | Job |
+|---|---|---|---|---|
+| blink | 2 | 500 ms | 2048 bytes | Toggle the LED and update led_on |
+| monitor | 1 | 500 ms | 2048 bytes | Read led_on and log it |
+
+Both tasks have the same shape. This is the blink task. Ignore the take and give calls for now, they are the topic of the next chapter.
+
+```c
+static void blink_task(void *arg)
+{
+    (void)arg;
+    while (true) {
+        if (xSemaphoreTake(s_state.mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+            s_state.led_on = !s_state.led_on;
+            status_led_set(s_state.led_on);
+            ESP_LOGI(TAG, "[blink]   LED state: %s", s_state.led_on ? "ON" : "OFF");
+            xSemaphoreGive(s_state.mutex);
+        } else {
+            ESP_LOGW(TAG, "[blink] mutex busy for >%d ms, skipping", MUTEX_TIMEOUT_MS);
+        }
+        vTaskDelay(pdMS_TO_TICKS(BLINK_PERIOD_MS));
+    }
+}
+```
+
+- **An endless loop that mostly sleeps:** Each task works for a fraction of a millisecond and then blocks for 500 ms. For the rest of its life it consumes no CPU.
+- **Four numbers per task:** Priority, period and stack are in the table. The core is not pinned, because blink uses xTaskCreate and lets the scheduler choose.
+- **Creation order is not run order:** In the log, the blink line appears before the line that says the tasks started. The task has a higher priority than the main task, and the chip has a second core that can pick up a new task at once.
+- **The monitor line may move:** The monitor has the same priority as the main task, so it may print before or after the last line of app_main. Both orders are correct, and no line order is a promise.
+- **Output costs time:** Every log line formats a string and uses stack, which is why the tasks have 2048 bytes and not 512.
+
+- **Try it yourself:** Open main/main.c in the starter kit, run it in the simulator or on the physical hardware, and watch the first four log lines after boot. Note which task prints before app_main finishes its own startup message.
+- **Check your understanding:** Both tasks sleep for 500 ms. In which state are they almost all the time, and what runs on the core while they sleep?
 
 ## Task States and the Tick
 At any moment a task is in exactly one **state**. If you can name the state, you can usually explain the bug.
@@ -579,7 +680,7 @@ That conversion tells you the limits. At 100 Hz one tick is 10 ms, so a 5 ms del
 
 - **Zero timeout means poll:** A receive with a timeout of zero returns immediately. Useful to drain a queue, harmful if you then loop on it.
 - **`portMAX_DELAY` means wait forever:** Fine for a task that genuinely has nothing else to do, dangerous in anything on a control path.
-- **Try it yourself:** In the simulator, create one task that blocks on a delay and one that spins on a counter. Print the counter from both. Explain the numbers.
+- **Try it yourself:** Print the value of `pdMS_TO_TICKS(5)` and `pdMS_TO_TICKS(10)` in `app_main`, then temporarily set `BLINK_PERIOD_MS` to 5 ms and observe what happens to the loop rate.
 - **Check your understanding:** A task is ready on the same core as a running task with the same priority. What decides which runs after the next tick?
 
 ## Priorities and Preemption
@@ -587,11 +688,11 @@ FreeRTOS uses **fixed priority preemptive** scheduling. Fixed means the priority
 
 The rules are short and worth knowing by heart.
 
-1. The highest priority **ready** task runs.
-2. Between tasks of **equal** priority the scheduler takes turns at each tick.
-3. A **higher priority** task that becomes ready pushes a lower one out immediately, not at the next tick.
-4. A **blocked** task does not count, no matter how high its priority.
-5. The **idle** task runs at priority zero when nothing else is ready, and keeps the chip from panicking.
+1. **Highest ready priority wins:** The highest priority **ready** task runs.
+2. **Equal priorities take turns:** Between tasks of **equal** priority the scheduler rotates at each tick.
+3. **Immediate preemption:** A **higher priority** task that becomes ready pushes a lower one out immediately, not at the next tick.
+4. **Blocked tasks do not compete:** A **blocked** task does not count, no matter how high its priority.
+5. **Idle runs at priority zero:** The **idle** task runs when nothing else is ready, and keeps the chip from panicking.
 
 The most important consequence: **the worst case delay of a high priority task does not depend on the length of the low priority tasks**, as long as those tasks actually block. It depends only on tasks of equal or higher priority.
 
@@ -608,6 +709,12 @@ priority  0  idle task               system
 - **Equal priority is legal:** Those tasks take turns at the tick. Use it only when you genuinely do not care about the order.
 - **Low priority is not a bin:** A low priority task holding a lock can still delay a high priority one. That is the next chapter.
 
+[![Do You Love Me? - Boston Dynamics](https://img.youtube.com/vi/fn3KWM1kuAw/0.jpg)](https://www.youtube.com/watch?v=fn3KWM1kuAw)
+
+Two minutes and fifty seconds of break, and the best illustration of this chapter you will get. Count the independent things that have to keep their exact rhythm at the same time: a dozen motors, a balance controller, a music track and a camera move. Nothing there is fast. Everything there is **on time**. Watch it once for the joke, then watch it again and ask what the worst case delay of a single hip joint would do to that shot.
+
+Now let us see what happens when you break that scheduler on purpose.
+
 **Breaking the scheduler on purpose.** This experiment is the heart of the chapter, and you should do it before you believe any of the rules.
 
 ```c
@@ -623,7 +730,7 @@ static void spin_task(void *arg) { for (;;) { s_fast++; } }   /* never do this *
 - **Step 2:** Replace the fast task with the spinning version and watch the slow one. Explain what happened using the words **state** and **priority**.
 - **Step 3:** Restore the delay but raise the slow task above the fast one. Predict the counters **before** you run.
 
-- **Try it yourself:** Give the spinning task priority 1 and the good task priority 10. Does the good task still work? Now reverse them. Write down both results.
+- **Try it yourself:** First swap the two task priorities in `blink` and predict which log line appears first after boot. Then run `spin_task` at priority 1 and the good task at priority 10, reverse their priorities, and write down both results.
 - **Check your understanding:** Two tasks share priority 10, one blocks for 10 ms per iteration and one for 1 ms. Which gets more CPU time, and is the answer the same on one core and on two?
 
 ## Two Cores and What Changes
@@ -684,8 +791,8 @@ static void control_task(void *arg) {
 
 **A delay is not a period.** This is a classic trap and it belongs in your report.
 
-- **`vTaskDelay(10)`** waits 10 ms **from now**. If the work took 3 ms, the real period is 13 ms, and it drifts further as you add work.
-- **`vTaskDelayUntil`** waits until the next **absolute deadline**. If the work took 3 ms, it waits 7 ms and the period stays 10 ms.
+- **`vTaskDelay(10)` is relative:** It waits 10 ms **from now**. If the work took 3 ms, the real period is 13 ms, and it drifts further as you add work.
+- **`vTaskDelayUntil` is absolute:** It waits until the next **absolute deadline**. If the work took 3 ms, it waits 7 ms and the period stays 10 ms.
 - **Neither fixes an overrun:** If the work takes 12 ms, a 10 ms task is broken and no delay function saves it.
 
 ```c
@@ -699,21 +806,21 @@ for (;;) {
 **Stack sizing is measured, not guessed.**
 
 ```c
-UBaseType_t high_water = uxTaskGetStackHighWaterMark(NULL);  /* words left */
-printf("stack headroom: %u words\n", (unsigned)high_water);
+UBaseType_t high_water = uxTaskGetStackHighWaterMark(NULL);  /* bytes left */
+printf("stack headroom: %u bytes\n", (unsigned)high_water);
 ```
 
 - **Measure the worst case, then add a margin:** Read the watermark during your heaviest run and add at least 30 percent, because a stack that barely fits today fails later when you add one more call.
 - **Printf is expensive:** It costs stack and time. A task that prints inside a 10 ms loop has a real time budget you did not intend.
 - **Check every task, not just the big one:** The one that overflows is usually the quiet one.
 
-- **Try it yourself:** Measure the worst period of a 10 ms task with `vTaskDelay`, then with `vTaskDelayUntil`. Then insert a 3 ms busy wait into the body and repeat. Write down all four numbers.
+- **Try it yourself:** First subtract consecutive timestamps of the `blink` log over thirty lines to see how `vTaskDelay` drifts. Then measure the worst period of a 10 ms task with `vTaskDelay` versus `vTaskDelayUntil`, both with and without a 3 ms busy wait inside the loop, and record all four numbers.
 - **Check your understanding:** Your measured worst period is 11 ms on a 10 ms target. Is your project finished? What exactly do you have to explain?
 
 **Checkpoint:** Show your instructor the four measured numbers, and explain which delay function belongs in a control loop and why.
 
 > Summary
-> A task is a thread with four numbers attached: **core**, **priority**, **period** and **stack**, and the stack is given **in words**.
+> A task is a thread with four numbers attached: **core**, **priority**, **period** and **stack**, and in ESP-IDF the stack is given **in bytes**. The blink example is the smallest complete case.
 > A task is **running**, **ready**, **blocked** or **suspended**, and a good task is **blocked most of the time**.
 > FreeRTOS is **fixed priority preemptive**: the highest ready task runs, a higher priority task interrupts immediately, equal priorities take turns. **Shorter deadline means higher priority.**
 > This chip has **two cores**, so two tasks really can run at once. The reference design keeps **hard real time on one core** and the network and logging on the other.
@@ -721,10 +828,6 @@ printf("stack headroom: %u words\n", (unsigned)high_water);
 
 # Sharing Data Between Tasks
 Two tasks that never talk to each other are easy. The moment one task writes data that another one reads, you have a new class of bug that a single threaded program never had. This chapter is that bug, and the four tools FreeRTOS gives you to beat it.
-
-[![Race conditions and how to prevent them](https://img.youtube.com/vi/MqnpIwN7dz0/0.jpg)](https://www.youtube.com/embed/MqnpIwN7dz0)
-
-A visual explanation of two threads stepping on each other, built up from the simplest possible example. It is about threads on a PC, but the failure is identical.
 
 ## The Race Condition Problem
 A **race condition** happens when the result depends on the exact order in which two tasks touch the same memory. The order is decided by the scheduler, and the scheduler is not your friend.
@@ -747,7 +850,7 @@ static void sensor_task(void *arg) {
 static void control_task(void *arg) {
     for (;;) {
         if (s_data.distance_mm[1] < 120) {     /* ... read in the middle */
-            hal_motor_stop_all();
+            motor_stop(s_left);
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
@@ -761,7 +864,6 @@ What can go wrong:
 - **Split values:** A 32 bit or float value may take more than one instruction to write, so a reader can catch half old and half new. Rare, almost impossible to reproduce, and the worst kind of bug.
 - **The compiler does not know about tasks:** It may keep a value in a register, reorder writes, or optimise a read loop into an infinite loop. That is why flags shared between tasks are `volatile`, and why even that does not make a struct safe.
 
-- **Try it yourself:** Write the unprotected version in the simulator with 10 ms periods and a slower reader. Add a second counter incremented inside the writer so the reader can detect the moment of inconsistency, and print the number of torn reads. You will see it happen.
 - **Check your understanding:** Why is a race condition more likely on a dual core chip than on a single core one?
 
 ## Mutexes and Priority Inheritance
@@ -810,6 +912,25 @@ without inheritance              with inheritance
 - **Semaphore or queue for an event:** Signalling is not the same problem as protecting, and mixing them up creates bugs that look impossible.
 - **Check your understanding:** A low priority task holds the shared data mutex and a medium priority network task becomes ready. Without priority inheritance, how long can your 10 ms control task be delayed?
 
+[![L19 08 Mars Pathfinder Incident - Phil Koopman](https://img.youtube.com/vi/pr9J0pxHI6c/0.jpg)](https://www.youtube.com/watch?v=pr9J0pxHI6c)
+
+Two minutes from a Carnegie Mellon real time course, on the bug that turned this page from an exam question into history. In 1997 a lander on Mars kept rebooting itself. The hardware was fine, the code was fine, and the **priorities** were the bug. Watch it before you read the fix below, then try to name which of the three tasks in the story is the medium priority one.
+
+## The Blink Mutex and Four Ways to Break It
+The blink example already contains a mutex, and it is the shortest working demonstration you will find. Look at the take and give pairs in both tasks again. **The variable led_on and the LED itself belong to the mutex**, so whoever holds it may read or change both.
+- **A timeout instead of waiting forever:** Both tasks wait at most 100 ms for the lock. On failure they log a warning and skip the round instead of freezing the system.
+- **The lock covers hardware and bookkeeping together:** The variable is updated, the pin is set and the line is logged inside one critical section, so nobody ever sees a half finished toggle.
+- **A mutex, not a binary semaphore:** xSemaphoreCreateMutex records the owner and gives priority inheritance. Created before any task exists, so no task can ever see a NULL handle.
+
+Now break it, **one change at a time**. For every change write down a prediction first, then build, run and compare.
+1. **Remove the mutex calls:** Delete every take and give but keep the task bodies. The program still mostly works, because toggling a variable is a single instruction. That is exactly why this bug class is dangerous. To provoke it, make the critical section longer: read led_on into a local variable, wait about 100 ms with vTaskDelay, then write it back and log it. The two tasks start to disagree.
+2. **Replace the timeout with portMAX_DELAY:** Nothing changes until some task keeps the lock. Then both tasks hang, which is why the original prefers to warn and skip.
+3. **Forget one give:** Delete the xSemaphoreGive from blink_task. The monitor starts printing the busy warning in every round. Look closely at what blink does on its second round as well.
+4. **Swap the priorities:** Nothing breaks. Priorities decide who runs first, not whether the data stays consistent, and that is the whole point of the mutex.
+
+- **Try it yourself:** Run the four experiments above in order, then restore the mutex, add a `uint32_t blink_count` field to `s_state`, increment it inside `blink_task` and log it from `monitoring_task` under the lock.
+- **Check your understanding:** Experiment two changes nothing visible at first. How would you notice the problem before the system hangs?
+
 ## Queues - State Versus Events
 A mutex solves the case where several tasks read the **latest value**. A **queue** solves the other case: data that must not be lost, and waiting that must not burn CPU.
 
@@ -838,7 +959,7 @@ The design question for every queue is: **what is this queue carrying?**
 xQueueOverwrite(s_state_queue, &cmd);     /* newest value wins, never blocks */
 ```
 
-The example in the starter kit uses exactly this distinction, and it is worth copying:
+A robot project usually needs exactly this distinction, and the table is worth copying:
 
 | Data | Mechanism | Length | Why |
 |---|---|---|---|
@@ -849,6 +970,8 @@ The example in the starter kit uses exactly this distinction, and it is worth co
 
 - **Zero timeout means poll:** Use it in a control task to drain what is pending without ever blocking.
 - **Drain to the newest, not the oldest:** Receive in a `while` loop with a zero timeout and act only on the last one. Applying every queued joystick position in turn makes the robot follow the operator through history.
+- **The buzzer driver is a queue in disguise:** buzzer_play, buzzer_pulse and buzzer_melody put a request into a small queue and return at once. A dedicated low priority task plays it, and a new request cancels the old one. It is an event queue with a cancel rule.
+- **Try it yourself:** Add a third task to `blink` that calls `boot_button_poll` every 10 ms and sends an event into a queue whenever `boot_button_is_pressed` transitions to true, making `blink_task` halve its period on each press.
 - **Check your understanding:** Why is a length one overwrite queue wrong for button presses and right for a joystick position?
 
 ## Sequence Numbers and Freshness
@@ -884,7 +1007,7 @@ if (shared_data_get_sensors(&sd) == ESP_OK && sd.seq != s_last_seq) {
 - **Check your understanding:** A sensor task is alive and publishes every 10 ms, but its driver returns an error every time. A timestamp check says the data is fresh. What is missing from your health check?
 
 ## The Data Handover Exercise
-Now you build the pattern you will use in your own project. This exercise needs no robot.
+Now you build the pattern you will use in your own project.
 
 - **Shared struct:** A payload of at least four fields, a sequence number and a millisecond timestamp, protected by one mutex, with a setter and getter that copy the whole struct under the lock.
 - **Command path:** An overwrite queue of length one carrying a command struct. The consumer drains it with a zero timeout and acts only on the newest.
@@ -893,16 +1016,12 @@ Now you build the pattern you will use in your own project. This exercise needs 
 - **Deliberate damage:** Remove the mutex and run the same test. Show the torn read counter climbing. Then put the mutex back.
 
 - **Evidence for your report:** A screenshot of the stress test with torn reads at zero, and one paragraph on which mechanism you used for which data and why.
-- **Generic board note:** The whole exercise runs unchanged on a plain **ESP32-S3** board, since it uses only the scheduler and printed output.
+- **Runs everywhere:** The whole exercise runs unchanged in the simulator and on the physical hardware, since it uses only the scheduler and printed output.
 - **Check your understanding:** Your consumer rejects stale data and uses a safe default. Is a safe default always better than the last known good value? Give one case where it is and one where it is not.
 
 **Quiz round:** The next meeting opens with a short quiz on this chapter. Nothing to memorise, but you should be able to explain why a mutex is not the same as a queue.
 
 **Checkpoint:** Show the torn read counter at zero with the mutex in place, and climbing without it.
-
-[![How does a mutex even work](https://img.youtube.com/vi/1tZhmTnk-vc/0.jpg)](https://www.youtube.com/embed/1tZhmTnk-vc)
-
-A short detour into what a lock actually is at the hardware level. Not required, but it turns "the mutex is magic" into "the mutex is an atomic instruction", which makes the next chapter much less mysterious.
 
 > Summary
 > A **race condition** happens when two tasks touch the same memory and the result depends on the order. Torn reads, half finished updates and split values are the three forms.
@@ -911,11 +1030,7 @@ A short detour into what a lock actually is at the hardware level. Not required,
 > **Sequence numbers and timestamps** answer what a mutex cannot: is the data fresh, and is the producer alive. **`dt` belongs to the measurement**, not to the reader.
 
 # The Control Path and the Cost of Delay
-Everything so far has been about tasks and data. This chapter is about the thing the robot actually does: look at the world, decide, and move. It connects the theory to the control path and explains why a few milliseconds matter more than a few lines of code.
-
-[![PID Controller Explained](https://img.youtube.com/vi/fv6dLTEvl74/0.jpg)](https://www.youtube.com/embed/fv6dLTEvl74)
-
-A clear explanation of what a PID controller is and what the three terms do. You are not expected to derive one, but you should recognise the shape, because the provided controller uses it.
+Everything so far has been about tasks and data. This chapter is about the job the robot exists to do: look at the world, decide, and move. It connects the theory to the control path and explains why a few milliseconds matter more than a few lines of code.
 
 ## The Control Tick
 Every control system has a **tick**: the fixed rhythm at which it looks at the world and reacts. Ours is **10 ms**, so 100 times per second.
@@ -931,7 +1046,7 @@ Why 10 ms and not 1 ms or 100 ms?
 - **Phase loss in control:** A controller that reacts 30 ms late to a fast disturbance is not just worse, it can oscillate. This is behind the classic complaint of a robot that "shivers" near a wall.
 - **Late safety reactions:** A reading that says "wall at 15 cm" is only useful if you can still brake. Delay eats braking distance directly.
 
-This is why the example control task has the shape it has, and every unusual line in it is a small catalogue of real bugs.
+This is why a well designed control task has the shape described below, and every unusual rule in that shape is a small catalogue of real bugs.
 
 - **Rate limit in both directions:** The limit used to drop instantly and recover slowly, and that fast drop with the slow rise produced a visible left right oscillation.
 - **Raw reading for the hard stop:** Averaging 300 ms of history is smooth, and it also means braking 300 ms late. The average shapes the gentle part, the raw value gates the stop.
@@ -941,33 +1056,36 @@ This is why the example control task has the shape it has, and every unusual lin
 None of that is control theory. It is **real time engineering under noisy input**, and it is the kind of thing you will do in your own project.
 
 - **Check your understanding:** Your control task takes 7 ms per run with a 10 ms period. What happens to the effective period, and what would you fix first?
-- **Try it yourself:** In the simulator, put a 7 ms delay in a 10 ms periodic task and measure the worst period. Then do the work as a busy wait instead. Is the period the same? Explain the difference.
 
 ## The HAL Boundary in Practice
 You never touch a pin. You call a function, and the function touches the pin. This is the hardware abstraction layer from the earlier chapter, seen from the control path.
 
 ```c
-/* the shape every part in this lab has */
-esp_err_t hal_motor_set_duty(int idx, float duty);       /* -1.0 .. 1.0 */
-esp_err_t hal_motor_update(float dt_s);
-esp_err_t hal_motor_get(int idx, hal_motor_state_t *out);
-esp_err_t hal_sensor_read_one(int idx, bool *valid, uint16_t *mm);
-esp_err_t hal_battery_voltage(float *volts);
+/* the shape every part in this lab has: a handle, a config and error returns */
+esp_err_t motor_init(motor_handle_t *out, const motor_cfg_t *cfg);
+esp_err_t motor_set_duty(motor_handle_t m, float duty);        /* -1.0 .. 1.0 */
+esp_err_t motor_read_counts(motor_handle_t m, int32_t *counts);
+esp_err_t motor_stop(motor_handle_t m);                        /* both inputs low */
+esp_err_t motor_brake(motor_handle_t m);                       /* both inputs high */
+bool      sensor_array_next(sensor_array_handle_t a, sensor_array_result_t *result);
+esp_err_t battery_read_voltage(battery_handle_t b, float *volts);
+void      status_led_set(bool on);
 ```
 
 Two rules make the boundary useful, and both are about time.
+- **Know which calls wait:** Most calls return at once. A sensor read waits for a ranging result, at most the read timeout you put into the configuration, and the full example uses 100 ms. sensor_array_next reads one sensor per call, while sensor_array_read_all reads all three one after the other and waits about three times as long. That number is part of your period.
+- **No decisions:** The HAL does not brake or retry. It reports, and the task decides what an error means.
 
-- **Bounded blocking:** Every call has a documented worst case. A sensor read costs at most about 15 ms and returns an error instead of waiting forever. That number is part of the contract, because your period depends on it.
-- **No decisions:** The HAL does not brake, log or retry. It reports, and the task decides what an error means.
-
-Between the HAL and the tasks sits the **component layer**, where the interesting behaviour lives: **PID**, **motor controller**, **differential drive**, **odometry**. These have no pins and no delays, so they can be stepped from any task and reasoned about on paper.
-
+Between the HAL and the tasks sits the **component layer**, where the interesting behaviour lives: **PID**, **drive mapping**, **odometry**. You write these yourself. They have no pins and no delays, so they can be stepped from any task and reasoned about on paper.
 - **Dependency direction:** Tasks call components, components call the HAL, the HAL calls the hardware. Never the other way.
 - **One handle per part:** The handle keeps one motor's state separate from the other's, which is why a call for the left wheel cannot write to the right.
-- **Errors are values:** Every failure is returned, and nothing panics in the middle of a control loop.
+- **Errors are values:** Every driver call returns one. In a control loop check it instead of wrapping it in ESP_ERROR_CHECK, which aborts and reboots the board.
 
-- **Try it yourself:** Open the HAL header and list every function with its worst case blocking time. Which one would you avoid calling inside a 10 ms task, and what would you do instead?
-- **Generic board note:** On a plain **ESP32-S3** board the motors and sensors are not there, but the same boundary applies to the onboard LED and a spare ADC pin. Practise the pattern on those.
+- **Try it yourself:** Open the headers in robot_hal/include and list every function that can wait, such as the sensor reads and status_led_blink_for. Which one would you avoid inside a 10 ms task, and what would you do instead?
+
+[![Automatic Bullseye, MOVING Dartboard - Mark Rober](https://img.youtube.com/vi/MHTizZ_XcUM/0.jpg)](https://www.youtube.com/watch?v=MHTizZ_XcUM)
+
+The best five minutes in this lab on what a control path really is. Six cameras track a dart, a controller predicts where it will land, and six stepper motors move the board before the dart arrives. The interesting part is not the servo. It is that the whole chain, **sense, predict, actuate**, has to finish inside a deadline measured in milliseconds. Skip to the slow motion replays if you want the punchline, then come back and look at the pipeline diagram below with that deadline in your head.
 
 ## Sensors In, Commands Out
 The control path is a **pipeline**, and every stage has one job. Seeing it once makes your own project design much easier.
@@ -979,7 +1097,7 @@ The control path is a **pipeline**, and every stage has one job. Seeing it once 
                                         |
                           control task -+
                                         |
-                            obstacle check -> drive mapping -> hal_motor_set_duty
+                            obstacle check -> drive mapping -> motor_set_duty
                                         |
                                   odometry -> shared pose
                                         |
@@ -991,26 +1109,27 @@ Walking the path in order:
 1. **Acquire:** The sensor task reads distance, encoders and battery. Distance is read several times and only accepted when two of three samples agree, because a single reading lies often enough to matter.
 2. **Publish:** It writes one struct with a sequence number and a timestamp, under a mutex. This is the only place the sensor task talks to the rest of the system.
 3. **Consume:** The control task checks freshness, applies the obstacle limit and steps the drive with the measured wheel speeds and the real `dt`.
-4. **Actuate:** The drive mapping turns speed and steering into two wheel duties, and `hal_motor_set_duty` turns duty into motion.
+4. **Actuate:** The drive mapping turns speed and steering into two wheel duties, and `motor_set_duty` turns duty into motion.
 5. **Observe:** Odometry is updated from the same wheel speeds, and the monitor prints the numbers at its own slower rhythm.
 
 **Convert speed correctly.** Encoder counts are not RPM, and RPM is not speed in millimetres per second.
 
-```tex
-v = \frac{\pi\, \cdot\, n\, \cdot\, d}{60}
-```
+$$
+v = \frac{\pi \cdot n \cdot d}{60}
+$$
 
-Here **v** is the speed in millimetres per second, **n** is the wheel speed in revolutions per minute and **d** is the wheel diameter, which is **40.8 mm** on this robot. The encoder gives **4200 counts per wheel revolution**, from seven pulses, four edges and a 150 to 1 gearbox.
+Here $v$ is the speed in millimetres per second, $n$ is the wheel speed in revolutions per minute and $d$ is the wheel diameter, which is **40.8 mm** on this robot. The encoder gives **4200 counts per wheel revolution**, from seven pulses, four edges and a 150 to 1 gearbox.
 
-- **Sign convention:** Positive must mean forward on both wheels, always. One motor on this robot is mounted mirrored, so the HAL inverts it. If the robot turns when you asked for straight, check this first.
+- **Sign convention:** Positive must mean forward on both wheels, always. One motor on this robot is mounted mirrored, so you set the invert flag in its motor configuration. If the robot turns when you asked for straight, check this first.
+- **Counts per revolution:** The robot gives 4200 counts per wheel revolution, the simulated motor only 40. Keep the number in one constant and change it when you move between the two.
 - **Deadband:** A stopped motor does not move at low duty. The controller boosts a stopped motor to a starting duty and lets a moving one drop to a lower running duty. Without that, low speeds do not work at all.
 - **Rate limit:** Duty may change only slowly, keeping the current draw within what the battery and boost converter can supply.
 
-- **Try it yourself:** Log the commanded duty and the measured RPM for a step from zero to half speed. Does the speed follow the command, or lag and overshoot? That curve is the reason a controller exists.
+- **Try it yourself:** In the simulator or on the physical robot (lifted on blocks), log the commanded duty and the measured RPM for a step from zero to half speed. Does the speed follow the command immediately, or lag and overshoot?
 - **Check your understanding:** Why does the controller need the measured wheel speed when it already knows what it commanded?
 
 ## The Network Milestone
-The last step of the theory part is deliberately small: **prove that your robot can reach the internet.** That is the milestone. Everything beyond it, the dashboard and the protocol, is not part of this lab.
+The last step of the theory part is deliberately small: **prove that your board can reach the network.** That is the milestone. The starter kit has no WiFi driver, so this is an **optional stretch** built on the WiFi station example of ESP-IDF. Everything beyond it, the dashboard and the protocol, is not part of this lab.
 
 The pattern is one you already know: a low priority task on the network core, with blocking calls and long timeouts, that never touches the control path directly.
 
@@ -1028,9 +1147,9 @@ control task (core 1, priority 10, 10 ms, never blocks on the network)
 ```
 
 - **Why it is a milestone and not a topic:** A network connection is the perfect example of the wrong kind of work to put in a real time task. You already know how to call one. What you need is the shape it must be wrapped in.
-- **If the network is unavailable:** The simulator does not emulate WiFi well and school networks block ports. Demonstrate the milestone on the robot, or against a small server on your own laptop.
+- **Where to run it:** The browser simulator does not bridge raw WiFi sockets to your local network, so run this milestone on the physical ESP32-S3 hardware against a small server on your laptop.
 
-- **Try it yourself:** Send your robot's distance readings as JSON and print what arrives. Then kill the connection and confirm the robot keeps driving while the status LED reports the link loss.
+- **Try it yourself:** Send a counter or a sensor reading as JSON and print what arrives. Then kill the connection and confirm the control task keeps running while the status LED reports the link loss.
 - **Check your understanding:** Why must the WiFi connection never be attempted from the control task, even if it only takes 300 ms?
 
 > Summary
@@ -1044,8 +1163,8 @@ A robot cannot always be connected to a debugger, and a timing bug disappears th
 
 ## Four Tools and What Each One Is For
 - **Serial log:** Cheap and direct. Prints state, numbers and errors. Costs time and stack, so never inside a fast loop.
-- **Status LED codes:** One LED transmits a surprising amount. This robot blinks **N short flashes then a pause** for an error code, and a short heartbeat pulse when everything is fine.
-- **Buzzer:** An active buzzer gives audible state changes without looking at a screen. Active means you only switch it on and off, it has its own oscillator.
+- **Status LED codes:** One LED transmits a surprising amount. A good convention is **N short flashes then a pause** for an error code, and a short heartbeat pulse when everything is fine. You build it from status_led_set and a task delay.
+- **Buzzer:** The buzzer gives audible state changes without looking at a screen. It is a **passive** type, so the pitch comes from a PWM frequency, and the driver does that for you. buzzer_pulse plays a beep and buzzer_melody a pattern, and both return at once. It is fitted on some builds only and silent in the simulator.
 - **Runtime statistics:** FreeRTOS reports the CPU share of every task and the free heap, which is how you find a task eating the chip.
 
 ```c
@@ -1066,12 +1185,16 @@ printf("%s\n", stats);
 
 - **Codes beat words:** A blink code is readable from across the room with no cable attached, which is exactly when you need it.
 - **The lowest code wins:** When several faults are active, showing the most urgent one is more useful than showing all of them.
-- **Persist the one shot failures:** A boot failure written to **non volatile storage** survives a reboot, so an unattended robot still reports what broke the first time.
+- **Persist the one shot failures:** A boot failure written to **non volatile storage** survives a reboot, so an unattended robot still reports what broke the first time. The kv_store driver does exactly this: kv_store_set("boot_error", "sensor 2 init failed") saves it, and kv_store_get reads it back after the next boot.
 
 **Hysteresis is a diagnostic too.** The status logic only switches its code after a condition has held for a couple of seconds, and returns to the heartbeat immediately. Without that anti flicker rule the LED blinks nonsense and the real fault is hidden in the noise.
 
 - **Try it yourself:** Add a heartbeat counter to one of your tasks and print the **highest execution time** it ever had, once per second. Leave it running for the whole meeting and see whether anything surprising appears.
 - **Check your understanding:** Why is a persisted boot error more useful than a printed one?
+
+[![Have you tried turning it off and on again? - The IT Crowd](https://img.youtube.com/vi/5UT8RkSmN4k/0.jpg)](https://www.youtube.com/watch?v=5UT8RkSmN4k)
+
+Forty seconds of the most quoted support line in television, and a useful warning. "Turn it off and on again" is a real diagnostic, because it clears state and gives you a clean run to compare against. It is also not a diagnosis. A robot that only works after a reboot has told you something, and the something is not "it is fixed now".
 
 ## Timeouts, Watchdogs and Safe States
 Everything above assumes the system is running. This section assumes it is not.
@@ -1092,17 +1215,17 @@ The pattern worth copying is one **monitor** task: low priority, no hardware acc
 When the board reboots in a loop, the console tells you why if you know what to look for.
 
 - **A backtrace names the functions and the core:** Read the addresses from the top down to the first function you recognise.
-- **Stack overflow in a task** is the most common panic here, and it is a sizing error rather than an accident.
-- **Watchdog timeout** means something stopped feeding it, usually a task that spins or a call that blocks far longer than documented.
-- **Brownout** means the supply dipped when the current spiked, usually a motor duty limit that is too high.
-- **Assert failures** point at the line and the condition, and they are usually the easiest of all to fix.
+- **Stack overflow in a task:** This is the most common panic here, and it is a sizing error rather than an accident.
+- **Watchdog timeout:** Means something stopped feeding it, usually a task that spins or a call that blocks far longer than documented.
+- **Brownout:** Means the supply dipped when the current spiked, usually a motor duty limit that is too high.
+- **Assert failures:** Point at the line and the condition, and they are usually the easiest of all to fix.
 
 - **Try it yourself:** Deliberately cause a stack overflow by giving a task a tiny stack, then read the panic message and find the task name in it.
 - **Check your understanding:** A board reboots exactly when both motors are commanded to full duty. Which of the four causes above fits, and how would you confirm it?
 
 **Quiz round:** The next meeting opens with a short quiz covering tasks, priorities and shared data.
 
-**Checkpoint:** Show a running system that reports its own health, either through LED codes on the robot or through printed heartbeat and stack numbers in the simulator.
+**Checkpoint:** Show a running system that reports its own health through status LED codes and printed heartbeat and stack numbers in the simulator or on the physical hardware.
 
 > Summary
 > **Diagnostics are part of the design**, not something added when it breaks: serial logs, **status LED codes**, the buzzer, **persisted boot errors** and **runtime statistics**.
@@ -1111,7 +1234,7 @@ When the board reboots in a loop, the console tells you why if you know what to 
 > When the board reboots in a loop, the panic message names the cause: **stack overflow, watchdog, brownout or an assert**.
 
 # Your Project - Design in the Simulator
-Now it is your turn. You have the theory, three mechanisms, one measuring tool and a HAL that runs without hardware. The project phase is where you build something of your own, and you build it the way this lab taught you: design it, prove it in the simulator, then put it on a robot.
+Now it is your turn. You have the theory, three mechanisms, one measuring tool and drivers that run in the simulator and on the physical hardware. The project phase is where you build something of your own, and you build it the way this lab taught you: design it, prove it in the simulator, and run it on the physical RobotIT hardware.
 
 ## The Project Brief and Scope
 You propose the project. There is no fixed list, because a project you chose is a project you will finish.
@@ -1122,7 +1245,7 @@ You propose the project. There is no fixed list, because a project you chose is 
 - **Success criteria:** Three to five **measurable** statements. Not "it works smoothly" but "the control task keeps its 10 ms period within 2 ms of jitter for five minutes, measured and logged".
 - **The task table:** Every task with its **core**, **priority**, **period**, **stack** and a one line job description.
 - **The data map:** Every piece of shared data, who writes it, who reads it, and which mechanism protects it.
-- **The hardware budget:** Which parts of the robot you need, and what your project does if one is unavailable.
+- **The hardware and simulation plan:** Which sensors, actuators and inputs your project uses, and how you will test fault cases in the simulator and on the physical hardware.
 
 **Scope rules.** These keep the project finishable in the time you have.
 
@@ -1130,6 +1253,7 @@ You propose the project. There is no fixed list, because a project you chose is 
 - **One shared struct under a mutex, and one queue:** Both must appear in the design, with the mechanism justified.
 - **A freshness check somewhere:** Your consumer rejects stale data and does something defined instead.
 - **It must run in the simulator first:** If it cannot, it is either too hardware dependent or not thought through.
+- **Runs in both simulation and hardware:** Your project uses the shared `robot_hal` headers so the same application code runs in the Velxio simulator and on the physical hardware. If your project focuses on event decoding or health monitoring without driving, the status LED, buzzer and BOOT button serve as your inputs and outputs.
 - **Demoable in three minutes:** A demo you can explain beats a system that almost works.
 
 **Ideas that fit the scope**, to start your thinking and not to be copied:
@@ -1139,6 +1263,7 @@ You propose the project. There is no fixed list, because a project you chose is 
 - **Two core split:** The same control law once with both tasks pinned to one core and once split across two, with the measured jitter compared and explained.
 - **Health monitor:** A monitor task watching three others through heartbeats, reporting on LED and buzzer, putting the robot into a safe state when one goes silent.
 - **Command governor:** A task that accepts commands from the network and refuses any command it cannot verify is fresh, logging each rejection with a reason.
+- **Button morse:** BOOT button presses become events in a queue, a task decodes them and shows the result on the LED and the buzzer.
 
 - **Do not pick:** A full web dashboard, computer vision, or anything needing a part you do not have. Those are better projects for later.
 - **Do pick something with a failure case:** The best projects have an obvious way to break, so you can show your design survives it.
@@ -1150,10 +1275,10 @@ The **task table** is the centre of it. Fill it in completely, including numbers
 
 | Task | Core | Priority | Period or trigger | Stack | Job |
 |---|---|---|---|---|---|
-| control | 1 | 10 | 10 ms, periodic | 4096 word | step controller, keep robot safe |
-| sensor | 1 | 10 | 10 ms, periodic | 4096 word | read HAL, publish snapshot |
-| monitor | 0 | 4 | 250 ms, periodic | 3072 word | watch heartbeats, report |
-| command | 0 | 2 | event, queued | 3072 word | accept and validate commands |
+| control | 1 | 10 | 10 ms, periodic | 4096 bytes | step controller, keep robot safe |
+| sensor | 1 | 10 | 10 ms, periodic | 4096 bytes | read HAL, publish snapshot |
+| monitor | 0 | 4 | 250 ms, periodic | 3072 bytes | watch heartbeats, report |
+| command | 0 | 2 | event, queued | 3072 bytes | accept and validate commands |
 
 **The checks your instructor will run**, so run them yourself first.
 
@@ -1177,9 +1302,9 @@ The **task table** is the centre of it. Fill it in completely, including numbers
 - **If you cannot explain a decision in one sentence, it is a guess:** Guesses are allowed, but mark them and plan how to measure whether the guess was right.
 
 ## Implementation in the Simulator
-The simulator runs the same ESP-IDF and the same FreeRTOS, and the HAL has a **simulated backend**, so everything you get working there works on the robot as long as you stay behind the HAL.
+The simulator runs the same ESP-IDF and the same FreeRTOS, and the drivers have the same headers, so everything you get working there ports to the physical hardware as long as you stay behind the HAL.
 
-**This is also what you do when no robot is free.** The simulated backend is not a toy version of the lab, it is the reason the lab does not stop.
+**Why you build in the simulator first:** You can verify task priorities, inject sensor faults and test your safety logic without chasing a runaway robot across the floor.
 
 **Suggested order**, which keeps you always able to run something:
 
@@ -1199,16 +1324,16 @@ The simulator runs the same ESP-IDF and the same FreeRTOS, and the HAL has a **s
 - **Commit working states:** A version that runs is worth more than a version that is nearly better.
 - **Keep a log:** Two lines per hour on what you changed and what the numbers did. Your report writes itself from that log.
 
-**Provoke the faults in the simulator.** This is the part you cannot do easily on real hardware, and it is the fastest way to prove your design.
+**Provoke the faults in the simulator.** This is the part you cannot do easily on real hardware, and it is the fastest way to prove your design. Click a part in the Velxio circuit to change its properties while the program runs.
+- **Noisy distance:** Select the sensor array and raise its **Random Jitter Amplitude** to 50 mm and its **Sine Wave Frequency** to 5 Hz. Then watch your filter and your stop logic.
+- **A repeatable wall:** The simulated distance sweeps between 20 and 80 cm like a sine wave, so your stop distance is crossed on a regular rhythm. Use that as a repeatable test input.
+- **Loaded motors:** Raise the **Mechanical Shaft Load** of a motor or lower its **Motor Supply Voltage**, then compare the measured RPM with the commanded duty.
+- **A silent sensor:** Delete the wire to one XSHUT pin or to SDA in the circuit editor and see what the sensor driver reports. Try it and write down the status it returns.
+- **Button events:** Press the pushbutton on IO0 with the mouse to inject events into your queue.
+- **An almost empty battery:** The supplied divider reads about 4.1 V. Change its 60 kilo ohm resistor to about 110 kilo ohm and the reading drops to roughly 3.1 V.
 
-```c
-hal_sim_set_distance(1, 60);          /* a wall 6 cm in front */
-hal_sim_set_sensor_missing(2, true);  /* the right sensor goes silent */
-hal_sim_set_battery_voltage(3.15f);   /* an almost empty cell */
-```
-
-- **Simulator limits:** No real motor physics, no real I2C timing and no reliable WiFi. If your design depends on the network, plan a substitute producer and say so in the design.
-- **Generic board note:** If the simulator is unavailable, everything up to step six runs on a plain **ESP32-S3** board with the serial console, and the onboard button can stand in for a real input.
+- **Simulator limits:** A simplified motor model, no hardware PWM, no real I2C timing and no reliable WiFi. Its timing numbers come from an emulator, so treat them as a rehearsal and not as evidence.
+- **Side by side testing:** You can flash each step to the physical hardware as you go, using the BOOT button and serial monitor to verify behaviour on the real chip alongside the simulator.
 
 ## Verification and Evidence Collection
 You will be asked for numbers, not opinions. Collect the evidence while you build, not afterwards.
@@ -1224,7 +1349,7 @@ You will be asked for numbers, not opinions. Collect the evidence while you buil
 
 **How to present a number so it means something:**
 
-- **State the setup:** What ran, on what core, at what priority, for how long.
+- **State the setup:** What ran, in the simulator or on the physical hardware, on what core, at what priority, for how long.
 - **State the worst case, not the average:** One 40 ms outlier matters more than an average of 10.1 ms.
 - **Compare against the deadline:** A number without a target is not evidence.
 - **Show the log:** A screenshot or copied excerpt beats a table typed from memory.
@@ -1234,56 +1359,58 @@ You will be asked for numbers, not opinions. Collect the evidence while you buil
 **Checkpoint:** Show a running simulator project with at least three tasks, a mutex protected struct with a freshness check, one queue, and live period and jitter numbers.
 
 > Summary
-> You propose the project and hand in **one page**: the idea, three to five **measurable success criteria**, the **task table**, the **data map** and the hardware budget.
-> Scope rules keep it finishable: **three tasks**, one **mutex** protected struct, one **queue**, a **freshness check** and a **simulator runnable** design.
+> You propose the project and hand in **one page**: the idea, three to five **measurable success criteria**, the **task table**, the **data map** and the hardware and simulation plan.
+> Scope rules keep it finishable: **three tasks**, one **mutex** protected struct, one **queue**, a **freshness check** and a design that runs in **both simulation and hardware**.
 > Build in the order **skeleton, heartbeats, shared data, queue, freshness, measure, behaviour**. You can always run something, and the measurement comes before the fancy part.
-> When no robot is free, the **simulated HAL backend** keeps you working, and it lets you **provoke faults** you could not create on hardware.
+> The **simulator** lets you build step by step and **provoke faults** on demand before moving to the physical hardware.
 > Collect **evidence** while you build, and always report the **worst case** against a target.
 
 # Your Project - Hardware, Demo and Review
-Your project runs in the simulator. Now it has to run on a robot, produce numbers you did not fake, and survive three minutes in front of an audience.
+Your project runs in the simulator. Now it has to run on the physical hardware, produce numbers you did not fake, and survive three minutes in front of an audience.
 
-[![How and why to use a logic analyzer](https://img.youtube.com/vi/IqiRDxxR8Ds/0.jpg)](https://www.youtube.com/embed/IqiRDxxR8Ds)
+[![Farewell to HD Atlas - Boston Dynamics](https://img.youtube.com/vi/-9EM5_VFlt8/0.jpg)](https://www.youtube.com/watch?v=-9EM5_VFlt8)
 
-Worth watching before you debug at the pin level. Most "the hardware is broken" sessions turn out to be a signal you never looked at.
+Three minutes of break before you move your code from the clean simulator onto real motors and a real floor. This is a decade of hydraulic Atlas compressed into a highlight reel: the parkour, the backflips, the dance routines. Every one of those seconds cost thousands of hours of hardware testing, and almost none of that testing looked good. Your simulator project is the polished edit. The next hour is the outtake reel, and that is normal.
 
-## Porting to the Real Robot
+## Porting to the Real Hardware
 The port should be small. If it is large, that is the lesson, and it is worth writing down.
 
 **Do it in this order**, and check the system after every step:
-
-1. **Flash first, change nothing.** Flash your simulator project unchanged. If it runs, your design and your HAL usage are fine, and you have just proven the priorities were right.
-2. **Swap the fake inputs for real ones.** Replace your substitute producer with the sensor task reading the real HAL. Keep the struct, the sequence number and the mutex. Nothing downstream changes.
-3. **Bring the motors up safely.** Lift the robot, or put it on blocks. Command a small forward speed and watch. If a wheel turns the wrong way, check the sign convention before touching anything else.
-4. **Check the boost converter.** No wake pin, no motor power. If nothing moves, this is the first suspect, not your code.
-5. **Tune slowly.** Start with a low speed limit and watch the measured RPM, not the wheels, because the numbers tell you what the wheels cannot.
-6. **Run the safety case.** Trigger your failure on purpose: stop the producer, cut the network, put a hand in front of a sensor. Confirm the safe state you designed actually happens.
+1. **Move your files, not the HAL:** Copy your own source files from the Velxio editor into the main folder of the ESP-IDF project from the starter kit. Do not copy the simulator versions of dc_motor, encoder and motor over the real ones.
+2. **Flash first, change nothing else:** Build and flash the project unchanged. If it runs, your design and your HAL usage are fine, and you have just proven the priorities were right.
+3. **Swap the fake inputs for real ones:** Replace your substitute producer with the sensor task reading the real HAL, or with the BOOT button input. Keep the struct, the sequence number and the mutex. Nothing downstream changes.
+4. **Bring the motors up safely:** Lift the robot, or put it on blocks. Change the counts per revolution constant from 40 to 4200, then command a small forward speed and watch. If a wheel turns the wrong way, check the invert flag before touching anything else.
+5. **Check the boost converter:** Remember that without the wake pin high, there is no motor power. If nothing moves, this is the first suspect, not your code.
+6. **Tune slowly:** Start with a low speed limit and watch the measured RPM, not the wheels, because the numbers tell you what the wheels cannot.
+7. **Run the safety case:** Trigger your failure on purpose: stop the producer, cut the network, put a hand in front of a sensor, or hold the BOOT button. Confirm the safe state you designed actually happens.
 
 **Common port failures and what they mean:**
 
 | Symptom | Likely cause | Where to look |
 |---|---|---|
 | Nothing moves, no errors | Boost converter asleep | Wake pin, power path |
-| One wheel turns the wrong way | Sign mismatch on one motor | Invert flag in the HAL |
+| One wheel turns the wrong way | Sign mismatch on one motor | Invert flag in the motor configuration |
+| Speed is off by a huge factor | Simulator counts per revolution still in the code | One constant, 40 in the simulator and 4200 on the robot |
 | Robot circles instead of straight | Motor asymmetry | Steering correction in the drive mapping |
-| Speed oscillates at low commands | Deadband too small, or no rate limit | Motor controller configuration |
+| Speed oscillates at low commands | Deadband too small, or no rate limit | Your motor controller |
 | Sudden reboots under load | Current spike from full duty | Duty limit, rate limit |
 | Distance readings jump | Single sample accepted | Consensus filter, validity flag |
 | Robot stops on its own | Obstacle limit latched | Distance history, release margin |
+| Battery value reads nonsense on USB power | Battery switched off or not connected | Check the power switch or guard the value in code |
 
-- **The robot never runs on the table with new motor code** unless you can reach the power switch, and never while someone is looking at the screen instead of the robot.
-- **Shared robot, shared rules:** If you share, you share time slots, not code. Flash your own firmware in your slot and leave the robot in a defined state.
+- **Never run new motor code on the table:** Keep it lifted unless you can reach the power switch, and never while someone is looking at the screen instead of the robot.
+- **Hardware lab etiquette:** Flash your own firmware cleanly, keep the wheels unblocked on the first run, and leave the robot switched off and in a defined state when finished.
 - **Check your understanding:** Your simulator project used a timer as the command source. On the robot the command comes from the network. Which files should change, and which must not?
 
 ## Measuring and Proving Your Timing
-The simulator gives clean numbers. The robot gives honest ones. This is the difference.
+The simulator gives clean numbers. The physical hardware gives honest ones: tasks, queues and mutexes time with real bus contention, interrupt latency and silicon jitter. This is the difference.
 
 **The same measurements, now with real work:**
 
-- **Period and jitter** with the real sensors and the real drive running. Expect worse numbers than in the simulator, and explain why.
-- **Execution time**, especially the worst case. Look for the one call that occasionally takes far longer: a sensor read that times out, a network write that blocks, a print that fills a buffer.
-- **Stack headroom** again. Real HAL calls use more stack than the simulated ones.
-- **CPU share** from runtime statistics. Is your real time task actually getting the core, or is something else quietly eating it?
+- **Period and jitter:** Measure with the real sensors and the real drive running on the hardware. Compare them with the simulator and explain the difference.
+- **Execution time:** Measure especially the worst case. Look for the one call that occasionally takes far longer: a sensor read that times out, a network write that blocks, a print that fills a buffer.
+- **Stack headroom:** Measure again. The real drivers can use more stack than the lightweight simulator versions.
+- **CPU share:** Read from runtime statistics. Is your real time task actually getting the core, or is something else quietly eating it?
 
 **Presenting the numbers**, in the shape your report needs:
 
@@ -1292,7 +1419,7 @@ The simulator gives clean numbers. The robot gives honest ones. This is the diff
 | Control task period | 10 ms | 10.4 ms | 0.4 ms over target | log excerpt |
 | Control task execution | under 10 ms | 3.1 ms | 69 percent headroom | log excerpt |
 | Sensor freshness | under 100 ms | 34 ms | 66 ms spare | log excerpt |
-| Control stack | under 4096 words | 1180 words peak | 71 percent headroom | watermark print |
+| Control stack | under 4096 bytes | 1180 bytes peak | 71 percent headroom | watermark print |
 
 **What makes a measurement trustworthy:**
 
@@ -1301,7 +1428,7 @@ The simulator gives clean numbers. The robot gives honest ones. This is the diff
 - **It has a worst case:** An average hides exactly the outlier that would crash the robot.
 - **It can be repeated:** Someone else can read your setup and get the same order of magnitude.
 
-- **Try it yourself:** Run for five minutes while driving and note the single worst period. Then find out what the task was doing when it happened. That investigation is the most realistic exercise in the lab.
+- **Try it yourself:** Run for five minutes under load and note the single worst period. Then find out what the task was doing when it happened. That investigation is the most realistic exercise in the lab.
 - **Check your understanding:** Your worst case execution time is 9.6 ms in a 10 ms period. Is that acceptable, and what would you change first?
 
 ## Demo and Design Review
@@ -1309,20 +1436,20 @@ Three minutes of demo, three minutes of questions. The questions are about **dec
 
 **The demo script**, in this order:
 
-1. **What it does**, in one sentence.
-2. **The architecture**, on one slide or one whiteboard sketch: tasks, cores, priorities, the two communication mechanisms.
-3. **It runs.** Show the live behaviour.
-4. **It survives.** Break it on purpose and show the reaction: the safe state, the LED code, the log line.
-5. **The numbers.** Worst case period, jitter, stack headroom, compared with the target.
+1. **What it does:** State the goal in one sentence.
+2. **The architecture:** Show on one slide or one whiteboard sketch: tasks, cores, priorities, the two communication mechanisms.
+3. **It runs:** Show the live behaviour.
+4. **It survives:** Break it on purpose and show the reaction: the safe state, the LED code, the log line.
+5. **The numbers:** Present worst case period, jitter, stack headroom, compared with the target.
 
 **The questions you should be able to answer:**
 
-- **Why this priority?** For any task in your table, the answer relates to its deadline.
-- **Why this core?** Either a real time argument or an honest "I did not need to pin it, and here is how I checked".
-- **Why this mechanism?** Mutex or queue, overwrite or normal, and what would break with the other choice.
-- **What happens when it dies?** For each task, the consequence and the detection.
-- **What did you measure, and what did you not?** Honest gaps score better than invented certainty.
-- **What would you do with one more meeting?** A good answer shows you understand what is weak.
+- **Why this priority:** For any task in your table, the answer relates to its deadline.
+- **Why this core:** Either a real time argument or an honest "I did not need to pin it, and here is how I checked".
+- **Why this mechanism:** Mutex or queue, overwrite or normal, and what would break with the other choice.
+- **What happens when it dies:** For each task, the consequence and the detection.
+- **What did you measure, and what did you not:** Honest gaps score better than invented certainty.
+- **What would you do with one more meeting:** A good answer shows you understand what is weak.
 
 - **A wrong answer is fine:** "I picked priority 10 because the example had 10 and I never tested anything else" is acceptable if you then say how you would test it. Pretending is not.
 - **The best demos include a failure:** A project that cannot fail has not been tested.
@@ -1349,7 +1476,7 @@ The report is short, personal and evidence based. It documents **what you did**,
 **The one thing to remember:** a real time system is not judged by how fast it runs on average, but by what you can **prove** about its worst case. The priorities, the mechanisms, the measurements and the failure handling all exist to make that proof possible.
 
 > Summary
-> The **port to hardware is small** if your code stays behind the HAL: flash unchanged, swap fake inputs for real ones, bring the motors up safely, then tune with numbers instead of impressions.
+> The **port to hardware is small** if your code stays behind the HAL: move your own files and keep the real drivers, flash unchanged, swap fake inputs for real ones, bring the motors up safely on blocks, then tune with numbers instead of impressions.
 > Real hardware gives **honest numbers**. Measure period, jitter, execution time and stack headroom under the real workload, for at least five minutes, and report the **worst case**.
 > The **demo is three minutes** and the review is about **decisions**: why this priority, why this core, why this mechanism, what happens when it dies.
 > The **report is personal** and evidence based, with your task table, your data map, your numbers and one failure you found and fixed.
@@ -1362,7 +1489,8 @@ The complete pin assignment of the board, and what each signal is used for.
 | Signal | Pin | Peripheral | Used for |
 |---|---|---|---|
 | LED | IO2 | GPIO output | Status heartbeat and error codes |
-| BUZZER | IO1 | GPIO output | Active buzzer, level driven |
+| BUZZER | IO1 | PWM | Passive buzzer on some builds, pitch from the frequency |
+| BOOT_BUTTON | IO0 | GPIO input | BOOT button, free as a user input once the program runs |
 | NOT_SLEEP | IO21 | GPIO output | Wake pin of the boost converter |
 | LEFT_IN1 | IO5 | PWM | Left H-bridge input |
 | LEFT_IN2 | IO6 | PWM | Left H-bridge input |
@@ -1383,35 +1511,48 @@ The complete pin assignment of the board, and what each signal is used for.
 
 - **Encoder:** 7 pulses per revolution, 4x quadrature, gearbox 150 to 1, so **4200 counts per wheel revolution**.
 - **Wheel:** diameter **40.8 mm**, track width about **85.5 mm**.
-- **Motor PWM:** **20 kHz**, above the audible range.
+- **Motor PWM:** **20 kHz**, above the audible range. The simulator uses software PWM at about 20 Hz.
+- **Simulated motor:** 40 counts per revolution instead of 4200.
 - **I2C:** **400 kHz**, all sensors share one address and are separated by the enable pins.
 - **Battery:** empty about **3.3 V**, full about **4.05 V**.
-- **Duty limit:** about **80 percent**, rate limited, to keep the current within what the supply can deliver.
+- **Duty limit:** the driver only clamps to minus one to plus one, so you keep the duty to about **80 percent** and ramp it, to keep the current within what the supply can deliver.
 
 ## HAL Quick Reference
-What you may call, and what it promises about time. You never edit these files, you call them.
+What you may call, and what it promises about time. You never edit these files, you call them. Every header lives in robot_hal/include.
 
-| Part | Function | Contract |
+| Part | Functions | Contract |
 |---|---|---|
-| system | hal_init, hal_backend_name | About 60 ms, sensor addressing sequence |
-| motors | hal_motor_set_duty, hal_motor_stop_all | Immediate, never blocks |
-| motors | hal_motor_update, hal_motor_get | Immediate, one control tick at a time |
-| sensors | hal_sensor_read_one | At most about 15 ms, error instead of hanging |
-| sensors | hal_sensor_read_all | Three reads, so up to about 45 ms |
-| battery | hal_battery_voltage | About 1 ms |
-| status | hal_led_set | Immediate |
-| status | hal_buzzer_play | Immediate, queues the sound |
-| simulation | hal_sim_set_distance, hal_sim_set_sensor_missing | Simulated backend only |
+| status_led | status_led_init, status_led_set, status_led_on, status_led_off, status_led_toggle | Immediate |
+| status_led | status_led_blink | Immediate, call it every loop, it follows the clock |
+| status_led | status_led_blink_for | Blocks for the whole duration |
+| buzzer | buzzer_init, buzzer_play, buzzer_pulse, buzzer_melody, buzzer_stop | Queued, returns at once, a new request cancels the old one |
+| boot_button | boot_button_init, boot_button_poll | Poll about every 10 ms, debounced for 20 ms |
+| boot_button | boot_button_is_pressed, boot_button_held_ms, boot_button_set_long_press_cb | Immediate |
+| battery | battery_init, battery_read_voltage | One ADC sample per read |
+| step_up | step_up_init, step_up_on, step_up_off, step_up_set | Immediate |
+| motor | motor_init, motor_set_duty, motor_stop, motor_brake, motor_set_invert | Immediate |
+| motor | motor_read_counts, motor_reset_counts | Immediate |
+| dc_motor, encoder | dc_motor_set_duty, encoder_read_counts, encoder_counts_to_rpm | The two halves of motor, usable alone |
+| sensor_array | sensor_array_init | Enables the first sensor |
+| sensor_array | sensor_array_next | One sensor per call, waits for that result |
+| sensor_array | sensor_array_read_current | Re-reads the enabled sensor, no switching |
+| sensor_array | sensor_array_read_all | All sensors in turn, blocks until done |
+| vl53l0x | vl53l0x_start_measurement, vl53l0x_result_ready, vl53l0x_fetch_result | Non blocking, for your own scheduling |
+| kv_store | kv_store_init, kv_store_set, kv_store_get | Writes to flash and commits at once |
 
-**The simulated backend controls**, which let you provoke what you cannot provoke on hardware:
+Every part follows the same pattern: fill a configuration with the default macro, create the object, call it.
 
 ```c
-hal_sim_set_distance(1, 60);          /* wall 6 cm in front of the front sensor */
-hal_sim_set_sensor_missing(2, true);  /* the right sensor stops answering */
-hal_sim_set_battery_voltage(3.15f);   /* an almost empty cell */
+motor_handle_t left = NULL;
+motor_cfg_t cfg = MOTOR_CFG_DEFAULT(MOTOR_LEFT_IN1_GPIO, MOTOR_LEFT_IN2_GPIO,
+                                    ENCODER_LEFT_A, ENCODER_LEFT_B);
+ESP_ERROR_CHECK(motor_init(&left, &cfg));
+motor_set_duty(left, 0.3f);
 ```
 
-These return `ESP_ERR_NOT_SUPPORTED` on real hardware.
+- **The pins:** Every pin name comes from pinout.h, never from your own memory.
+- **The simulator:** dc_motor, encoder and motor are lightweight versions there, with the same headers. See the table of stand-ins in the chapter on application structure.
+- **No hidden limits:** The motor driver clamps the duty to minus one to plus one and nothing more. Everything else is your code.
 
 ## Build, Flash and Monitor Cheat Sheet
 The commands you need every meeting.
@@ -1430,10 +1571,10 @@ idf.py -p <YOUR_PORT> flash monitor
 
 - **Leaving the monitor:** `Ctrl` and `]`.
 - **Find your port:** Device Manager under Ports, or `idf.py -p detect`. It is **not** always `COM5`.
-- **Clean rebuild** when the build system is confused: `idf.py fullclean`, then build again.
-- **Erase the whole chip**, including stored settings, when a bad value keeps coming back: `idf.py -p <YOUR_PORT> erase-flash`.
+- **Clean rebuild:** Use when the build system is confused: `idf.py fullclean`, then build again.
+- **Erase the whole chip:** Clears everything including stored settings, when a bad value keeps coming back: `idf.py -p <YOUR_PORT> erase-flash`.
 - **Firmware size:** `idf.py size` shows what your features cost.
-- **Switch the HAL backend:** edit `HAL_BACKEND` in the top level `CMakeLists.txt` and rebuild.
+- **Run in the simulator:** import the .vlx file into Velxio, press compile, start the simulation and open the serial monitor.
 
 ## Troubleshooting
 The problems that actually happen, and what they mean.
@@ -1447,6 +1588,7 @@ The problems that actually happen, and what they mean.
 | Board resets in a loop | Panic or brownout | Read the backtrace, check duty limits |
 | Debugger cannot attach | Conflicting driver on the USB JTAG interface | Reinstall the device in Device Manager |
 | Everything builds, robot does nothing | Boost converter asleep | Wake pin, power path |
+| Works in the simulator, not on the board | A part or a timing the simulator does not model | Table of simulator stand-ins, then print driver return values |
 | One wheel turns the wrong way | Sign mismatch | Invert flag in the HAL |
 
 **Reading a panic:** the backtrace names the function and the core. The common ones here are a **stack overflow** in a task, a **watchdog timeout** in a spinning loop and a **brownout** from a motor duty that is too high.
@@ -1462,7 +1604,7 @@ Short definitions of the words this lab uses without a detour.
 - **Deadband:** The range of small duty values where a motor does not move.
 - **Determinism:** The property that the system behaves the same way every time.
 - **Graceful degradation:** Losing a function on purpose while keeping the important ones.
-- **HAL:** Hardware abstraction layer. Thin, bounded, non deciding driver code, one per part.
+- **HAL:** Hardware abstraction layer. Thin, non deciding driver code, one per part. Here it is the robot_hal component.
 - **Jitter:** The variation of a period around its target. The worst case is what counts.
 - **Mutex:** A lock protecting shared data, with priority inheritance in FreeRTOS.
 - **Overwrite queue:** A queue of length one where a new item replaces the old one.
@@ -1477,6 +1619,7 @@ Short definitions of the words this lab uses without a detour.
 - **Superloop:** A single endless loop that does everything in sequence.
 - **Task:** An independent activity with its own stack, priority and state.
 - **Torn read:** Reading part old and part new data because a write was interrupted.
+- **Velxio:** A browser based simulator that emulates the ESP32-S3 and runs real ESP-IDF firmware.
 - **Watchdog:** A mechanism that detects a stalled system, by rebooting or by reporting.
 
 ## Further Reading
@@ -1486,10 +1629,12 @@ Resources worth your time, in the order they become useful.
 - **ESP-IDF programming guide:** The sections on FreeRTOS, timers, GPIO, I2C and the ADC. This is the source of truth for the chip.
 - **The Espressif getting started guide:** Installation and first project, if your toolchain is not set up yet.
 - **FreeRTOS runtime statistics and stack watermark pages:** Two short pages that turn your project from a claim into evidence.
+- **Velxio documentation:** How to import a project, edit the circuit and change the properties of a part while it runs.
+- **The robot_hal headers:** The comments in robot_hal/include are the real reference for every driver call.
 - **Your own course notes on multithreading:** Threads, locks and race conditions are the same ideas under different names.
 
 > Final Summary
 > You started with one question, **what does real time mean**, and the answer turned out to be **the worst case, not the average**.
 > Along the way you learned the **three worlds**, how a project is **layered**, how tasks are **scheduled by priority across two cores**, how data is shared with **mutexes and queues**, how **freshness** is proven with sequence numbers, how the **control path** runs from sensor to PWM, and how a system **reports and survives its own failures**.
-> You then designed and built something of your own, proved it against the **simulated HAL** when no robot was free, moved it to hardware, and defended the decisions behind it.
+> You then designed and built something of your own, proved it in the **Velxio simulator**, moved it to the physical hardware, and defended the decisions behind it.
 > The habits to keep are small and permanent: **measure the worst case, keep every task blocking, protect shared data with exactly one mechanism, define a safe state, and never claim timing you have not proven.**
