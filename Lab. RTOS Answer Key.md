@@ -136,7 +136,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 ## Check your understanding - two things identical and two different between simulator and hardware
 
 - **Identical in both:** the FreeRTOS scheduler (task priorities, preemption, mutexes, queues), the application code in `main/main.c`, and all `robot_hal` function signatures and header files.
-- **Different between the two:** motor PWM frequency (20 kHz hardware LEDC on the robot versus ~20 Hz software toggle in Velxio), encoder resolution (4200 counts per wheel revolution on the geared N20 versus 40 counts per revolution in Velxio), ToF distance readings (real laser ranging versus a 3-channel sine-wave generator), ADC calibration (calibrated eFuse versus raw fallback reading ~4.1 V), and buzzer audio (audible PWM versus silent).
+- **Different between the two:** motor PWM frequency (20 kHz hardware LEDC on the robot versus ~20 Hz software toggle in Velxio), encoder resolution (4200 counts per wheel revolution on the geared N20 versus 40 counts per revolution in Velxio), ToF distance readings (real laser ranging versus a 3-channel sine-wave generator), ADC calibration (calibrated eFuse versus a raw fallback reading of the 3.7 V supply part), the boost converter (wake pin required on the robot, always on in Velxio), and buzzer audio (audible PWM versus silent).
 - **Teacher info, three minutes:** make sure students name the encoder constant (4200 vs 40) early, as forgetting it during the hardware port is a classic mistake.
 
 ## Try it yourself - the full test loop versus blink tasks
@@ -165,7 +165,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 - **The right motor is mounted mirrored:** the gearbox and wheel are on the opposite side of the chassis, so a positive input that turns the left wheel forward turns the right wheel backward. The HAL inverts the sign for one motor so that positive means forward on both.
 - **The encoders are mirrored as well:** counting up on the left and up on the right represent opposite directions, so the encoder sign is also inverted. If it is not, odometry reports a spin instead of a straight line.
-- **Two separate handles:** each motor keeps its own state, its own duty limit and its own rate limiter, which is why one call cannot write to the other.
+- **Two separate handles:** each motor keeps its own state, including its own invert flag and encoder, which is why one call cannot write to the other. The HAL only clamps the duty to minus one to plus one, so any duty limit or rate limiter per motor is application code the student writes.
 - **Teacher info, three minutes:** push the student to say **what breaks** if it is not inverted. The answer is "the robot spins when you ask for straight", not "the code is wrong".
 - **Watch for:** "the pins are different". True and irrelevant, since the electrical interface is identical. The difference is mechanical.
 
@@ -227,7 +227,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 ## Predict before you run - COM5 and COM7
 
 - **Neither port number is wrong:** the port belongs to the machine and to the board, not to the project. Your colleague's board may enumerate as five and yours as seven, on the same day, on the same desk. What is actually wrong is copying a port number from any other source, including this script, without checking.
-- **How to find yours:** Device Manager under Ports on Windows, `idf.py -p detect`, or `/dev/ttyUSB*` and `/dev/cu.*` on the other systems.
+- **How to find yours:** Device Manager under Ports on Windows, `python -m serial.tools.list_ports -v` in the exported shell, or `/dev/ttyUSB*` and `/dev/cu.*` on the other systems. Leaving out `-p` also works, because `idf.py flash` then probes the ports itself. Note that `idf.py -p detect` is not a real command, in case a student found it somewhere.
 - **Teacher info, three minutes:** ask the prediction **before** anyone plugs a board in. The value is in the group that predicts "mine will be COM5 because I have no other device", then discovers otherwise.
 - **Watch for:** boards that appear twice. One entry is the serial console and one is the debug interface. The console one prints the boot log, so let them try both and see which one talks.
 
@@ -285,9 +285,9 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Try it yourself - tick conversion from milliseconds to ticks
 
-- **Expected values at the default 100 Hz tick rate:** one tick is 10 ms, so `pdMS_TO_TICKS(10)` evaluates to `1`, while `pdMS_TO_TICKS(5)` truncates to `0` ticks.
-- **What happens when `BLINK_PERIOD_MS` is set to 5 ms:** `vTaskDelay(0)` yields to equal priority tasks without sleeping for a tick, so `blink_task` runs continuously without blocking for 5 ms, flooding the serial monitor and starving lower priority tasks on its core.
-- **Teacher info, ten minutes:** this five-line experiment makes tick resolution concrete before students ever write a 400 Hz or 200 Hz loop.
+- **Expected values at a 100 Hz tick rate:** one tick is 10 ms, so `pdMS_TO_TICKS(10)` evaluates to `1`, while `pdMS_TO_TICKS(5)` truncates to `0` ticks. The starter kit does not set `CONFIG_FREERTOS_HZ` in sdkconfig.defaults, so the value comes from the ESP-IDF default of the installed version. Have the group print it first; if a build uses 1000 Hz the numbers are `10` and `5`, and the experiment below shows nothing dramatic.
+- **What happens when `BLINK_PERIOD_MS` is set to 5 ms at 100 Hz:** `vTaskDelay(0)` only yields to tasks of equal priority and never blocks, so `blink_task` is always ready. It floods the serial monitor, the monitor task at priority 1 almost never gets the mutex or the core it shares, and after a few seconds the task watchdog complains that the idle task of that core is not running.
+- **Teacher info, ten minutes:** this five-line experiment makes tick resolution concrete before students ever write a 400 Hz or 200 Hz loop. The watchdog warning is a bonus: it is the first time the group sees the system report its own starvation.
 
 ## Check your understanding - ready versus running at the same priority
 
@@ -300,11 +300,12 @@ Everything in this document is organised the same way: the prompt is quoted in a
 ## Try it yourself - swapping priorities and breaking the scheduler on purpose
 
 - **Swapping priorities in blink:** when `monitoring_task` is given priority 2 and `blink_task` priority 1, the monitor prints its first line before `blink_task` toggles the LED, so the initial `ON` state set in `app_main` is logged before the first toggle.
-- **Step one, two good tasks:** roughly a ten to one ratio between the one millisecond task and the ten millisecond task, because activations are one order of magnitude apart. Report the actual counters, not the theory.
-- **Step two, spinner instead of the fast task:** the slow counter stops or crawls. The spinner is always ready or running, so the slow task is ready but never scheduled on that core.
-- **Step three, slow task above the fast one:** predict first. The slow task keeps its ten millisecond rhythm because it preempts the fast one, and the fast task gets whatever is left and therefore runs **less** often than before, not more.
-- **Spinner at priority 1 vs priority 10:** when the spinner is at priority 1 and the good task is at priority 10, the good task keeps its period because it preempts the spinner whenever its delay expires (though the idle task starves). When reversed (spinner at 10, good task at 1), the good task never runs at all.
-- **Teacher info, twenty minutes:** collect the predictions on paper before any run. The group whose prediction fails learns more than the group that guessed right.
+- **Step one, two good tasks:** roughly a ten to one ratio between the one tick task and the ten tick task, because activations are one order of magnitude apart. The delays are in ticks, so at 100 Hz the tasks run every 10 ms and every 100 ms; the ratio is the same at any tick rate. Report the actual counters, not the theory.
+- **Step two, spinner at priority 5 instead of the fast task:** the slow counter stops completely. The spinner is always ready and outranks the slow task at priority 4 on the same core, so the slow task is **ready** but never **running**. After a few seconds the task watchdog prints a warning that names `IDLE1`, because the idle task of core 1 is starved as well. By default this is a warning, not a reset.
+- **Step three, slow task at 6, fast task at 5:** predict first. Almost nothing changes, and the ratio stays near ten to one. Both tasks block almost all the time, so they are rarely ready at the same instant, and priority only decides something when two tasks compete. This is rule four in action: blocked tasks do not compete. A group that predicted "the fast task now starves" has confused priority with share.
+- **Spinner at priority 1 vs priority 10, pinned to the same core:** with the spinner at 1 and the good task at 10, the good task keeps its period because it preempts the spinner whenever its delay expires, while the idle task of that core starves and the watchdog complains. Reversed (spinner at 10, good task at 1), the good task never runs at all.
+- **The same without pinning:** the reversed case suddenly "works", because the good task migrates to the other core. This is the most instructive moment of the experiment: the second core hides a scheduling bug that a busier system will expose.
+- **Teacher info, twenty minutes:** collect the predictions on paper before any run. The group whose prediction fails learns more than the group that guessed right. Check that every group really pinned all tasks to core 1 and prints from core 0; an unpinned run is the most common reason for "nothing happened".
 - **Watch for:** students who think preemption happens only at the tick. Rule three is the surprise: a higher priority task interrupts immediately, not at the next tick.
 
 ## Check your understanding - same priority, ten millisecond and one millisecond blocks
@@ -383,7 +384,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Try it yourself - breaking the blink mutex in four ways and adding a blink counter
 
-- **Experiment 1, removing the mutex and widening the window:** a bare boolean toggle is fast enough to hide the race most of the time, but reading `led_on` into a local variable, delaying 100 ms, and writing it back without the mutex makes `monitoring_task` report stale or mismatched states immediately.
+- **Experiment 1, removing the mutex and widening the window:** a bare boolean toggle is a load, an invert and a store, a window of a few instructions, which hides the race most of the time. The starter kit README still calls it "a single instruction"; correct that if a student quotes it, but reading `led_on` into a local variable, delaying 100 ms, and writing it back without the mutex makes `monitoring_task` report stale or mismatched states immediately.
 - **Experiment 2, `portMAX_DELAY`:** behaves identically while healthy, but removes the safety timeout so a stuck lock freezes both tasks forever.
 - **Experiment 3, forgetting `xSemaphoreGive`:** `monitoring_task` times out after `MUTEX_TIMEOUT_MS` (100 ms) and prints the busy warning on every round. On its second iteration, `blink_task` also fails `xSemaphoreTake` because a normal (non-recursive) FreeRTOS mutex cannot be taken twice by the same owner without giving it back first.
 - **Experiment 4, swapping priorities and adding `blink_count`:** swapping priorities changes who runs first at boot, but `(s_state.led_on, s_state.blink_count)` stays 100 percent consistent across both tasks when updated and read inside the mutex.
@@ -627,9 +628,9 @@ Everything in this document is organised the same way: the prompt is quoted in a
 
 ## Provoking faults in the simulator
 
-- **The interactive Velxio provocations:** clicking the `Sensor_Array` chip to raise **Random Jitter Amplitude** (`noise_mm` up to 50 mm) or **Sine Wave Frequency** (`wave_freq_hz`), clicking a motor chip to increase **Mechanical Shaft Load** or lower **Motor Supply Voltage**, disconnecting an `XSHUT` or `SDA` wire in the circuit editor to trigger a timeout/I2C error, pressing the `IO0` pushbutton to inject events, or changing the `60k` voltage divider resistor to `110k` to drop the simulated battery reading to ~3.1 V.
+- **The interactive Velxio provocations:** clicking the `Sensor_Array` chip to raise **Random Jitter Amplitude** (`noise_mm` up to 50 mm) or **Sine Wave Frequency** (`wave_freq_hz`), clicking a motor chip to increase **Mechanical Shaft Load** or lower **Motor Supply Voltage**, disconnecting an `XSHUT` or `SDA` wire in the circuit editor to trigger a timeout/I2C error, pressing the `IO0` pushbutton to inject events, or lowering the voltage of the 3.7 V battery supply part to 3.3 V or below to trigger the low battery path. With the RobotIT 2D simulator connected, a saved course gives a repeatable wall instead of the sine wave.
 - **What to record:** the code or the log line the fault produced, and the state the robot ended in. A fault with no visible reaction is an untested design.
-- **The simulator limits:** simplified motor inertia, 20 Hz software PWM (`dc_motor.c` in Velxio), 40 counts per revolution (`N20_COUNTS_PER_REV`) instead of 4200, blank eFuse ADC calibration requiring a raw ADC fallback, and no buzzer audio.
+- **The simulator limits:** simplified motor inertia, 20 Hz software PWM (`dc_motor.c` in Velxio), 40 counts per revolution (`N20_COUNTS_PER_REV`) instead of 4200, blank eFuse ADC calibration requiring a raw ADC fallback, a motor supply that is always on regardless of the wake pin, and no buzzer audio.
 - **Teacher info, ten minutes per group, and repeat it:** interactive faults are provokable in seconds in Velxio, so this is the cheapest evidence in the whole lab. Do not let a group leave the design phase without at least two provoked faults.
 - **Watch for:** students copying the simulator's `dc_motor.c`, `encoder.c` or `motor.c` over the real hardware drivers in the ESP-IDF project, or forgetting to change counts per revolution from 40 to 4200 when moving to a built robot.
 
@@ -728,7 +729,7 @@ Everything in this document is organised the same way: the prompt is quoted in a
 ## Final quiz round - model answers
 
 - **vTaskDelayUntil keeps a stable period:** it waits to an absolute deadline. Neither function helps when the work itself exceeds the period, because the deadline has already been missed before the delay is reached.
-- **A mutex blocks, a critical section disables interrupts:** the mutex gives exclusion between tasks with ownership and priority inheritance, and it may block. A critical section freezes the whole chip including the network stack, has no ownership and no inheritance, and is the wrong tool against another task. What a mutex does not give you is protection from code that never takes it.
+- **A mutex blocks, a critical section disables interrupts:** the mutex gives exclusion between tasks with ownership and priority inheritance, and it may block. A critical section in ESP-IDF takes a spinlock and disables interrupts and scheduling on its own core, makes the other core spin if it wants the same lock, has no priority inheritance, and must never wait. It is the right tool against an interrupt handler and the wrong one for anything longer than a few lines. What a mutex does not give you is protection from code that never takes it.
 - **An overwrite queue is right when only the newest value matters:** older values are stale by definition. It silently loses data whenever each item matters, because a producer faster than the consumer drops items without a trace.
 - **A changed sequence number proves a new publication happened:** the reader is not acting twice on the same sample. It does not prove the values are valid, it does not prove they are recent in time, and on its own it does not prove the fields are consistent, which is the mutex's job.
 - **Priority inversion lets a medium task delay a high one:** a low priority task holds a lock a high priority task needs, and a medium priority task preempts the holder, so the high priority task waits for the medium one. Priority inheritance stops it by temporarily raising the holder to the priority of the highest waiter, which bounds the wait by the critical section.

@@ -82,7 +82,7 @@ You have two ways to run your code throughout this lab: in the **Velxio simulato
 | Tasks, priorities, queues, mutexes | Full FreeRTOS on emulated ESP32-S3 | Full FreeRTOS on real ESP32-S3 |
 | Status LED and BOOT button | Virtual LED on IO2 and button on IO0 | On-board LED on IO2 and button on IO0 |
 | Buzzer | Calls work, silent in the browser | Passive PWM buzzer on IO1 |
-| Battery voltage | Fixed value around 4.1 V from a divider | Real cell through a 2 to 1 divider |
+| Battery voltage | Adjustable 3.7 V supply through a 2 to 1 divider | Real cell through a 2 to 1 divider |
 | Motors and encoders | Simulated N20 motors (40 counts per rev) | Geared N20 motors (4200 counts per rev) |
 | Distance sensors | Simulated three sensor array | Three VL53L0X sensors on shared I2C |
 | Timing numbers | Rehearsal and logic checks | Honest hardware numbers for your report |
@@ -90,31 +90,31 @@ You have two ways to run your code throughout this lab: in the **Velxio simulato
 [Download the RobotIT starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/espIDFRobotITStarterKit.zip)
 
 That archive contains a complete ESP-IDF project with the **robot_hal** component and the **blink** example, plus the two Velxio project files. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter. The two Velxio files are also available on their own.
-- **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
-- **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
+- **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
+- **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
+- **If the browser shows text instead of downloading:** Right click the link and choose "Save link as", and keep the `.vlx` ending.
 
 ## Running the Simulator Locally
 Velxio emulates the ESP32-S3 and runs your firmware, but it does not move a robot around a room. For that there is a second, small tool: the **RobotIT 2D simulator**.
-- **What it shows:** A top-down view of the robot on a course, with the three time of flight rays drawn from the robot, the wheel speeds, the pose and the live wall contacts. You draw walls with the mouse or load a course from JSON, and Velxio drives the simulated robot through the same REST API the real one would use.
+- **What it shows:** A top-down view of the robot on a course, with the three time of flight rays drawn from the robot, the wheel speeds, the pose and the live wall contacts. You draw walls with the mouse or load a course from JSON. The motor, sensor, LED and button parts in the Velxio circuit exchange their values with it over a small local HTTP interface, so the motor duty your firmware sets moves the robot on the course and the distance it sees comes back to your sensor reads.
 - **How it connects:** The RobotIT simulator listens on **127.0.0.1:8765** and prints "Waiting for Velxio". Start Velxio next to it, import a `.vlx` file and run it, and the two talk to each other. The panel then reads **Velxio Connected**.
+- **Without it:** Velxio still runs on its own. The distance sensors then fall back to a slow sine wave between 20 and 80 cm, and the motors only exist as numbers in your log.
 - **Manual test drive:** You can drive the wheels by hand in the browser before you have any firmware running, which is the fastest way to check that a course and its sensors behave as you expect.
 
 [Download the RobotIT 2D simulator](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/RobotITSim.exe)
 
 It is a single Windows executable. Double click it, your browser opens on `http://127.0.0.1:8765` with the course view, and you can close it by closing the console window. Useful flags: `-port 8765` to change the port, `-host` to bind another interface, `-course course.json` to start with a course file and `-no-browser` to skip opening the browser.
 
-If you would rather not install anything, start everything with one command. The compose file pulls the Velxio image and the RobotIT simulator image, wires them onto the same network namespace so the simulator can still reach Velxio on `127.0.0.1:8765`, and exposes both ports:
+If you would rather not install anything, start everything with one command. The compose file pulls the Velxio image and the RobotIT simulator image, puts them into the same network namespace so the parts inside Velxio still reach the simulator on `127.0.0.1:8765`, and exposes both ports:
 
 ```bash
 docker compose up
 ```
 
-| What | Where |
-|---|---|
-| Velxio web UI | `http://localhost:3080` |
-| RobotIT 2D simulator | `http://localhost:8765` |
+- **Velxio web UI:** [localhost:3080](http://localhost:3080)
+- **RobotIT 2D simulator:** [localhost:8765](http://localhost:8765)
 
-[Download the docker-compose.yml](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/docker-compose.yml) and put it in an empty folder, then run `docker compose up` in that folder. The ports are configurable through `VELXIO_PORT` and `SIM_PORT` in a `.env` file. Data, Arduino libraries, the ESP-IDF cache and build output live in named volumes, so the download only happens once. When the course announces an update, run `docker compose pull` once before `docker compose up` to fetch the new images.
+[Download the docker-compose file](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/docker-compose.zip), unzip the docker-compose.yml into an empty folder, then run `docker compose up` in that folder. The ports are configurable through `VELXIO_PORT` and `SIM_PORT` in a `.env` file. Data, Arduino libraries, the ESP-IDF cache and build output live in named volumes, so the download only happens once. When the course announces an update, run `docker compose pull` once before `docker compose up` to fetch the new images.
 
 ## Safety
 - **Lift the robot before the first run of new motor code:** Always. Use your hand as a switch: if it drives towards you, tip it up.
@@ -291,7 +291,7 @@ The starter kit gives you **one set of headers** and **two places to run them**.
 - **Different parts underneath:** The simulated circuit replaces the physical parts with virtual stand-ins, listed in the table below.
 - **Three lightweight motor files:** Inside the Velxio project, dc_motor, encoder and motor are lightweight versions with the exact same headers. Every other driver is identical to the hardware version.
 
-Here is the circuit that comes with the Velxio files. Find the LED on IO2, the button on IO0, the two motors with their encoder wires, the sensor array and the two resistors that form the battery divider on IO4.
+Here is the circuit that comes with the Velxio files. Find the LED on IO2, the button on IO0, the two motors with their encoder wires, the sensor array, the two supply parts for battery and motor voltage, and the two resistors that form the battery divider on IO4.
 
 ![The simulated RobotIT circuit in Velxio](./files/robotit/VelxioCircuit.png)
 
@@ -301,8 +301,9 @@ Here is the circuit that comes with the Velxio files. Find the LED on IO2, the b
 | Hardware pulse counter on the encoder | Encoder polled every 500 microseconds | Counts are right, but they come from software |
 | Geared N20 motor with 4200 counts per revolution | Simulated N20 motor with 40 counts per revolution | Keep counts per revolution in one constant |
 | Boost converter and H-bridge | L293D motor driver | Direction and duty work, the electrical details differ |
-| Three VL53L0X sensors | One chip with three simulated sensors | Distance sweeps between 20 and 80 cm like a sine wave, with adjustable jitter |
-| Battery with a 2 to 1 divider and calibrated ADC | Resistor divider on the 3.3 V rail, blank calibration | Reads a constant of about 4.1 V, and battery_init may fail |
+| Three VL53L0X sensors | One chip with three simulated sensors | Distances come from the RobotIT 2D simulator, or sweep between 20 and 80 cm like a sine wave when it is not running, with adjustable jitter |
+| Battery with a 2 to 1 divider and calibrated ADC | 3.7 V supply part with two 100 kilo ohm resistors, blank calibration | Reads about 3.7 V until you change the supply voltage, and battery_init may fail |
+| Boost converter output | 10 V supply part on the motor driver | Always on, the wake pin changes nothing in the simulator |
 | Buzzer on IO1 | Not in the circuit | Calls succeed, nothing is audible |
 
 - **Write once:** Because your code only calls the robot_hal headers and never touches a raw pin, you can move between the simulator and the physical robot at any time.
@@ -528,14 +529,15 @@ idf.py -p <YOUR_PORT> flash monitor
 ```
 
 - **`export.ps1`:** Loads the tools into your shell. It does **not** persist, so a new terminal needs it again. This is the single most common "it worked yesterday" problem.
-- **`set-target`:** Chooses the chip and writes it into the build configuration. Every project needs it once, or you get firmware for the wrong chip.
+- **`set-target`:** Chooses the chip and writes it into the build configuration. The starter kit already names the ESP32-S3 in sdkconfig.defaults, but running it once costs nothing and protects every project you start from scratch.
 - **`build`:** Compiles everything into an application image plus a bootloader and a partition table.
 - **`flash`:** Writes those three images over USB.
 - **`monitor`:** Opens the serial console. Leave it with `Ctrl` and `]`.
 
 **`<YOUR_PORT>` is not fixed.** It is whatever port your board shows up as on your machine:
 
-- **Windows:** Device Manager, section **Ports**, for example `COM3`, `COM5`, `COM12`. Or run `idf.py -p detect`.
+- **Windows:** Device Manager, section **Ports**, for example `COM3`, `COM5`, `COM12`.
+- **Any system:** Run `python -m serial.tools.list_ports -v` in the exported shell, or leave out `-p` completely and `idf.py flash` tries every port it finds.
 - **Linux:** For example `/dev/ttyUSB0` or `/dev/ttyACM0`.
 - **macOS:** For example `/dev/cu.usbserial-0001`.
 
@@ -589,7 +591,7 @@ I (832) blink: [monitor] LED state: ON
 - **Try it yourself:** Run `idf.py size` after your build finishes. Which part of your image is the largest, and why does that matter on a chip with limited flash?
 
 ## Run the Same Project in the Simulator
-The Velxio simulator runs the exact same program in your browser. [Download the Velxio starter project](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITStarterKit.vlx) or take the file from the starter kit archive.
+The Velxio simulator runs the exact same program in your browser. [Download the Velxio starter project](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITStarterKit.vlx) or take the file from the starter kit archive.
 - **Open Velxio:** Go to [velxio.dev](https://velxio.dev), or to the address your instructor gives you if the lab runs its own instance.
 - **Import the project:** Use the import entry of the project menu and choose the .vlx file. It brings the circuit, the board settings and all source files, including robot_hal.
 - **Check the board:** The board must be an **ESP32-S3** in **ESP-IDF** mode. Both are already set in the file.
@@ -604,7 +606,7 @@ The Velxio simulator runs the exact same program in your browser. [Download the 
 > Summary
 > Install **ESP-IDF as administrator** so the USB driver step works, and start the download in the first five minutes because it is slow.
 > The build loop is **`export.ps1`, `set-target`, `build`, `flash monitor`**, and `export.ps1` has to be repeated in every new terminal.
-> **The port is not always `COM5`.** Find yours in Device Manager or with `idf.py -p detect`, and import the **Velxio** project to run the exact same firmware in the browser.
+> **The port is not always `COM5`.** Find yours in Device Manager or with `python -m serial.tools.list_ports`, and import the **Velxio** project to run the exact same firmware in the browser.
 > Most first day failures are a **charge only cable**, an **unexported shell**, a **missing target** or a **stale monitor**. The troubleshooting table covers the rest.
 
 # Tasks, Scheduling and Priorities
@@ -693,17 +695,17 @@ At any moment a task is in exactly one **state**. If you can name the state, you
 
 The difference between **blocked** and **ready** is the whole trick of an RTOS. A task that spins in a `while` loop waiting for a flag is a badly written task, because it burns a core and starves everything at or below its priority.
 
-**The tick** is the heartbeat of the scheduler. FreeRTOS counts time in **ticks**, not milliseconds, and the tick rate is a compile time setting, commonly **100 Hz** or **1000 Hz**. Everything time related is converted with `pdMS_TO_TICKS()`.
+**The tick** is the heartbeat of the scheduler. FreeRTOS counts time in **ticks**, not milliseconds, and the tick rate is a compile time setting, commonly **100 Hz** or **1000 Hz**. In ESP-IDF it is `CONFIG_FREERTOS_HZ`, and you find the value of your build in the generated sdkconfig file. Everything time related is converted with `pdMS_TO_TICKS()`.
 
 ```c
 vTaskDelay(pdMS_TO_TICKS(10));   /* block for about 10 ms */
 ```
 
-That conversion tells you the limits. At 100 Hz one tick is 10 ms, so a 5 ms delay rounds to zero or one tick and you do not get what you asked for. If you need finer resolution, you need a faster tick, a hardware timer, or an event instead of a delay.
+That conversion tells you the limits. At 100 Hz one tick is 10 ms, and `pdMS_TO_TICKS(5)` rounds **down** to zero ticks, so you do not get what you asked for. Even a delay of one tick only waits until the **next** tick interrupt, which can be anywhere between almost zero and 10 ms away. If you need finer resolution, you need a faster tick, a hardware timer, or an event instead of a delay.
 
 - **Zero timeout means poll:** A receive with a timeout of zero returns immediately. Useful to drain a queue, harmful if you then loop on it.
 - **`portMAX_DELAY` means wait forever:** Fine for a task that genuinely has nothing else to do, dangerous in anything on a control path.
-- **Try it yourself:** Print the value of `pdMS_TO_TICKS(5)` and `pdMS_TO_TICKS(10)` in `app_main`, then temporarily set `BLINK_PERIOD_MS` to 5 ms and observe what happens to the loop rate.
+- **Try it yourself:** Print `CONFIG_FREERTOS_HZ`, `pdMS_TO_TICKS(5)` and `pdMS_TO_TICKS(10)` in `app_main`, then temporarily set `BLINK_PERIOD_MS` to 5 ms and observe what happens to the loop rate and to the monitor task.
 - **Check your understanding:** A task is ready on the same core as a running task with the same priority. What decides which runs after the next tick?
 
 ## Priorities and Preemption
@@ -744,16 +746,25 @@ Now let us see what happens when you break that scheduler on purpose.
 static volatile uint32_t s_fast = 0;
 static volatile uint32_t s_slow = 0;
 
+/* the delays are in ticks on purpose: one tick and ten ticks */
 static void fast_task(void *arg) { for (;;) { s_fast++; vTaskDelay(1); } }
 static void slow_task(void *arg) { for (;;) { s_slow++; vTaskDelay(10); } }
 static void spin_task(void *arg) { for (;;) { s_fast++; } }   /* never do this */
+
+/* in app_main: everything on core 1, so the second core cannot hide the effect */
+xTaskCreatePinnedToCore(fast_task, "fast", 2048, NULL, 5, NULL, 1);
+xTaskCreatePinnedToCore(slow_task, "slow", 2048, NULL, 4, NULL, 1);
 ```
 
-- **Step 1:** Run the two well behaved tasks and print both counters once per second. You should see roughly a ten to one ratio.
-- **Step 2:** Replace the fast task with the spinning version and watch the slow one. Explain what happened using the words **state** and **priority**.
-- **Step 3:** Restore the delay but raise the slow task above the fast one. Predict the counters **before** you run.
+Print both counters once per second from `app_main` or a small monitor task on **core 0**, so the printing never competes with the experiment.
 
-- **Try it yourself:** First swap the two task priorities in `blink` and predict which log line appears first after boot. Then run `spin_task` at priority 1 and the good task at priority 10, reverse their priorities, and write down both results.
+- **Step 1:** Run the two well behaved tasks. You should see roughly a ten to one ratio.
+- **Step 2:** Create `spin_task` instead of `fast_task`, with the same priority 5 on core 1, and watch the slow counter. Explain what happened using the words **state** and **priority**. Then read the warning the **task watchdog** prints after a few seconds and find out which task it names.
+- **Step 3:** Restore `fast_task` but give the slow task priority 6, above the fast one. Predict the counters **before** you run.
+
+Pinning matters here. Without it, the ESP32-S3 simply runs the starved task on the other core, and the experiment seems to prove that priorities do not matter.
+
+- **Try it yourself:** First swap the two task priorities in `blink` and predict which log line appears first after boot. Then pin `spin_task` and a well behaved task to the **same core**, run the spinner at priority 1 and the good task at priority 10, reverse their priorities, and write down both results. Finally remove the pinning and explain what changed.
 - **Check your understanding:** Two tasks share priority 10, one blocks for 10 ms per iteration and one for 1 ms. Which gets more CPU time, and is the answer the same on one core and on two?
 
 ## Two Cores and What Changes
@@ -833,7 +844,7 @@ UBaseType_t high_water = uxTaskGetStackHighWaterMark(NULL);  /* bytes left */
 printf("stack headroom: %u bytes\n", (unsigned)high_water);
 ```
 
-- **Measure the worst case, then add a margin:** Read the watermark during your heaviest run and add at least 30 percent, because a stack that barely fits today fails later when you add one more call.
+- **Measure the worst case, then add a margin:** The watermark is the **smallest headroom ever left**, not the usage. Read it after your heaviest run, compute the peak usage as stack size minus watermark, and size the stack at least 30 percent above that peak, because a stack that barely fits today fails later when you add one more call.
 - **Printf is expensive:** It costs stack and time. A task that prints inside a 10 ms loop has a real time budget you did not intend.
 - **Check every task, not just the big one:** The one that overflows is usually the quiet one.
 
@@ -896,7 +907,8 @@ The fix for a shared struct is a **mutex**, short for mutual exclusion. It is a 
 static SemaphoreHandle_t s_mutex;
 
 esp_err_t shared_data_set_sensors(const shared_sensor_data_t *in) {
-    if (xSemaphoreTake(s_mutex, portMAX_DELAY) != pdTRUE) {
+    /* bounded wait: the copy takes microseconds, 5 ms means something is wrong */
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(5)) != pdTRUE) {
         return ESP_ERR_TIMEOUT;
     }
     s_data = *in;            /* a copy, in one protected step */
@@ -928,7 +940,7 @@ without inheritance              with inheritance
      MEDIUM task                      short critical section
 ```
 
-**Critical sections** are a different tool for a different job. `taskENTER_CRITICAL` disables interrupts for a few instructions. Use it for a single variable and a couple of lines, never for a block that waits, because it freezes the whole chip including the WiFi stack.
+**Critical sections** are a different tool for a different job. In ESP-IDF, `taskENTER_CRITICAL(&s_lock)` takes a **spinlock** of type `portMUX_TYPE` and disables interrupts on the calling core. If the other core wants the same spinlock, it spins until it is free. Use it for a single variable and a couple of lines, never for a block that waits: while it is held, the scheduler and the interrupts on that core, including the ones the WiFi stack needs, stand still, and the other core may be burning cycles waiting for you.
 
 - **Mutex for data shared between tasks:** It is the only one of the three that inherits priority.
 - **Critical section for a few instructions shared with an interrupt:** Disabling interrupts is the correct tool against an interrupt handler, and the wrong tool against a task.
@@ -946,7 +958,7 @@ The blink example already contains a mutex, and it is the shortest working demon
 - **A mutex, not a binary semaphore:** xSemaphoreCreateMutex records the owner and gives priority inheritance. Created before any task exists, so no task can ever see a NULL handle.
 
 Now break it, **one change at a time**. For every change write down a prediction first, then build, run and compare.
-1. **Remove the mutex calls:** Delete every take and give but keep the task bodies. The program still mostly works, because toggling a variable is a single instruction. That is exactly why this bug class is dangerous. To provoke it, make the critical section longer: read led_on into a local variable, wait about 100 ms with vTaskDelay, then write it back and log it. The two tasks start to disagree.
+1. **Remove the mutex calls:** Delete every take and give but keep the task bodies. The program still mostly works, because toggling a variable takes only a handful of instructions and the window in which another task can slip in is tiny. That is exactly why this bug class is dangerous. To provoke it, make the critical section longer: read led_on into a local variable, wait about 100 ms with vTaskDelay, then write it back and log it. The two tasks start to disagree.
 2. **Replace the timeout with portMAX_DELAY:** Nothing changes until some task keeps the lock. Then both tasks hang, which is why the original prefers to warn and skip.
 3. **Forget one give:** Delete the xSemaphoreGive from blink_task. The monitor starts printing the busy warning in every round. Look closely at what blink does on its second round as well.
 4. **Swap the priorities:** Nothing breaks. Priorities decide who runs first, not whether the data stays consistent, and that is the whole point of the mutex.
@@ -1191,10 +1203,12 @@ A robot cannot always be connected to a debugger, and a timing bug disappears th
 - **Runtime statistics:** FreeRTOS reports the CPU share of every task and the free heap, which is how you find a task eating the chip.
 
 ```c
-char stats[1024];
-vTaskGetRunTimeStats(stats);   /* needs configGENERATE_RUN_TIME_STATS */
+static char stats[1024];       /* static: too big for a small task stack */
+vTaskGetRunTimeStats(stats);
 printf("%s\n", stats);
 ```
+
+The function only exists after you enable three options in `idf.py menuconfig` under Component config, FreeRTOS, Kernel: **configUSE_TRACE_FACILITY**, **configGENERATE_RUN_TIME_STATS** and **configUSE_STATS_FORMATTING_FUNCTIONS**.
 
 | Flashes | Meaning | Typical cause |
 |---|---|---|
@@ -1349,11 +1363,11 @@ The simulator runs the same ESP-IDF and the same FreeRTOS, and the drivers have 
 
 **Provoke the faults in the simulator.** This is the part you cannot do easily on real hardware, and it is the fastest way to prove your design. Click a part in the Velxio circuit to change its properties while the program runs.
 - **Noisy distance:** Select the sensor array and raise its **Random Jitter Amplitude** to 50 mm and its **Sine Wave Frequency** to 5 Hz. Then watch your filter and your stop logic.
-- **A repeatable wall:** The simulated distance sweeps between 20 and 80 cm like a sine wave, so your stop distance is crossed on a regular rhythm. Use that as a repeatable test input.
+- **A repeatable wall:** Without the 2D simulator, the simulated distance sweeps between 20 and 80 cm like a sine wave, so your stop distance is crossed on a regular rhythm. With the 2D simulator, save a course as JSON and load it again for every run. Either way you get a repeatable test input.
 - **Loaded motors:** Raise the **Mechanical Shaft Load** of a motor or lower its **Motor Supply Voltage**, then compare the measured RPM with the commanded duty.
 - **A silent sensor:** Delete the wire to one XSHUT pin or to SDA in the circuit editor and see what the sensor driver reports. Try it and write down the status it returns.
 - **Button events:** Press the pushbutton on IO0 with the mouse to inject events into your queue.
-- **An almost empty battery:** The supplied divider reads about 4.1 V. Change its 60 kilo ohm resistor to about 110 kilo ohm and the reading drops to roughly 3.1 V.
+- **An almost empty battery:** The battery supply part in the circuit delivers 3.7 V. Lower its voltage to 3.3 V or below while the program runs and watch your low battery logic react.
 
 - **Simulator limits:** A simplified motor model, no hardware PWM, no real I2C timing and no reliable WiFi. Its timing numbers come from an emulator, so treat them as a rehearsal and not as evidence.
 - **Side by side testing:** You can flash each step to the physical hardware as you go, using the BOOT button and serial monitor to verify behaviour on the real chip alongside the simulator.
@@ -1593,7 +1607,7 @@ idf.py -p <YOUR_PORT> flash monitor
 ```
 
 - **Leaving the monitor:** `Ctrl` and `]`.
-- **Find your port:** Device Manager under Ports, or `idf.py -p detect`. It is **not** always `COM5`.
+- **Find your port:** Device Manager under Ports, or `python -m serial.tools.list_ports -v`. It is **not** always `COM5`.
 - **Clean rebuild:** Use when the build system is confused: `idf.py fullclean`, then build again.
 - **Erase the whole chip:** Clears everything including stored settings, when a bad value keeps coming back: `idf.py -p <YOUR_PORT> erase-flash`.
 - **Firmware size:** `idf.py size` shows what your features cost.
