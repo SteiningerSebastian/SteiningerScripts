@@ -328,8 +328,8 @@ void app_main(void)
     status_led_set(true);
     s_state.led_on = true;
 
-    xTaskCreate(monitoring_task, "monitor", 2048, NULL, 1, NULL);
-    xTaskCreate(blink_task,      "blink",   2048, NULL, 2, NULL);
+    xTaskCreate(monitoring_task, "monitor", 4096, NULL, 1, NULL);
+    xTaskCreate(blink_task,      "blink",   4096, NULL, 2, NULL);
 }
 ```
 
@@ -623,7 +623,7 @@ You already know threads from Java, C# or C++. An RTOS task is the same idea wit
 | Blocking | Sleep, locks, IO | Sleep, queues, semaphores, notifications |
 | On overflow | Managed by the OS | Memory corruption or a panic |
 
-- **The stack is yours:** In ESP-IDF you give the size in **bytes**. Vanilla FreeRTOS counts in words, which is a classic trap when you read other tutorials. A value of 4096 is 4 kB, and the blink example gets by with 2048.
+- **The stack is yours:** In ESP-IDF you give the size in **bytes**. Vanilla FreeRTOS counts in words, which is a classic trap when you read other tutorials. A value of 4096 is 4 kB, which is what the blink example uses.
 - **There is no fairness:** A high priority task that loops forever starves everything below it. On a PC an infinite loop is annoying, on an RTOS it is a crashed robot with spinning motors.
 - **Blocking is the normal state:** A well written task is blocked almost all the time and becomes ready only when there is work.
 
@@ -653,8 +653,8 @@ Time to watch tasks run. The starter kit contains a small, complete RTOS program
 
 | Task | Priority | Period | Stack | Job |
 |---|---|---|---|---|
-| blink | 2 | 500 ms | 2048 bytes | Toggle the LED and update led_on |
-| monitor | 1 | 500 ms | 2048 bytes | Read led_on and log it |
+| blink | 2 | 500 ms | 4096 bytes | Toggle the LED and update led_on |
+| monitor | 1 | 500 ms | 4096 bytes | Read led_on and log it |
 
 Both tasks have the same shape. This is the blink task. Ignore the take and give calls for now, they are the topic of the next chapter.
 
@@ -666,10 +666,10 @@ static void blink_task(void *arg)
         if (xSemaphoreTake(s_state.mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
             s_state.led_on = !s_state.led_on;
             status_led_set(s_state.led_on);
-            ESP_LOGI(TAG, "[blink]   LED state: %s", s_state.led_on ? "ON" : "OFF");
+            printf("%s: [blink]   LED state: %s\n", TAG, s_state.led_on ? "ON" : "OFF");
             xSemaphoreGive(s_state.mutex);
         } else {
-            ESP_LOGW(TAG, "[blink] mutex busy for >%d ms, skipping", MUTEX_TIMEOUT_MS);
+            printf("%s: [blink] mutex busy for >%d ms, skipping\n", TAG, MUTEX_TIMEOUT_MS);
         }
         vTaskDelay(pdMS_TO_TICKS(BLINK_PERIOD_MS));
     }
@@ -680,7 +680,7 @@ static void blink_task(void *arg)
 - **Four numbers per task:** Priority, period and stack are in the table. The core is not pinned, because blink uses xTaskCreate and lets the scheduler choose.
 - **Creation order is not run order:** In the log, the blink line appears before the line that says the tasks started. The task has a higher priority than the main task, and the chip has a second core that can pick up a new task at once.
 - **The monitor line may move:** The monitor has the same priority as the main task, so it may print before or after the last line of app_main. Both orders are correct, and no line order is a promise.
-- **Output costs time:** Every log line formats a string and uses stack, which is why the tasks have 2048 bytes and not 512.
+- **Output costs time:** Every log line formats a string and uses stack. printf() needs well over a kilobyte for that, which is why the tasks have 4096 bytes. With 2048 the monitor task overflows its stack and the chip reboots.
 
 - **Try it yourself:** Open main/main.c in the starter kit, run it in the simulator or on the physical hardware, and watch the first four log lines after boot. Note which task prints before app_main finishes its own startup message.
 - **Check your understanding:** Both tasks sleep for 500 ms. In which state are they almost all the time, and what runs on the core while they sleep?
