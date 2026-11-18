@@ -87,11 +87,34 @@ You have two ways to run your code throughout this lab: in the **Velxio simulato
 | Distance sensors | Simulated three sensor array | Three VL53L0X sensors on shared I2C |
 | Timing numbers | Rehearsal and logic checks | Honest hardware numbers for your report |
 
-[Download the RobotIT starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/espIDFRobotITStarterKit.zip)
+[Download the RobotIT starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/espIDFRobotITStarterKit.zip)
 
 That archive contains a complete ESP-IDF project with the **robot_hal** component and the **blink** example, plus the two Velxio project files. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter. The two Velxio files are also available on their own.
-- **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
-- **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
+- **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
+- **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
+
+## Running the Simulator Locally
+Velxio emulates the ESP32-S3 and runs your firmware, but it does not move a robot around a room. For that there is a second, small tool: the **RobotIT 2D simulator**.
+- **What it shows:** A top-down view of the robot on a course, with the three time of flight rays drawn from the robot, the wheel speeds, the pose and the live wall contacts. You draw walls with the mouse or load a course from JSON, and Velxio drives the simulated robot through the same REST API the real one would use.
+- **How it connects:** The RobotIT simulator listens on **127.0.0.1:8765** and prints "Waiting for Velxio". Start Velxio next to it, import a `.vlx` file and run it, and the two talk to each other. The panel then reads **Velxio Connected**.
+- **Manual test drive:** You can drive the wheels by hand in the browser before you have any firmware running, which is the fastest way to check that a course and its sensors behave as you expect.
+
+[Download the RobotIT 2D simulator](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/RobotITSim.exe)
+
+It is a single Windows executable. Double click it, your browser opens on `http://127.0.0.1:8765` with the course view, and you can close it by closing the console window. Useful flags: `-port 8765` to change the port, `-host` to bind another interface, `-course course.json` to start with a course file and `-no-browser` to skip opening the browser.
+
+If you would rather not install anything, start everything with one command. The compose file pulls the Velxio image and the RobotIT simulator image, wires them onto the same network namespace so the simulator can still reach Velxio on `127.0.0.1:8765`, and exposes both ports:
+
+```bash
+docker compose up
+```
+
+| What | Where |
+|---|---|
+| Velxio web UI | `http://localhost:3080` |
+| RobotIT 2D simulator | `http://localhost:8765` |
+
+[Download the docker-compose.yml](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/docker-compose.yml) and put it in an empty folder, then run `docker compose up` in that folder. The ports are configurable through `VELXIO_PORT` and `SIM_PORT` in a `.env` file. Data, Arduino libraries, the ESP-IDF cache and build output live in named volumes, so the download only happens once.
 
 ## Safety
 - **Lift the robot before the first run of new motor code:** Always. Use your hand as a switch: if it drives towards you, tip it up.
@@ -270,7 +293,7 @@ The starter kit gives you **one set of headers** and **two places to run them**.
 
 Here is the circuit that comes with the Velxio files. Find the LED on IO2, the button on IO0, the two motors with their encoder wires, the sensor array and the two resistors that form the battery divider on IO4.
 
-![The simulated RobotIT circuit in Velxio](./files/VelxioCircuit.png)
+![The simulated RobotIT circuit in Velxio](./files/robotit/VelxioCircuit.png)
 
 | Real robot | In the simulator | What it means for you |
 |---|---|---|
@@ -337,14 +360,14 @@ static void control_task(void *arg) {
 # The Hardware and the Schematic
 The schematic is the truth about the hardware. Everything else, including the pin names in the code, is a claim you should be able to verify. This chapter walks the four pages of the board schematic and connects each one to something you will meet in software.
 
-[Download the full schematic as PDF](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/RobotITSchematic.pdf)
+[Download the full schematic as PDF](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/RobotITSchematic.pdf)
 
 The PDF is the reference for detail. Each page also appears below as an image, and each one gets a section of its own, because a schematic nobody explains is just a wall of lines.
 
 ## Page 1 - Power Distribution and Connectors
 This page answers the question you will ask first when something does not work: **what is connected to what?**
 
-![Schematic page 1 - power distribution and connectors](./files/RobotITSchematic-p1.png)
+![Schematic page 1 - power distribution and connectors](./files/robotit/RobotITSchematic-p1.png)
 
 Read it left to right, and it is the story of the board:
 
@@ -372,7 +395,7 @@ The connectors on the right are how the robot is assembled:
 ## Page 2 - Charging, Protection and the 3.3 V Supply
 This is the page most people skip, and it is the page that explains two strange behaviours: the board charges slowly, and it protects itself from a battery plugged in backwards.
 
-![Schematic page 2 - charger, protection and regulator](./files/RobotITSchematic-p2.png)
+![Schematic page 2 - charger, protection and regulator](./files/robotit/RobotITSchematic-p2.png)
 
 The charger in the middle is a **BQ25060**. Three things about it matter to you:
 
@@ -393,7 +416,7 @@ The protection block on the right is a small circuit with two transistors and a 
 ## Page 3 - The ESP32-S3 and Its Pins
 This page is the map between the schematic and your source code. If you ever wonder where a pin number in the code came from, it came from here.
 
-![Schematic page 3 - ESP32-S3 and pin assignments](./files/RobotITSchematic-p3.png)
+![Schematic page 3 - ESP32-S3 and pin assignments](./files/robotit/RobotITSchematic-p3.png)
 
 Three details on this page are worth more than the rest:
 
@@ -423,7 +446,7 @@ Three details on this page are worth more than the rest:
 ## Page 4 - Motor Power and the H-Bridge
 The last page is where the robot physically moves. It contains the two parts that decide how the motors behave.
 
-![Schematic page 4 - boost converter and H-bridge](./files/RobotITSchematic-p4.png)
+![Schematic page 4 - boost converter and H-bridge](./files/robotit/RobotITSchematic-p4.png)
 
 - **The boost converter:** Raises the battery voltage to a motor rail of about **10 V**, because a single cell cannot turn a geared motor well. Its **enable pin is driven by the ESP32**, and that is the wake pin you saw on page 3.
 - **Switching frequency set by a resistor:** It is deliberately placed above the audible range, so the robot does not whistle.
@@ -566,7 +589,7 @@ I (832) blink: [monitor] LED state: ON
 - **Try it yourself:** Run `idf.py size` after your build finishes. Which part of your image is the largest, and why does that matter on a chip with limited flash?
 
 ## Run the Same Project in the Simulator
-The Velxio simulator runs the exact same program in your browser. [Download the Velxio starter project](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/VelxioRobotITStarterKit.vlx) or take the file from the starter kit archive.
+The Velxio simulator runs the exact same program in your browser. [Download the Velxio starter project](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/VelxioRobotITStarterKit.vlx) or take the file from the starter kit archive.
 - **Open Velxio:** Go to [velxio.dev](https://velxio.dev), or to the address your instructor gives you if the lab runs its own instance.
 - **Import the project:** Use the import entry of the project menu and choose the .vlx file. It brings the circuit, the board settings and all source files, including robot_hal.
 - **Check the board:** The board must be an **ESP32-S3** in **ESP-IDF** mode. Both are already set in the file.

@@ -230,7 +230,7 @@ transfer. Link to the **raw file on GitHub** instead, so the browser downloads i
 from that server:
 
 ```markdown
-[Download the HAL starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit-hal-starter.zip)
+[Download the HAL starter kit](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/robotit-hal-starter.zip)
 ```
 
 - **Use the `/raw/refs/heads/main/` form**, not `blob/`. The `blob` URL opens GitHub's
