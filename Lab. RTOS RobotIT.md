@@ -114,7 +114,7 @@ docker compose up
 | Velxio web UI | `http://localhost:3080` |
 | RobotIT 2D simulator | `http://localhost:8765` |
 
-[Download the docker-compose.yml](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/docker-compose.yml) and put it in an empty folder, then run `docker compose up` in that folder. The ports are configurable through `VELXIO_PORT` and `SIM_PORT` in a `.env` file. Data, Arduino libraries, the ESP-IDF cache and build output live in named volumes, so the download only happens once.
+[Download the docker-compose.yml](https://github.com/SteiningerSebastian/SteiningerScripts/raw/refs/heads/main/files/robotit/docker-compose.yml) and put it in an empty folder, then run `docker compose up` in that folder. The ports are configurable through `VELXIO_PORT` and `SIM_PORT` in a `.env` file. Data, Arduino libraries, the ESP-IDF cache and build output live in named volumes, so the download only happens once. When the course announces an update, run `docker compose pull` once before `docker compose up` to fetch the new images.
 
 ## Safety
 - **Lift the robot before the first run of new motor code:** Always. Use your hand as a switch: if it drives towards you, tip it up.
