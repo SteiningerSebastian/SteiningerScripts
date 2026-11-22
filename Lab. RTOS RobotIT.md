@@ -1591,6 +1591,511 @@ motor_set_duty(left, 0.3f);
 - **The simulator:** dc_motor, encoder and motor are lightweight versions there, with the same headers. See the table of stand-ins in the chapter on application structure.
 - **No hidden limits:** The motor driver clamps the duty to minus one to plus one and nothing more. Everything else is your code.
 
+## Code Examples
+Short, complete building blocks for your project. They all fit together: the sensor task publishes a snapshot, the control task reads it, the monitor watches both, and app_main at the end wires everything up. Take what you need, and measure before you trust any of the numbers in them.
+
+- **Pasting them into one file:** C needs a definition before its first use. Put the includes, `TAG` and the snapshot and command types from the inter task communication example at the top, and app_main at the bottom.
+- **They build:** Put together in that order, the examples compile with ESP-IDF 6.0 against the starter kit.
+
+### Project Setup
+The starter kit uses a minimal build, so every ESP-IDF component your own code includes must be named in main/CMakeLists.txt.
+
+```cmake
+idf_component_register(SRCS "main.c"
+                       INCLUDE_DIRS "."
+                       REQUIRES robot_hal esp_timer
+                                esp_wifi esp_netif esp_event nvs_flash lwip)
+```
+
+- **Only what you use:** robot_hal and esp_timer are enough for everything except WiFi. Drop the rest if your project has no network.
+- **Includes:** pinout.h for the pin names, plus one header per part, for example motor.h, sensor_array.h or status_led.h.
+
+### Status LED - Heartbeat and Error Codes
+One task owns the LED and shows the code that the monitor task chooses. Nothing else touches the LED.
+
+```c
+static volatile int s_error_code = 0;   /* 0 = OK, otherwise number of flashes */
+
+static void led_task(void *arg)
+{
+    for (;;) {
+        int code = s_error_code;
+        if (code == 0) {                              /* heartbeat */
+            status_led_on();  vTaskDelay(pdMS_TO_TICKS(50));
+            status_led_off(); vTaskDelay(pdMS_TO_TICKS(950));
+            continue;
+        }
+        for (int i = 0; i < code; i++) {              /* N short flashes */
+            status_led_on();  vTaskDelay(pdMS_TO_TICKS(150));
+            status_led_off(); vTaskDelay(pdMS_TO_TICKS(250));
+        }
+        vTaskDelay(pdMS_TO_TICKS(1500));              /* pause between codes */
+    }
+}
+```
+
+- **Blocking is fine here:** The LED task does nothing else, so its delays cost no one anything.
+- **Inside a loop that must not wait:** Call `status_led_blink(500)` once per iteration instead. It follows the clock and returns at once.
+
+### Buzzer and BOOT Button - an Event Queue
+The button task turns presses into events. Every press must arrive, so this is a normal queue, not an overwrite queue.
+
+```c
+typedef enum { BTN_SHORT, BTN_LONG } btn_event_t;
+static QueueHandle_t s_btn_q;                 /* xQueueCreate(4, sizeof(btn_event_t)) */
+static volatile uint32_t s_btn_dropped = 0;
+
+static void button_task(void *arg)
+{
+    bool was_pressed = false;
+    uint32_t held_ms = 0;
+    for (;;) {
+        boot_button_poll();                    /* debounces, call every ~10 ms */
+        bool pressed = boot_button_is_pressed();
+        if (pressed) {
+            held_ms = boot_button_held_ms();
+        } else if (was_pressed) {              /* released: one event */
+            btn_event_t ev = (held_ms >= 2000) ? BTN_LONG : BTN_SHORT;
+            if (xQueueSend(s_btn_q, &ev, 0) != pdTRUE) {
+                s_btn_dropped++;               /* queue full: count it, never block */
+            }
+        }
+        was_pressed = pressed;
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+static void ui_task(void *arg)
+{
+    btn_event_t ev;
+    for (;;) {
+        if (xQueueReceive(s_btn_q, &ev, pdMS_TO_TICKS(1000)) == pdTRUE) {
+            if (ev == BTN_SHORT) buzzer_pulse(80, 2400);          /* returns at once */
+            else                 buzzer_play(BUZZER_SOUND_STARTUP);
+        }
+        /* a timeout is not an error: nothing was pressed this second */
+    }
+}
+```
+
+- **Zero timeout on send:** A producer that blocks on a full queue stops polling the button. Counting the drop is better.
+- **Melodies:** `buzzer_melody(freq_hz, dur_ms, count, repeat)` plays two arrays of frequencies and durations. Like every buzzer call it only queues the request.
+
+### Motors - Init, Ramp and Speed
+The driver only clamps the duty to minus one to plus one. The duty limit and the ramp are your code, and they protect the supply.
+
+```c
+#define COUNTS_PER_REV  4200.0f   /* 40.0f in the Velxio simulator */
+#define DUTY_LIMIT      0.8f
+#define DUTY_STEP       0.02f     /* per 10 ms tick: 0 to 80 percent in 400 ms */
+
+static motor_handle_t s_left, s_right;
+
+static esp_err_t drive_init(void)
+{
+    motor_cfg_t l = MOTOR_CFG_DEFAULT(MOTOR_LEFT_IN1_GPIO,  MOTOR_LEFT_IN2_GPIO,
+                                      ENCODER_LEFT_A,       ENCODER_LEFT_B);
+    motor_cfg_t r = MOTOR_CFG_DEFAULT(MOTOR_RIGHT_IN1_GPIO, MOTOR_RIGHT_IN2_GPIO,
+                                      ENCODER_RIGHT_A,      ENCODER_RIGHT_B);
+    r.invert = true;              /* mirrored motor: verify on a lifted robot */
+
+    esp_err_t err = motor_init(&s_left, &l);
+    if (err == ESP_OK) err = motor_init(&s_right, &r);
+    if (err == ESP_OK) err = step_up_init();
+    if (err == ESP_OK) step_up_on();          /* no wake pin, no motor power */
+    return err;
+}
+
+static float clampf(float v, float lim) { return v > lim ? lim : (v < -lim ? -lim : v); }
+
+static float ramp(float current, float target)
+{
+    return current + clampf(target - current, DUTY_STEP);
+}
+
+/* wheel speed from two count readings dt_s seconds apart */
+static float wheel_rpm(motor_handle_t m, int32_t *last_counts, float dt_s)
+{
+    int32_t counts = 0;
+    motor_read_counts(m, &counts);
+    float rpm = encoder_counts_to_rpm(counts - *last_counts, dt_s, COUNTS_PER_REV, 30000);
+    *last_counts = counts;
+    return rpm;
+}
+```
+
+- **The wrap limit:** 30000 is the counter limit set by `ENCODER_CFG_DEFAULT`, so the conversion handles a counter that wrapped between two reads.
+- **Safe state:** `motor_stop` sets both inputs low and the wheel coasts. `step_up_off()` additionally removes the motor power.
+- **Speed in mm/s:** Multiply the RPM by π times 40.8 mm and divide by 60.
+
+### Sensor Array - Bus, Array and a Sensor Task
+The three sensors share one address, so the array driver wakes them one after another. Each read waits until that sensor has finished ranging.
+
+```c
+static esp_err_t tof_init(sensor_array_handle_t *out)
+{
+    i2c_master_bus_handle_t bus = NULL;
+    const i2c_master_bus_config_t bus_cfg = {
+        .i2c_port          = I2C_NUM_0,
+        .sda_io_num        = SENSOR_ARRAY_I2C_SDA,
+        .scl_io_num        = SENSOR_ARRAY_I2C_SCL,
+        .clk_source        = I2C_CLK_SRC_DEFAULT,
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = true,
+    };
+    esp_err_t err = i2c_new_master_bus(&bus_cfg, &bus);
+    if (err != ESP_OK) return err;
+
+    const sensor_array_cfg_t cfg = {
+        .bus             = bus,
+        .i2c_speed_hz    = 400000,
+        .boot_delay_ms   = 2,
+        .read_timeout_ms = 100,            /* worst case wait per read */
+        .count           = 3,
+        .members = {
+            { .xshut_gpio = XSHUT_SENSOR_1 },
+            { .xshut_gpio = XSHUT_SENSOR_2 },
+            { .xshut_gpio = XSHUT_SENSOR_3 },
+        },
+    };
+    return sensor_array_init(out, &cfg);
+}
+
+static volatile uint32_t s_hb_sensor = 0;
+
+static void sensor_task(void *arg)
+{
+    sensor_array_handle_t tof = (sensor_array_handle_t)arg;
+    sensor_array_result_t res = {0};
+    robot_snapshot_t snap = {0};
+    for (;;) {
+        sensor_array_next(tof, &res);       /* one sensor per call */
+        for (int i = 0; i < 3; i++) {
+            snap.distance_mm[i] = res.distance_mm[i];
+            snap.valid[i]       = res.valid[i];
+        }
+        snapshot_publish(&snap);            /* see inter task communication */
+        s_hb_sensor++;
+        vTaskDelay(pdMS_TO_TICKS(10));      /* give the core back between reads */
+    }
+}
+```
+
+- **The read keeps the CPU busy:** The driver polls the sensor over I2C until the result is ready. That is why the sensor task runs one step **below** the control task: the control task can always preempt it.
+- **Validity first:** Check `valid[i]` before you use `distance_mm[i]`. An invalid reading is not a distance.
+- **Which sensor is the front one:** Check your build and keep the index in one constant. The examples use index 1.
+
+### Battery Voltage
+One ADC sample per call. In the simulator the eFuse calibration is blank, so `battery_init` can fail, and your code has to survive that.
+
+```c
+#include "esp_adc/adc_oneshot.h"            /* ADC_CHANNEL_3 */
+
+static battery_handle_t s_bat = NULL;
+
+static void battery_setup(void)
+{
+    battery_cfg_t cfg = BATTERY_CFG_DEFAULT(ADC_CHANNEL_3);   /* IO4 = ADC1 channel 3 */
+    cfg.divider_ratio = BATTERY_DIVIDER_RATIO;
+    if (battery_init(&s_bat, &cfg) != ESP_OK) {
+        ESP_LOGW(TAG, "no battery reading, continuing without it");
+        s_bat = NULL;
+    }
+}
+
+static bool battery_volts(float *v)
+{
+    return s_bat != NULL && battery_read_voltage(s_bat, v) == ESP_OK;
+}
+```
+
+- **Low battery means about 3.3 V:** Use a threshold slightly above that, and average a few samples before you act on it.
+
+### Persisting a Boot Error
+A failure that is written to flash is still there after the reboot, even when nobody had a cable attached.
+
+```c
+ESP_ERROR_CHECK(kv_store_init());          /* also initialises NVS for WiFi */
+
+char last[64];
+if (kv_store_get("boot_error", last, sizeof last) == ESP_OK) {
+    ESP_LOGW(TAG, "previous boot failed: %s", last);
+    kv_store_erase("boot_error");          /* report once, then clear */
+}
+
+if (tof_init(&tof) != ESP_OK) {
+    kv_store_set("boot_error", "sensor array init failed");
+    s_error_code = 6;                      /* boot failure on the LED */
+}
+```
+
+- **Keys are short:** At most 15 characters.
+- **Write once per failure:** Never write to flash inside a loop. Flash has a limited number of write cycles, and each write takes milliseconds.
+
+### Inter Task Communication
+Three mechanisms for three kinds of data: a mutex protected snapshot for the latest state, an overwrite queue for the newest command, and volatile counters for heartbeats.
+
+```c
+typedef struct {
+    uint32_t seq;               /* set by the publisher */
+    int64_t  timestamp_ms;      /* set by the publisher */
+    uint16_t distance_mm[3];
+    bool     valid[3];
+} robot_snapshot_t;
+
+static robot_snapshot_t  s_snap;
+static SemaphoreHandle_t s_snap_mutex;      /* xSemaphoreCreateMutex() in app_main */
+
+static esp_err_t snapshot_publish(robot_snapshot_t *in)
+{
+    if (xSemaphoreTake(s_snap_mutex, pdMS_TO_TICKS(5)) != pdTRUE) return ESP_ERR_TIMEOUT;
+    in->seq          = s_snap.seq + 1;
+    in->timestamp_ms = esp_timer_get_time() / 1000;
+    s_snap = *in;                           /* whole struct, inside the lock */
+    xSemaphoreGive(s_snap_mutex);
+    return ESP_OK;
+}
+
+static esp_err_t snapshot_get(robot_snapshot_t *out)
+{
+    if (xSemaphoreTake(s_snap_mutex, pdMS_TO_TICKS(5)) != pdTRUE) return ESP_ERR_TIMEOUT;
+    *out = s_snap;                          /* a copy, never a pointer */
+    xSemaphoreGive(s_snap_mutex);
+    return ESP_OK;
+}
+
+/* the newest command wins: overwrite queue of length 1 */
+typedef struct { float speed; float steer; } drive_cmd_t;
+static QueueHandle_t s_cmd_q;               /* xQueueCreate(1, sizeof(drive_cmd_t)) */
+
+/* fake command source for the simulator, replaced by the network later */
+static void command_task(void *arg)
+{
+    const drive_cmd_t cmd = { .speed = 0.4f, .steer = 0.0f };
+    for (;;) {
+        xQueueOverwrite(s_cmd_q, &cmd);     /* never blocks */
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+```
+
+The control task puts it all together: a stable period, fresh data only, a hard stop on the raw reading, and a ramp everywhere else.
+
+```c
+#define STOP_MM        120
+#define SNAP_MAX_AGE   100     /* ms */
+#define CMD_MAX_AGE    500     /* ms */
+#define FRONT          1
+
+static volatile uint32_t s_hb_control = 0;
+static volatile int64_t  s_worst_period_us = 0;
+
+static void control_task(void *arg)
+{
+    TickType_t last_wake = xTaskGetTickCount();
+    int64_t last_us = esp_timer_get_time();
+    int64_t cmd_ms = 0;
+    drive_cmd_t cmd = {0};
+    robot_snapshot_t snap;
+    float duty_l = 0.0f, duty_r = 0.0f;
+
+    for (;;) {
+        int64_t now_us = esp_timer_get_time();
+        if (now_us - last_us > s_worst_period_us) s_worst_period_us = now_us - last_us;
+        last_us = now_us;
+        int64_t now_ms = now_us / 1000;
+
+        if (xQueueReceive(s_cmd_q, &cmd, 0) == pdTRUE) cmd_ms = now_ms;
+        bool cmd_fresh  = (now_ms - cmd_ms) < CMD_MAX_AGE;
+        bool snap_fresh = snapshot_get(&snap) == ESP_OK
+                       && (now_ms - snap.timestamp_ms) < SNAP_MAX_AGE;
+        bool blocked = !snap_fresh || !snap.valid[FRONT]
+                    || snap.distance_mm[FRONT] < STOP_MM;
+
+        if (blocked || !cmd_fresh) {
+            duty_l = duty_r = 0.0f;                   /* stop at once, no ramp */
+        } else {
+            duty_l = ramp(duty_l, clampf(cmd.speed + cmd.steer, DUTY_LIMIT));
+            duty_r = ramp(duty_r, clampf(cmd.speed - cmd.steer, DUTY_LIMIT));
+        }
+        motor_set_duty(s_left,  duty_l);
+        motor_set_duty(s_right, duty_r);
+
+        s_hb_control++;
+        vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(10));
+    }
+}
+```
+
+- **Stale means stop:** Missing data, an invalid reading and an old command all lead to the same safe state, without asking any other task.
+- **No print in here:** The monitor prints the worst period. This task only measures it.
+- **Real controllers go further:** A latched stop with a release margin and a closed speed loop with `wheel_rpm` are the next steps, and both are good project material.
+
+### Monitor - Heartbeats, Codes and Watermarks
+The monitor reads, decides on a code and reports. It never touches a motor.
+
+```c
+static TaskHandle_t s_control_handle, s_sensor_handle;
+
+static void monitor_task(void *arg)
+{
+    uint32_t last_c = 0, last_s = 0, n = 0;
+    for (;;) {
+        vTaskDelay(pdMS_TO_TICKS(250));
+        uint32_t c = s_hb_control, s = s_hb_sensor;
+        float v;
+
+        int code = 0;                                   /* lowest code wins */
+        if (battery_volts(&v) && v < 3.4f) code = 5;
+        if (c == last_c) code = 4;                      /* control stalled */
+        if (s == last_s) code = 3;                      /* no sensor data */
+        s_error_code = code;
+        last_c = c;
+        last_s = s;
+
+        if (++n % 4 == 0) {                             /* once per second */
+            ESP_LOGI(TAG, "worst period %lld us | stack free control %u sensor %u",
+                     (long long)s_worst_period_us,
+                     (unsigned)uxTaskGetStackHighWaterMark(s_control_handle),
+                     (unsigned)uxTaskGetStackHighWaterMark(s_sensor_handle));
+        }
+    }
+}
+```
+
+- **Add hysteresis before the demo:** Switch to an error code only after it has been present for about two seconds, and back to the heartbeat at once.
+- **One writer per heartbeat:** Each counter is written by exactly one task, so a volatile 32 bit counter is enough.
+
+### WiFi - a Network Task That Never Touches the Control Path
+This is the optional network milestone. It runs on the physical hardware only, because the browser simulator does not bridge WiFi to your network. The task connects, sends the snapshot as JSON over UDP four times per second, and reports its state through a flag.
+
+```c
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_netif.h"
+#include "freertos/event_groups.h"
+#include "lwip/sockets.h"
+
+#define WIFI_SSID  "lab-network"
+#define WIFI_PASS  "change-me"
+#define LAPTOP_IP  "192.168.1.50"
+#define LAPTOP_PORT 5005
+#define WIFI_UP    BIT0
+
+static EventGroupHandle_t s_wifi_events;
+static volatile bool s_wifi_up = false;
+
+static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *data)
+{
+    if (base == WIFI_EVENT && id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect();
+    } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
+        xEventGroupClearBits(s_wifi_events, WIFI_UP);
+        esp_wifi_connect();                              /* keep retrying */
+    } else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
+        xEventGroupSetBits(s_wifi_events, WIFI_UP);
+    }
+}
+
+static void wifi_task(void *arg)
+{
+    s_wifi_events = xEventGroupCreate();
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_netif_create_default_wifi_sta();
+    wifi_init_config_t init = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&init));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_wifi_event, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_wifi_event, NULL));
+    wifi_config_t cfg = { .sta = { .ssid = WIFI_SSID, .password = WIFI_PASS } };
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+    struct sockaddr_in dst = { .sin_family = AF_INET, .sin_port = htons(LAPTOP_PORT) };
+    inet_pton(AF_INET, LAPTOP_IP, &dst.sin_addr);
+
+    for (;;) {
+        EventBits_t bits = xEventGroupWaitBits(s_wifi_events, WIFI_UP,
+                                               pdFALSE, pdTRUE, pdMS_TO_TICKS(1000));
+        s_wifi_up = (bits & WIFI_UP) != 0;
+        if (!s_wifi_up) continue;                        /* waited with a timeout */
+
+        robot_snapshot_t snap;
+        if (snapshot_get(&snap) == ESP_OK) {
+            char msg[96];
+            int len = snprintf(msg, sizeof msg, "{\"seq\":%lu,\"front_mm\":%u,\"valid\":%d}",
+                               (unsigned long)snap.seq, snap.distance_mm[FRONT], snap.valid[FRONT]);
+            sendto(sock, msg, len, 0, (struct sockaddr *)&dst, sizeof dst);
+        }
+        vTaskDelay(pdMS_TO_TICKS(250));
+    }
+}
+```
+
+On the laptop, a few lines of Python print what arrives:
+
+```python
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind(("0.0.0.0", 5005))
+while True:
+    print(s.recvfrom(256)[0].decode())
+```
+
+- **The network sees a copy:** It reads the snapshot through the same getter as everyone else and holds no lock while it sends.
+- **Make the monitor show code 2:** Add `if (!s_wifi_up) code = 2;` as the last check in the monitor, so it wins over every other code.
+- **Never commit the password:** Keep the SSID and password in a header that is not in your repository, or set them through menuconfig.
+- **Firewall:** If nothing arrives, allow incoming UDP on port 5005 on the laptop first, then suspect your code.
+- **WiFi is big:** With WiFi the whole example uses about 80 percent of the 1 MB app partition. Check `idf.py size` before you add more libraries.
+
+### Putting It Together - app_main
+Create the shared objects first, then the hardware, then the tasks. The real time tasks go on core 1, everything else goes on core 0.
+
+```c
+static const char *TAG = "robot";
+
+void app_main(void)
+{
+    ESP_ERROR_CHECK(kv_store_init());
+    ESP_ERROR_CHECK(status_led_init());
+    ESP_ERROR_CHECK(buzzer_init());
+    ESP_ERROR_CHECK(boot_button_init(2000));      /* long press after 2 s */
+
+    s_snap_mutex = xSemaphoreCreateMutex();
+    s_cmd_q      = xQueueCreate(1, sizeof(drive_cmd_t));
+    s_btn_q      = xQueueCreate(4, sizeof(btn_event_t));
+    if (!s_snap_mutex || !s_cmd_q || !s_btn_q) abort();
+
+    battery_setup();
+    ESP_ERROR_CHECK(drive_init());
+
+    sensor_array_handle_t tof = NULL;
+    if (tof_init(&tof) == ESP_OK) {
+        xTaskCreatePinnedToCore(sensor_task, "sensor", 4096, tof, 9, &s_sensor_handle, 1);
+    } else {
+        kv_store_set("boot_error", "sensor array init failed");
+        s_error_code = 6;        /* no sensor task: control sees stale data and stops */
+    }
+
+    /*                       function       name       stack  arg   prio  handle             core */
+    xTaskCreatePinnedToCore(control_task, "control", 4096, NULL, 10, &s_control_handle, 1);
+    xTaskCreatePinnedToCore(monitor_task, "monitor", 3072, NULL,  4, NULL,              0);
+    xTaskCreatePinnedToCore(led_task,     "led",     2048, NULL,  3, NULL,              0);
+    xTaskCreatePinnedToCore(button_task,  "button",  3072, NULL,  5, NULL,              0);
+    xTaskCreatePinnedToCore(ui_task,      "ui",      3072, NULL,  3, NULL,              0);
+    xTaskCreatePinnedToCore(command_task, "command", 2048, NULL,  2, NULL,              0);
+    /* xTaskCreatePinnedToCore(wifi_task, "wifi",    4096, NULL,  2, NULL,              0); */
+
+    buzzer_play(BUZZER_SOUND_STARTUP);
+}
+```
+
+- **The stack sizes are guesses:** Read the watermarks from the monitor and size every task from measured numbers.
+- **Lift the robot:** This program drives forward on its own as soon as the front sensor reports a free path. Run it on blocks first, every time.
+- **One file is fine to start:** When it grows, move the snapshot into shared_data.c, the drive helpers into drive.c and the tasks into their own files, along the layers from the chapter on application structure.
+
 ## Build, Flash and Monitor Cheat Sheet
 The commands you need every meeting.
 
