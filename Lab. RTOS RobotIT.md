@@ -92,6 +92,7 @@ You have two ways to run your code throughout this lab: in the **Velxio simulato
 That archive contains a complete ESP-IDF project with the **robot_hal** component and the **blink** example, plus the two Velxio project files. Unzip it, open the folder in VS Code with the ESP-IDF extension and build it. You will use it in every chapter. The two Velxio files are also available on their own.
 - **Starter project for Velxio:** [VelxioRobotITStarterKit.vlx](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITStarterKit.vlx) holds the circuit and the blink source. Import it into the simulator and run it.
 - **Full hardware test for Velxio:** [VelxioRobotITFullExample.vlx](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITFullExample.vlx) holds the same circuit and one big program that exercises every part of the robot. It is the reference for how each driver is called.
+- **Explorer demo for Velxio:** [VelxioRobotITExplorer.vlx](https://cdn.jsdelivr.net/gh/SteiningerSebastian/SteiningerScripts@main/files/robotit/VelxioRobotITExplorer.vlx) uses the same circuit with a task based program that drives around a course on its own, avoids walls and backs out of corners. Run it together with the RobotIT 2D simulator to see what a finished project can look like.
 - **If the browser shows text instead of downloading:** Right click the link and choose "Save link as", and keep the `.vlx` ending.
 
 ## Running the Simulator Locally
